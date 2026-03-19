@@ -1,0 +1,2774 @@
+{
+  "updatedAt": "2026-03-09T19:15:02.989Z",
+  "createdAt": "2026-01-06T21:54:53.927Z",
+  "id": "AGWBCw82QWpF2AEv",
+  "name": "Receptor de Eventos",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "wh_NbJAn0m8owwBMkxHWssOsSt7hcGXhPzYFaldF",
+        "height": 80,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -208
+      ],
+      "id": "ac5b06f7-d58b-4733-b500-defe108e6f68",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Nome: \"Buscar Flows Ativos (CORREÇÃO)\"\nSELECT \n  fe.id AS flow_execution_id,\n  fe.flow_code,\n  fe.lead_id,\n  fe.checkout_id,\n  fe.status\nFROM flow_executions fe\nJOIN flow_definitions fd_existing ON fe.flow_code = fd_existing.flow_code\nCROSS JOIN flow_definitions fd_new\nWHERE \n  fe.status = 'active'\n  AND fd_new.flow_code = $2  -- código do novo fluxo\n  AND (\n      -- REGRA DE OURO: Busca pelo Checkout ID (Prioridade Máxima)\n      fe.checkout_id = $3\n      OR\n      -- Rede de segurança: Busca pelo Lead ID\n      fe.lead_id = $1\n  )\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $node[\"Resolver Lead\"].json.id }}, \n{{ $node[\"Receptor\"].json.flow_code }}, \n{{ $node[\"Receptor\"].json.checkout_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2928,
+        -368
+      ],
+      "id": "3af68156-9e4b-4437-b7cc-8273a84c95a8",
+      "name": "Busca flow ativo",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07f9eb7a-370e-4391-bf80-667128156f86",
+      "name": "DELETE Scheduler API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3744,
+        -512
+      ],
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "Ajuste a URL da sua API de agendamento aqui"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"{{ $json.step_db_id }}\",\n  \"scheduleTo\": \"{{ $json.scheduled_for }}\",\n  \"payload\": {\n    \"execution_flow_step_id\": \"{{ $json.step_db_id }}\"\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/366f8652-fc71-43cb-bf54-f371eba66495\"\n}\n",
+        "options": {}
+      },
+      "id": "76f75b9c-9abb-4239-b969-b5688dfe6f39",
+      "name": "POST Scheduler API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        5008,
+        -352
+      ],
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "⚠️ COLOQUE A URL DO WORKFLOW DE BAIXO NO CAMPO webhook_url"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE flow_step_executions\nSET schedule_id = $1\nWHERE id = $2;",
+        "options": {
+          "queryReplacement": "={{ $json.messageId }}, {{ $('Registrar Flow').item.json.step_db_id }}"
+        }
+      },
+      "id": "62ee6cfb-d688-494e-8b31-49d910089d51",
+      "name": "Salvar Schedule ID1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        5184,
+        -352
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.flow_execution_id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "fab3a9a5-e432-4642-8f70-3e108c9d70aa",
+      "name": "Tem fluxo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        -368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH results AS (\n    SELECT \n        fse.id::TEXT, \n        fse.schedule_id::TEXT\n    FROM \"public\".\"flow_step_executions\" fse\n    INNER JOIN \"public\".\"flow_executions\" fe ON fse.flow_execution_id = fe.id\n    WHERE fe.lead_id = $1::uuid \n      AND fe.checkout_id = $2::text\n      AND fse.status = 'scheduled'\n)\nSELECT id, schedule_id FROM results\nUNION ALL\nSELECT 'nao encontrado', NULL\nWHERE NOT EXISTS (SELECT 1 FROM results);",
+        "options": {
+          "queryReplacement": "={{ $node[\"Resolver Lead\"].json.id }}, \n{{ $node[\"Receptor\"].json.checkout_id }}"
+        }
+      },
+      "id": "1dd504a7-58a1-4edf-85fd-a499d0a095b0",
+      "name": "Buscar Steps Agendados",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        3552,
+        -512
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE flow_step_executions\nSET status = 'cancelled', cancelled_at = NOW()\nWHERE id = $1;",
+        "options": {
+          "queryReplacement": "={{ $('Buscar Steps Agendados').item.json.id }}"
+        }
+      },
+      "id": "1a9ac026-1b6e-43a7-9c34-3b4070928eab",
+      "name": "Marca Step Cancelled",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        3936,
+        -512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        4096,
+        -512
+      ],
+      "id": "83c4781d-380b-4d9b-a201-95ff005e86db",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6c7bad76-588a-4f20-b3b5-cebc39f53429",
+      "name": "Loop Agendamento1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4784,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- ⚠️ MUDANÇA: Recebe lista de IDs da query anterior\nUPDATE flow_executions\nSET status = 'cancelled', cancelled_at = NOW()\nWHERE id = $1::uuid\n  AND status = 'active'\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ $json.flow_execution_id }}"
+        }
+      },
+      "id": "0977069b-7a1d-4bb5-b5b9-9a76faae7edb",
+      "name": "Cancelar Antigos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        3376,
+        -512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "564283d1-554f-4ee8-96b2-09fb54e8f315",
+              "leftValue": "={{ $json.ignore }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1776,
+        -416
+      ],
+      "id": "392507ce-40ed-4e8e-90f8-9a39dbddd5d3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "FlowAnteriorCancelado",
+              "inputValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        4256,
+        -512
+      ],
+      "id": "51410380-789d-4691-afd2-57721fc67d6a",
+      "name": "cancelado"
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "FlowCriado",
+              "inputValue": "={{ $('Receptor').item.json.flow_code }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        5184,
+        -496
+      ],
+      "id": "38e083f7-3a2d-41d9-873c-50546248d749",
+      "name": "criado"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Nome do nó: \"Gravar Checkout Event\"\nINSERT INTO checkout_events (\n  lead_id,\n  platform,\n  external_id,\n  external_checkout_id,\n  event_type,\n  payload,\n  created_at\n)\nVALUES (\n  NULL,  -- Será atualizado depois que resolver lead_id\n  'yampi',\n  $1,    -- order_id\n  $2,    -- checkout_id\n  $3,    -- original_event\n  $4,    -- raw_payload (JSONB)\n  NOW()\n)\nRETURNING id as checkout_event_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Receptor').item.json.order_id, \n  $('Receptor').item.json.checkout_id, \n  $('Receptor').item.json.original_event, \n  JSON.stringify($('Receptor').item.json.raw_payload)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1968,
+        -416
+      ],
+      "id": "9fbca25b-69f3-45ad-bfec-14ed200e3bcd",
+      "name": "Resolver Checkout",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH found AS (\n    -- 1. Tenta encontrar o lead existente por Telefone OU Email\n    SELECT id\n    FROM leads\n    WHERE normalize_phone(phone) = normalize_phone($3)\n       OR (email IS NOT NULL AND email <> '' AND email = $4)\n    ORDER BY\n        (normalize_phone(phone) = normalize_phone($3)) DESC, -- Prioridade para telefone\n        (email = $4) DESC\n    LIMIT 1\n),\nupdated AS (\n    -- 2. Se achou, ATUALIZA FORÇANDO OS NOVOS DADOS (Removido COALESCE)\n    UPDATE leads\n    SET\n        last_activity_at = NOW(),\n        email = $4,         -- Atualiza com o email novo\n        first_name = $1,    -- Atualiza com o primeiro nome novo (TESTE)\n        full_name = $2      -- Atualiza com o nome completo novo\n    WHERE id IN (SELECT id FROM found)\n    RETURNING id\n),\ninserted AS (\n    -- 3. Se não achou, INSERE\n    INSERT INTO leads (\n        first_name,\n        full_name,\n        phone,\n        email,\n        created_at,\n        last_activity_at\n    )\n    SELECT\n        $1,\n        $2,\n        normalize_phone($3),\n        $4,\n        NOW(),\n        NOW()\n    WHERE NOT EXISTS (SELECT 1 FROM found)\n    \n    -- Se houver conflito de telefone não detectado no passo 1, \n    -- ele também força a atualização para o nome novo aqui.\n    ON CONFLICT (phone) DO UPDATE \n    SET \n        first_name = EXCLUDED.first_name,\n        full_name = EXCLUDED.full_name,\n        email = EXCLUDED.email,\n        last_activity_at = NOW()\n    \n    RETURNING id\n)\n-- 4. Retorna o ID final\nSELECT id FROM updated\nUNION ALL\nSELECT id FROM inserted\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('Receptor').item.json.name }}, {{ $('Receptor').item.json.full_name }}, {{ $('Receptor').item.json.phone }}, {{ $('Receptor').item.json.email }}"
+        }
+      },
+      "id": "adb8e370-e0fa-4cda-9166-979a1ac390f4",
+      "name": "Resolver Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2112,
+        -416
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nWITH upserted_flow AS (\n  INSERT INTO flow_executions (\n    flow_code,\n    lead_id,\n    checkout_id,\n    context,\n    status,\n    started_at\n  )\n  VALUES (\n    $1::text,    -- Flow Code\n    $2::uuid,    -- Lead ID (Forçado para UUID)\n    $3::text,    -- Checkout ID (Forçado para Texto)\n    $4::jsonb,   -- Contexto\n    'active',\n    NOW()\n  )\n  -- AQUI ESTÁ A CORREÇÃO FINAL:\n  -- A condição abaixo copia exatamente a definição do seu índice\n  ON CONFLICT (lead_id, checkout_id, flow_code) \n  WHERE status = 'active' AND checkout_id IS NOT NULL\n  \n  DO UPDATE SET \n    started_at = NOW(),       -- Reinicia o timer\n    context = EXCLUDED.context, -- Atualiza o carrinho\n    status = 'active'         -- Mantém ativo\n  RETURNING id, started_at\n),\n\n-- Passo de Segurança: Limpa steps agendados velhos desse fluxo\ncleanup_old_steps AS (\n  DELETE FROM flow_step_executions\n  WHERE flow_execution_id IN (SELECT id FROM upserted_flow)\n    AND status = 'scheduled'\n)\n\n-- Insere os novos steps\nINSERT INTO flow_step_executions (\n  flow_execution_id, \n  step_order, \n  scheduled_for, \n  status\n)\nSELECT \n  upserted_flow.id,\n  (step->>'order')::int,\n  upserted_flow.started_at + ((step->>'delay_minutes')::int || ' minutes')::interval,\n  'scheduled'\nFROM flow_definitions,\n     jsonb_array_elements(steps) as step,\n     upserted_flow\nWHERE flow_code = $1::text\nRETURNING \n  id as step_db_id, \n  scheduled_for, \n  flow_execution_id,\n  step_order;",
+        "options": {
+          "queryReplacement": "={{ $node[\"Receptor\"].json.flow_code }},{{ $node[\"Resolver Lead\"].json.id }},{{ $node[\"Receptor\"].json.checkout_id }},\n{{ JSON.stringify($node[\"Receptor\"].json) }}\n\n"
+        }
+      },
+      "id": "7eb51671-6bb9-4f9c-b46a-1b33866c8d83",
+      "name": "Registrar Flow",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        4512,
+        -352
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PROCESSADOR DE EVENTOS YAMPI v3.5 (Revisão 04-03)\n// ============================================\n\nconst inputJson = items[0].json;\nconst body = inputJson.body || {};\nconst resource = body.resource;\n\nif (!resource) {\n  return { json: { ignore: true, reason: \"Dados insuficientes no payload (resource ausente)\" } };\n}\n\nconst customerData = resource.customer?.data || {}; \nconst incomingEvent = body.event;\nconst statusAlias = resource.status?.data?.alias || 'unknown';\nconst paymentMethod = resource.payments?.[0]?.alias || resource.payment_method || 'unknown';\n\n// 1. MAPEAMENTO DE EVENTOS\nconst EVENT_MAP = {\n  \"cart.reminder\": \"abandoned_cart\",\n  \"cart.abandoned\": \"abandoned_cart\",\n  \"order.created\": \"CHECK_PAYMENT_LOGIC\",\n  \"order.paid\": \"purchase_approved\",\n  \"payment.approved\": \"purchase_approved\",\n  \"payment.pix_generated\": \"pix_generated\",\n  \"order.shipped\": \"order_shipped\",\n  \"payment.denied\": \"card_denied\",\n  \"transaction.payment.refused\": \"card_denied\"\n};\n\n// 2. CONFIGURAÇÃO DE VARIÁVEIS\nconst VARIABLE_CONFIG = {\n  basic: {\n    first_name: { path: 'customer.data.first_name', required: true },\n    full_name: { path: 'customer.data.name', required: true },\n    email: { path: 'customer.data.email', required: false }\n  },\n  checkout: {\n    checkout_id: { path: 'id', required: true },\n    url_carrinho: { path: 'checkout_url', required: false },\n    url_carrinho_alt: { path: 'simulate_url', required: false },\n    reorder_url: { path: 'reorder_url', required: false },\n    valor_total: { path: 'value_total', required: false }\n  },\n  utm: {\n    utm_source: { path: 'utm_source', required: false },\n    utm_campaign: { path: 'utm_campaign', required: false },\n    utm_medium: { path: 'utm_medium', required: false }\n  },\n  delivery: {\n    tracking_public_url: { path: 'public_url', required: false },\n    delivery_date: { path: 'date_delivery.date', required: false },\n    address: { path: 'shipping_address.data.full_address', required: false },\n  },\n  pix: {\n    pix_code: { \n      paths: ['pix.data.pix_qr_code', 'payments[0].metadata.data.pix_qr_code'],\n      required: false \n    }\n  },\n  boleto: {\n    boleto_url: { path: 'payments[0].boleto_url', required: false },\n    linha_digitavel: { path: 'payments[0].boleto_code', required: false }\n  },\n  shipping: {\n    tracking_code: { path: 'tracking_code', required: false },\n    tracking_url: { path: 'tracking_url', required: false },\n    // 🟢 MELHORIA: Captura de Bairro e Estado\n    bairro: { path: 'shipping_address.data.neighborhood', required: false },\n    estado: { path: 'shipping_address.data.state', required: false },\n    address: { \n      custom: (res) => {\n        const addr = res.shipping_address?.data;\n        if (!addr) return null;\n        \n        // 🟢 MELHORIA: Identifica se o endereço é de uma Unidade de Retirada\n        const isPickup = res.metadata?.data?.some(m => m.key === 'pickup_config_id' && m.value);\n        const prefixo = isPickup ? \"📍 [RETIRADA] \" : \"\";\n        \n        return `${prefixo}${addr.street}, ${addr.number} - ${addr.city}/${addr.state} - CEP: ${addr.zipcode}`;\n      }\n    }\n  }\n};\n\n// 3. FUNÇÕES AUXILIARES\nfunction getNestedValue(obj, path) {\n  if (!path) return null;\n  return path.split('.').reduce((curr, key) => {\n    const match = key.match(/^(\\w+)\\[(\\d+)\\]$/);\n    if (match) return curr?.[match[1]]?.[parseInt(match[2])];\n    return curr?.[key];\n  }, obj);\n}\n\nfunction extractBySpec(resource, spec) {\n  if (spec.custom) return spec.custom(resource);\n  if (spec.paths) {\n    for (const p of spec.paths) {\n      const v = getNestedValue(resource, p);\n      if (v) return v;\n    }\n    return null;\n  }\n  return getNestedValue(resource, spec.path) || null;\n}\n\nfunction extractVariables(resource, flowCode) {\n  const vars = {};\n  Object.entries(VARIABLE_CONFIG.basic).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.checkout).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.utm).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.delivery).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  \n  // 🟢 MELHORIA: Sempre tenta extrair dados de shipping (address, bairro, estado)\n  // Isso garante que pedidos de qualquer fluxo tenham endereço completo\n  Object.entries(VARIABLE_CONFIG.shipping).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n\n  if (flowCode === 'pix_generated') {\n    Object.entries(VARIABLE_CONFIG.pix).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n  if (flowCode === 'boleto_generated') {\n    Object.entries(VARIABLE_CONFIG.boleto).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n\n  try {\n    const pUrl = resource.items?.data?.[0]?.sku?.data?.purchase_url;\n    if (pUrl) vars.purchase_url = pUrl;\n  } catch (e) {}\n\n  if (resource.items && resource.items.data) {\n    vars.lista_produtos = resource.items.data\n      .map(item => `🔸 *${item.quantity}x ${item.sku?.data?.title || 'Produto'}*`)\n      .join('\\n');\n  } else {\n    vars.lista_produtos = \"*Produtos não identificados*\";\n  }\n  \n  const AUTO_CAPTURE = [\n    'discount_value', 'coupon_code', 'items_quantity', \n    'shipping_value', 'installments', 'payment_date',\n    'track_code', 'track_url' \n  ];\n  \n  AUTO_CAPTURE.forEach(field => {\n    if (resource[field] !== undefined && resource[field] !== null) {\n      vars[field] = resource[field];\n    }\n  });\n  \n  return vars;\n}\n\nfunction tratarTelefone(rawPhone) {\n  if (!rawPhone) return null;\n  let nums = rawPhone.toString().replace(/\\D/g, '');\n  if (nums.startsWith('55')) nums = nums.substring(2);\n  if (nums.length === 11) nums = nums.substring(0, 2) + nums.substring(3);\n  return '55' + nums;\n}\n\n// 4. LÓGICA CENTRAL DE DECISÃO\nlet flowCode = EVENT_MAP[incomingEvent] || null;\n\nif (incomingEvent === 'order.created' || flowCode === 'CHECK_PAYMENT_LOGIC') {\n  if (['refused', 'cancelled'].includes(statusAlias)) {\n    flowCode = (paymentMethod === 'credit_card') ? 'card_denied' : null;\n  }\n  else if (statusAlias === 'waiting_payment') {\n    if (paymentMethod === 'pix') flowCode = 'pix_generated';\n    else if (['billet', 'boleto'].includes(paymentMethod)) flowCode = 'boleto_generated';\n    else flowCode = null;\n  }\n  else if (['paid', 'approved'].includes(statusAlias)) {\n    flowCode = 'purchase_approved';\n  }\n} \nelse if (incomingEvent === 'order.status.updated') {\n  if (['on_carriage', 'shipped', 'delivered_transport'].includes(statusAlias)) {\n    flowCode = 'order_shipped';\n  } else {\n    flowCode = null;\n  }\n}\n\n// --- IMPLEMENTAÇÃO RETIRADA LOCAL ---\nif (flowCode === 'purchase_approved' && resource.metadata && resource.metadata.data) {\n  const isPickup = resource.metadata.data.find(meta => meta.key === 'pickup_config_id' && meta.value);\n  if (isPickup) {\n    flowCode = 'retirada_local';\n  }\n}\n\nif (!flowCode) {\n  return { json: { ignore: true, reason: `Status ignorado: ${statusAlias}` } };\n}\n\nconst telefoneFinal = tratarTelefone(customerData.phone?.full_number || customerData.phone?.number);\nlet docNum = (customerData.cpf || customerData.cnpj || '').replace(/\\D/g, '');\n\nconst contextData = extractVariables(resource, flowCode);\n\nconst output = {\n    flow_code: flowCode,\n    original_event: incomingEvent,\n    phone: telefoneFinal,\n    email: customerData.email,\n    name: customerData.first_name,\n    full_name: customerData.name,\n    doc_number: docNum,\n    checkout_id: resource.id,\n    order_id: resource.id,\n    total_value: resource.value_total,\n    payment_method: paymentMethod,\n    current_status: statusAlias,\n    raw_payload: body\n};\n\nreturn {\n  json: Object.assign(output, contextData) \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        -416
+      ],
+      "id": "d5170133-afb8-40a2-9a33-95680e007906",
+      "name": "Receptor"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE checkout_events\nSET lead_id = $1\nWHERE id = $2;",
+        "options": {
+          "queryReplacement": "={{ $json.id }}, {{ $('Resolver Checkout').item.json.checkout_event_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        -416
+      ],
+      "id": "fb671ba4-229f-45c1-8511-06cec1718f35",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "evento",
+              "value": "={{ $json.current_status }}"
+            },
+            {
+              "key": "flow_code",
+              "value": "={{ $json.flow_code }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        -416
+      ],
+      "id": "3aa1a103-c329-47e4-acf1-6049ae2936c4",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "flow",
+              "value": "ignorado"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        -560
+      ],
+      "id": "612fdb4b-bfec-4ae4-81b8-c9ea15bebd9c",
+      "name": "Execution Data1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 1. PROMOVE O LEAD PARA CLIENTE (Com CPF, Bairro e Estado)\nINSERT INTO public.clientes (id, nome, email, whatsapp, cidade, doc_number, bairro, estado)\nSELECT \n    id, \n    COALESCE(full_name, first_name, 'Cliente'), \n    COALESCE(email, $6), \n    COALESCE(phone, $7), \n    $8, $12, $13, $14\nFROM public.leads \nWHERE id = $2\nON CONFLICT (id) DO UPDATE SET \n    email = EXCLUDED.email, \n    whatsapp = EXCLUDED.whatsapp,\n    cidade = EXCLUDED.cidade,\n    doc_number = EXCLUDED.doc_number,\n    bairro = EXCLUDED.bairro,\n    estado = EXCLUDED.estado;\n\n-- 2. INSERE O PEDIDO E VINCULA EVENTO\nINSERT INTO public.pedidos (id, cliente_id, status, valor_pedido, valor_desconto, cidade, endereco_completo, tipo_frete, data_pedido)\nVALUES ($1, $2, $3, $4, CAST($9 AS NUMERIC), $8, $10, $11, NOW())\nON CONFLICT (id) DO UPDATE SET \n    status = EXCLUDED.status, \n    valor_pedido = EXCLUDED.valor_pedido,\n    endereco_completo = EXCLUDED.endereco_completo,\n    tipo_frete = EXCLUDED.tipo_frete;\n\n-- VINCULAÇÃO DE TABELAS (Melhoria 04-03)\nUPDATE public.checkout_events SET lead_id = $2 WHERE external_id = $1;\n\n-- 3. LIMPEZA E INSERÇÃO DE ITENS\nDELETE FROM public.pedido_itens WHERE pedido_id = $1;\n\nINSERT INTO public.pedido_itens (pedido_id, produto_nome, sku, quantidade, preco_unitario)\nSELECT $1, x.nome, x.sku, x.quantidade, x.preco\nFROM json_to_recordset($5::json) AS x(nome text, sku text, quantidade int, preco decimal);\n\n-- 4. ATUALIZA TOTAIS DO CLIENTE\nUPDATE public.clientes \nSET \n    total_orders = sub.qtd,\n    valor_total_gasto = sub.total,\n    data_ultima_compra = NOW()\nFROM (\n    SELECT COUNT(*) as qtd, SUM(COALESCE(valor_pedido, 0)) as total \n    FROM public.pedidos \n    WHERE cliente_id = $2\n) AS sub\nWHERE public.clientes.id = $2;",
+        "options": {
+          "queryReplacement": "={{ $node[\"Receptor\"].json.order_id }},\n{{ $node[\"Resolver Lead\"].json.id }},\n{{ $node[\"Receptor\"].json.current_status }},\n{{ $node[\"Receptor\"].json.total_value }},\n{{ JSON.stringify($node[\"Receptor\"].json.raw_payload.resource.items.data.map(item => ({\n  nome: item.sku?.data?.title || 'Produto sem nome',\n  sku: item.item_sku || item.sku?.data?.sku || 'N/A',\n  quantidade: parseInt(item.quantity) || 1,\n  preco: parseFloat(item.price) || 0\n}))) }},\n{{ $node[\"Receptor\"].json.email || $node[\"Receptor\"].json.raw_payload.resource.customer.data.email }},\n{{ $node[\"Receptor\"].json.phone || $node[\"Receptor\"].json.raw_payload.resource.customer.data.phone.full_number }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipping_address.data.city || 'Não informada' }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.value_discount || 0 }},\n{{ ($node[\"Receptor\"].json.address || \"\").replace(',', ' -') }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipment_service || 'Retirada' }},\n{{ $('Receptor').item.json.doc_number }},{{ $('Receptor').item.json.bairro }},{{ $('Receptor').item.json.estado }}\n"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2464,
+        -64
+      ],
+      "id": "cfc733d7-501e-49f2-bb8f-207814c654ef",
+      "name": "Gravar itens de pedido/cliente",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('If').item.json.flow_code }}",
+                    "rightValue": "=purchase_approved",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f7c34ee0-ded6-4987-8215-bea7c61374fa"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Compra APROVADA"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e982345a-6ed2-4154-87d9-1b754d56af7c",
+                    "leftValue": "={{ $('If').item.json.flow_code }}",
+                    "rightValue": "order_shipped",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pedido Enviado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "87f229be-6412-4d1f-b71a-46f3d788df68",
+                    "leftValue": "={{ $('If').item.json.flow_code }}",
+                    "rightValue": "retirada_local",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Retirada local"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b25c012f-ecd3-48f9-b6b5-8f96b2ed1231",
+                    "leftValue": "={{ $('If').item.json.flow_code }}",
+                    "rightValue": ".*",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Passa o resto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2464,
+        -448
+      ],
+      "id": "7f21b59f-d319-4f2b-a27b-47e7cce27c87",
+      "name": "Switch",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.pedidos\nSET \n    status = 'shipped',\n    track_code = $2,\n    track_url = $3\nWHERE id = $1;",
+        "options": {
+          "queryReplacement": "={{ $node[\"Receptor\"].json.order_id }},\n{{ $('If').item.json.raw_payload.resource.track_code }},\n{{ $('If').item.json.raw_payload.resource.track_url }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2464,
+        -224
+      ],
+      "id": "f1a968d5-8270-4bab-9107-701a5817551b",
+      "name": "SALVAR TRACKING_CODE",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3030bcf9-d5c3-4705-a16e-660b3ec3369b",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1296,
+        -416
+      ],
+      "id": "462a389f-b991-46f4-b897-9119f7cd13c3",
+      "name": "Webhook",
+      "webhookId": "3030bcf9-d5c3-4705-a16e-660b3ec3369b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4e59f32-9faf-4828-a8f2-1a9e053576af",
+              "name": "headers",
+              "value": "={{ $json.headers }}",
+              "type": "object"
+            },
+            {
+              "id": "8ddfce39-e03c-4991-b70a-6f4557d568b6",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        304
+      ],
+      "id": "ad1c9fa2-51c9-49b7-9993-24f3fc02b306",
+      "name": "Edit Fields",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PROCESSADOR DE EVENTOS YAMPI v3.4 (Suporte Retirada Local)\n// ============================================\n\n// Proteção contra payloads vazios\nconst inputJson = items[0].json;\nconst body = inputJson.body || {};\nconst resource = body.resource;\n\n// Se não houver dados, ele ignora graciosamente em vez de travar\nif (!resource) {\n  return { json: { ignore: true, reason: \"Dados insuficientes no payload (resource ausente)\" } };\n}\n\nconst customerData = resource.customer?.data || {}; \nconst incomingEvent = body.event;\nconst statusAlias = resource.status?.data?.alias || 'unknown';\nconst paymentMethod = resource.payments?.[0]?.alias || resource.payment_method || 'unknown';\n\n// 1. MAPEAMENTO DE EVENTOS\nconst EVENT_MAP = {\n  \"cart.reminder\": \"abandoned_cart\",\n  \"cart.abandoned\": \"abandoned_cart\",\n  \"order.created\": \"CHECK_PAYMENT_LOGIC\",\n  \"order.paid\": \"purchase_approved\",\n  \"payment.approved\": \"purchase_approved\",\n  \"payment.pix_generated\": \"pix_generated\",\n  \"order.shipped\": \"order_shipped\",\n  \"payment.denied\": \"card_denied\",\n  \"transaction.payment.refused\": \"card_denied\"\n};\n\n// 2. CONFIGURAÇÃO DE VARIÁVEIS\nconst VARIABLE_CONFIG = {\n  basic: {\n    first_name: { path: 'customer.data.first_name', required: true },\n    full_name: { path: 'customer.data.name', required: true },\n    email: { path: 'customer.data.email', required: false }\n  },\n  checkout: {\n    checkout_id: { path: 'id', required: true },\n    url_carrinho: { path: 'checkout_url', required: false },\n    url_carrinho_alt: { path: 'simulate_url', required: false },\n    reorder_url: { path: 'reorder_url', required: false },\n    valor_total: { path: 'value_total', required: false }\n  },\n  utm: {\n    utm_source: { path: 'utm_source', required: false },\n    utm_campaign: { path: 'utm_campaign', required: false },\n    utm_medium: { path: 'utm_medium', required: false }\n  },\n  delivery: {\n    tracking_public_url: { path: 'public_url', required: false },\n    delivery_date: { path: 'date_delivery.date', required: false },\n    address: { path: 'shipping_address.data.full_address', required: false },\n  },\n  pix: {\n    pix_code: { \n      paths: ['pix.data.pix_qr_code', 'payments[0].metadata.data.pix_qr_code'],\n      required: false \n    }\n  },\n  boleto: {\n    boleto_url: { path: 'payments[0].boleto_url', required: false },\n    linha_digitavel: { path: 'payments[0].boleto_code', required: false }\n  },\n  shipping: {\n    tracking_code: { path: 'tracking_code', required: false },\n    tracking_url: { path: 'tracking_url', required: false },\n    address: { \n      custom: (res) => {\n        const addr = res.shipping_address?.data;\n        if (!addr) return null;\n        return `${addr.street}, ${addr.number} - ${addr.city}/${addr.state} - CEP: ${addr.zipcode}`;\n      }\n    }\n  }\n};\n\n// 3. FUNÇÕES AUXILIARES\nfunction getNestedValue(obj, path) {\n  return path.split('.').reduce((curr, key) => {\n    const match = key.match(/^(\\w+)\\[(\\d+)\\]$/);\n    if (match) return curr?.[match[1]]?.[parseInt(match[2])];\n    return curr?.[key];\n  }, obj);\n}\n\nfunction extractBySpec(resource, spec) {\n  if (spec.custom) return spec.custom(resource);\n  if (spec.paths) {\n    for (const p of spec.paths) {\n      const v = getNestedValue(resource, p);\n      if (v) return v;\n    }\n    return null;\n  }\n  return getNestedValue(resource, spec.path) || null;\n}\n\nfunction extractVariables(resource, flowCode) {\n  const vars = {};\n  Object.entries(VARIABLE_CONFIG.basic).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.checkout).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.utm).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.delivery).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  \n  if (flowCode === 'pix_generated') {\n    Object.entries(VARIABLE_CONFIG.pix).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n  if (flowCode === 'boleto_generated') {\n    Object.entries(VARIABLE_CONFIG.boleto).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n  if (flowCode === 'order_shipped') {\n    Object.entries(VARIABLE_CONFIG.shipping).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n\n  // ✅ CORREÇÃO: Captura da purchase_url no SKU mantendo o padrão\n  try {\n    const pUrl = resource.items?.data?.[0]?.sku?.data?.purchase_url;\n    if (pUrl) vars.purchase_url = pUrl;\n  } catch (e) {}\n\n// ✅ CRIAÇÃO DA LISTA DE PRODUTOS\n  if (resource.items && resource.items.data) {\n    vars.lista_produtos = resource.items.data\n      .map(item => `🔸 *${item.quantity}x ${item.sku?.data?.title || 'Produto'}*`)\n      .join('\\n');\n  } else {\n    vars.lista_produtos = \"*Produtos não identificados*\";\n  }\n  \n  const AUTO_CAPTURE = [\n    'discount_value', 'coupon_code', 'items_quantity', \n    'shipping_value', 'installments', 'payment_date',\n    'track_code', 'track_url' \n  ];\n  \n  AUTO_CAPTURE.forEach(field => {\n    if (resource[field] !== undefined && resource[field] !== null) {\n      vars[field] = resource[field];\n    }\n  });\n  \n  return vars;\n}\n\nfunction tratarTelefone(rawPhone) {\n  if (!rawPhone) return null;\n  let nums = rawPhone.toString().replace(/\\D/g, '');\n  if (nums.startsWith('55')) nums = nums.substring(2);\n  if (nums.length === 11) nums = nums.substring(0, 2) + nums.substring(3);\n  return '55' + nums;\n}\n\n// 4. LÓGICA CENTRAL DE DECISÃO\nlet flowCode = EVENT_MAP[incomingEvent] || null;\n\nif (incomingEvent === 'order.created' || flowCode === 'CHECK_PAYMENT_LOGIC') {\n  if (['refused', 'cancelled'].includes(statusAlias)) {\n    flowCode = (paymentMethod === 'credit_card') ? 'card_denied' : null;\n  }\n  else if (statusAlias === 'waiting_payment') {\n    if (paymentMethod === 'pix') flowCode = 'pix_generated';\n    else if (['billet', 'boleto'].includes(paymentMethod)) flowCode = 'boleto_generated';\n    else flowCode = null;\n  }\n  else if (['paid', 'approved'].includes(statusAlias)) {\n    flowCode = 'purchase_approved';\n  }\n} \nelse if (incomingEvent === 'order.status.updated') {\n  if (['on_carriage', 'shipped', 'delivered_transport'].includes(statusAlias)) {\n    flowCode = 'order_shipped';\n  } else {\n    flowCode = null;\n  }\n}\n\n// --- IMPLEMENTAÇÃO RETIRADA LOCAL ---\n// Verifica se é um evento de compra aprovada e se existe pickup_config_id no metadata\nif (flowCode === 'purchase_approved' && resource.metadata && resource.metadata.data) {\n  const isPickup = resource.metadata.data.find(meta => meta.key === 'pickup_config_id' && meta.value);\n  if (isPickup) {\n    flowCode = 'retirada_local';\n  }\n}\n// ------------------------------------\n\n// 5. OUTPUT ORIGINAL SEM ALTERAR NÍVEIS\nif (!flowCode) {\n  return { json: { ignore: true, reason: `Status ignorado: ${statusAlias}` } };\n}\n\nconst telefoneFinal = tratarTelefone(customerData.phone?.full_number || customerData.phone?.number);\nlet docNum = (customerData.cpf || customerData.cnpj || '').replace(/\\D/g, '');\n\nconst contextData = extractVariables(resource, flowCode);\n\nconst output = {\n    flow_code: flowCode,\n    original_event: incomingEvent,\n    phone: telefoneFinal,\n    email: customerData.email,\n    name: customerData.first_name,\n    full_name: customerData.name,\n    doc_number: docNum,\n    checkout_id: resource.id,\n    order_id: resource.id,\n    total_value: resource.value_total,\n    payment_method: paymentMethod,\n    current_status: statusAlias,\n    raw_payload: body\n};\n\n// ✅ VOLTANDO PARA O Object.assign QUE VOCÊ TINHA\nreturn {\n  json: Object.assign(output, contextData) \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        544
+      ],
+      "id": "53014c99-9302-4cb7-93ec-ce34fd97cef3",
+      "name": "Receptor1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 1. PROMOVE O LEAD PARA CLIENTE\nINSERT INTO public.clientes (id, nome, email, whatsapp, cidade)\nSELECT \n    id, \n    COALESCE(full_name, first_name, 'Cliente'), \n    COALESCE(email, $6), \n    COALESCE(phone, $7), \n    $8\nFROM public.leads \nWHERE id = $2\nON CONFLICT (id) DO UPDATE SET \n    email = EXCLUDED.email, \n    whatsapp = EXCLUDED.whatsapp,\n    cidade = EXCLUDED.cidade;\n\n-- 2. INSERE O PEDIDO\nINSERT INTO public.pedidos (id, cliente_id, status, valor_pedido, valor_desconto, cidade, endereco_completo, tipo_frete, data_pedido)\nVALUES (\n    $1, \n    $2, \n    $3, \n    $4, \n    CAST($9 AS NUMERIC), \n    $8, \n    $10, -- Endereço Completo\n    $11, -- Tipo de Frete\n    NOW()\n)\nON CONFLICT (id) DO UPDATE SET \n    status = EXCLUDED.status, \n    valor_pedido = EXCLUDED.valor_pedido,\n    endereco_completo = EXCLUDED.endereco_completo,\n    tipo_frete = EXCLUDED.tipo_frete;\n\n-- 3. LIMPEZA E INSERÇÃO DE ITENS\nDELETE FROM public.pedido_itens WHERE pedido_id = $1;\n\nINSERT INTO public.pedido_itens (pedido_id, produto_nome, sku, quantidade, preco_unitario)\nSELECT $1, x.nome, x.sku, x.quantidade, x.preco\nFROM json_to_recordset($5::json) AS x(nome text, sku text, quantidade int, preco decimal);\n\n-- 4. ATUALIZA TOTAIS DO CLIENTE\nUPDATE public.clientes \nSET \n    total_orders = sub.qtd,\n    valor_total_gasto = sub.total,\n    data_ultima_compra = NOW()\nFROM (\n    SELECT COUNT(*) as qtd, SUM(COALESCE(valor_pedido, 0)) as total \n    FROM public.pedidos \n    WHERE cliente_id = $2\n) AS sub\nWHERE public.clientes.id = $2;",
+        "options": {
+          "queryReplacement": "={{ $node[\"Receptor\"].json.order_id }},\n{{ $node[\"Resolver Lead\"].json.id }},\n{{ $node[\"Receptor\"].json.current_status }},\n{{ $node[\"Receptor\"].json.total_value }},\n{{ JSON.stringify($node[\"Receptor\"].json.raw_payload.resource.items.data.map(item => ({\n  nome: item.sku?.data?.title || 'Produto sem nome',\n  sku: item.item_sku || item.sku?.data?.sku || 'N/A',\n  quantidade: parseInt(item.quantity) || 1,\n  preco: parseFloat(item.price) || 0\n}))) }},\n{{ $node[\"Receptor\"].json.email || $node[\"Receptor\"].json.raw_payload.resource.customer.data.email }},\n{{ $node[\"Receptor\"].json.phone || $node[\"Receptor\"].json.raw_payload.resource.customer.data.phone.full_number }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipping_address.data.city || 'Não informada' }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.value_discount || 0 }},\n{{ ($node[\"Receptor\"].json.address || \"\").replace(',', ' -') }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipment_service || 'Retirada' }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1968,
+        544
+      ],
+      "id": "c133d96f-237c-4a94-a499-826b7e392af4",
+      "name": "Gravar itens de pedido/cliente1",
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "backup\n",
+        "height": 240,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        512
+      ],
+      "id": "3306ab29-8e2e-4de4-bdff-714241f28b63",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Busca flow ativo": {
+      "main": [
+        [
+          {
+            "node": "Tem fluxo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Scheduler API1": {
+      "main": [
+        [
+          {
+            "node": "Marca Step Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Scheduler API1": {
+      "main": [
+        [
+          {
+            "node": "Salvar Schedule ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Schedule ID1": {
+      "main": [
+        [
+          {
+            "node": "Loop Agendamento1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem fluxo?": {
+      "main": [
+        [
+          {
+            "node": "Cancelar Antigos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Steps Agendados": {
+      "main": [
+        [
+          {
+            "node": "DELETE Scheduler API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marca Step Cancelled": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "cancelado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Agendamento1": {
+      "main": [
+        [
+          {
+            "node": "criado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST Scheduler API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelar Antigos": {
+      "main": [
+        [
+          {
+            "node": "Buscar Steps Agendados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Execution Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resolver Checkout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelado": {
+      "main": [
+        [
+          {
+            "node": "Registrar Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Checkout": {
+      "main": [
+        [
+          {
+            "node": "Resolver Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Lead": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Flow": {
+      "main": [
+        [
+          {
+            "node": "Loop Agendamento1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receptor": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar itens de pedido/cliente": {
+      "main": [
+        [
+          {
+            "node": "Busca flow ativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Gravar itens de pedido/cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SALVAR TRACKING_CODE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gravar itens de pedido/cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Busca flow ativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SALVAR TRACKING_CODE": {
+      "main": [
+        [
+          {
+            "node": "Busca flow ativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Receptor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "GuzzleHttp/6.5.5 curl/7.81.0 PHP/7.2.34-54+ubuntu20.04.1+deb.sury.org+1",
+            "content-length": "13786",
+            "content-type": "application/json",
+            "merchant-token": "ec9W93mPKPyVtDNf026cHaD3lfBjhxXgMh9vu2AP",
+            "newrelic": "eyJ2IjpbMCwxXSwiZCI6eyJ0eSI6IkFwcCIsImFjIjoiMjkzNTI0OSIsImFwIjoiMTAyMzM4MjQxOSIsInRyIjoiMDAwMDAwMDAwMDAwMDAwMDI4MmJjMWE2N2U1ZDY0ZTIiLCJ0eCI6IjJjNTNlOTkwZDNiYzEwNjEiLCJwciI6MC4yNTEyNiwic2EiOmZhbHNlLCJ0aSI6MTc3MjY1MTE5OTcwMn19",
+            "traceparent": "00-0000000000000000282bc1a67e5d64e2-914052c0c9a63233-00",
+            "tracestate": "2935249@nr=0-0-2935249-1023382419--2c53e990d3bc1061-0-0.251260-1772651199702",
+            "x-forwarded-for": "18.228.135.79",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "18.228.135.79",
+            "x-yampi-hmac-sha256": "HHr5lODdnaQRX+8hF+1KZrw6e9U5P1jJGkpyIdjpMF4=",
+            "accept-encoding": "gzip"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "order.status.updated",
+            "time": "2026-03-04 16:06:39",
+            "merchant": {
+              "id": 1446385,
+              "alias": "takego"
+            },
+            "resource": {
+              "id": 157043691,
+              "merchant_id": 1446385,
+              "customer_id": 251252402,
+              "status_id": 6,
+              "desire_status_id": [
+                8,
+                7,
+                10,
+                11
+              ],
+              "desire_status": [
+                "cancelled",
+                "delivered",
+                "invoiced",
+                "shipment_exception"
+              ],
+              "promocode_id": 6288321,
+              "marketplace_id": null,
+              "marketplace_account_id": null,
+              "authorized": true,
+              "sync_by_erp": false,
+              "has_recomm": false,
+              "has_upsell": false,
+              "has_freebie": true,
+              "has_order_bump": false,
+              "order_bump_types": [],
+              "has_payment": true,
+              "is_upsell": false,
+              "delivered": false,
+              "number": 1446385211539904,
+              "marketplace_partner_id": null,
+              "marketplace_sale_number": null,
+              "value_total": 189.91,
+              "buyer_value_total": 189.91,
+              "value_products": 199.9,
+              "value_shipment": 0,
+              "value_tax": 0,
+              "buyer_value_tax": 0,
+              "value_discount": 10,
+              "value_wallet_discount": 0,
+              "shipment_cost": 0,
+              "shipment_service": "FRETE EXPRESSO",
+              "shipment_service_id": "Frete Expresso",
+              "shipment_icon_url": null,
+              "shipment_quote_id": "56445300",
+              "track_code": "ME26257UWS2BR",
+              "track_url": "https://www.loggi.com/rastreador/",
+              "b2w_label_url": null,
+              "days_delivery": 11,
+              "date_delivery": {
+                "date": "2026-03-19 00:00:00.000000",
+                "timezone_type": 3,
+                "timezone": "America/Sao_Paulo"
+              },
+              "cart_token": "hWN9SoMQNSWUXa8Y0QE0VhAY",
+              "utm_source": null,
+              "utm_campaign": null,
+              "utm_content": null,
+              "utm_term": null,
+              "utm_medium": null,
+              "total_comments": 0,
+              "payments": [
+                {
+                  "alias": "pix",
+                  "name": "Pix",
+                  "icon_url": "https://icons.yampi.me/svg/pix.svg"
+                }
+              ],
+              "ip": "177.52.82.163",
+              "device": "mobile",
+              "reorder_url": "https://seguro.takeandgosuplementos.com.br/cart/items?customerToken=3dfd3d80-17e5-11f1-94dd-4b139b66cb20&product_option_id[0]=292930418&quantity[0]=1&has_recomm[0]=0&redirectTo=checkout&skipToCheckout=1&store_token=ec9W93mPKPyVtDNf026cHaD3lfBjhxXgMh9vu2AP",
+              "content_statement_url": "https://api.dooki.com.br/html/orders/content-statement/hWN9SoMQNSWUXa8Y0QE0VhAY?id=def502002a1341bcd461a28a31e25e5f4f490791143594e5d880fb10ba3b14019482efd15dc913ed9091152b6360f6e61b08240f5cef8b302570fe0325c33f4eb2448ded190c889ecac7729efffda6f418c0162dfbb028aba605bdcff0",
+              "billet_whatsapp_link": "https://api.whatsapp.com/send?phone=5516982245154&text=",
+              "billet_whatsapp_app_link": "whatsapp://send?phone=5516982245154&text=",
+              "public_url": "https://api.dooki.com.br/v2/public/orders/hWN9SoMQNSWUXa8Y0QE0VhAY",
+              "created_at": {
+                "date": "2026-03-04 13:16:22.000000",
+                "timezone_type": 3,
+                "timezone": "America/Sao_Paulo"
+              },
+              "updated_at": {
+                "date": "2026-03-04 16:06:27.000000",
+                "timezone_type": 3,
+                "timezone": "America/Sao_Paulo"
+              },
+              "status": {
+                "data": {
+                  "id": 6,
+                  "alias": "on_carriage",
+                  "name": "Em transporte",
+                  "description": "O pedido já foi postado para a transportadora"
+                }
+              },
+              "marketplace": {
+                "data": []
+              },
+              "customer": {
+                "data": {
+                  "id": 251252402,
+                  "merchant_id": 1446385,
+                  "marketplace_id": null,
+                  "cluster_id": null,
+                  "active": true,
+                  "type": "f",
+                  "name": "Karina Servo",
+                  "razao_social": null,
+                  "first_name": "Karina",
+                  "last_name": "Servo",
+                  "generic_name": "Karina Servo",
+                  "email": "kakaservo2015@gmail.com",
+                  "cnpj": null,
+                  "state_registration": null,
+                  "cpf": "28864888870",
+                  "birthday": null,
+                  "phone": {
+                    "full_number": "16982245154",
+                    "area_code": "16",
+                    "number": "982245154",
+                    "formated_number": "(16) 98224-5154",
+                    "whatsapp_link": "https://api.whatsapp.com/send?phone=5516982245154"
+                  },
+                  "social_driver": null,
+                  "social_id": null,
+                  "newsletter": false,
+                  "whatsapp": false,
+                  "utm_source": null,
+                  "utm_campaign": null,
+                  "ip": "177.52.82.163",
+                  "notes": null,
+                  "token": "3dfd3d80-17e5-11f1-94dd-4b139b66cb20",
+                  "login_url": "https://seguro.takeandgosuplementos.com.br/auth/login/force?token=3dfd3d80-17e5-11f1-94dd-4b139b66cb20",
+                  "anonymized": false,
+                  "created_at": {
+                    "date": "2026-03-04 13:14:38.000000",
+                    "timezone_type": 3,
+                    "timezone": "America/Sao_Paulo"
+                  },
+                  "updated_at": {
+                    "date": "2026-03-04 13:14:38.000000",
+                    "timezone_type": 3,
+                    "timezone": "America/Sao_Paulo"
+                  }
+                }
+              },
+              "items": {
+                "data": [
+                  {
+                    "id": 205959317,
+                    "product_id": 44094702,
+                    "sku_id": 292930418,
+                    "bundle_id": null,
+                    "bundle_name": null,
+                    "freebie_id": null,
+                    "price_cost": 0,
+                    "price": 199.9,
+                    "item_sku": "BX9UODDU4Y",
+                    "quantity": 1,
+                    "shipment_cost": 0,
+                    "gift": false,
+                    "gift_value": 0,
+                    "has_recomm": 0,
+                    "customizations": [],
+                    "is_digital": false,
+                    "sku": {
+                      "data": {
+                        "id": 292930418,
+                        "product_id": 44094702,
+                        "seller_id": null,
+                        "sku": "BX9UODDU4Y",
+                        "token": "SBBRFSYV0D",
+                        "erp_id": null,
+                        "blocked_sale": false,
+                        "barcode": null,
+                        "title": "Take&Go Start   GLP-1 Support",
+                        "availability": 1,
+                        "availability_soldout": -1,
+                        "days_availability_formated": "1 dia útil",
+                        "price_cost": 0,
+                        "price_sale": 349.9,
+                        "price_discount": 199.9,
+                        "width": 1,
+                        "height": 1,
+                        "length": 1,
+                        "weight": 0.3,
+                        "quantity_managed": true,
+                        "variations": [],
+                        "combinations": "292930418",
+                        "order": 0,
+                        "total_in_stock": 859,
+                        "stock_status": "in_stock",
+                        "total_orders": null,
+                        "allow_sell_without_customization": false,
+                        "image_reference_sku_id": null,
+                        "purchase_url": "https://seguro.takeandgosuplementos.com.br/r/SBBRFSYV0D",
+                        "created_at": {
+                          "date": "2026-02-19 18:55:27.000000",
+                          "timezone_type": 3,
+                          "timezone": "America/Sao_Paulo"
+                        },
+                        "updated_at": {
+                          "date": "2026-02-19 18:55:27.000000",
+                          "timezone_type": 3,
+                          "timezone": "America/Sao_Paulo"
+                        },
+                        "customizations": {
+                          "data": []
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": 205959318,
+                    "product_id": 43713239,
+                    "sku_id": 290470124,
+                    "bundle_id": null,
+                    "bundle_name": null,
+                    "freebie_id": 5385,
+                    "price_cost": 0,
+                    "price": 0,
+                    "item_sku": "1XVA4BP9W8",
+                    "quantity": 1,
+                    "shipment_cost": 0,
+                    "gift": false,
+                    "gift_value": 0,
+                    "has_recomm": 0,
+                    "customizations": [],
+                    "is_digital": false,
+                    "sku": {
+                      "data": {
+                        "id": 290470124,
+                        "product_id": 43713239,
+                        "seller_id": null,
+                        "sku": "1XVA4BP9W8",
+                        "token": "AVD4WL5VYY",
+                        "erp_id": null,
+                        "blocked_sale": false,
+                        "barcode": null,
+                        "title": "Take&Go Boosted - Bebida funcional",
+                        "availability": 1,
+                        "availability_soldout": -1,
+                        "days_availability_formated": "1 dia útil",
+                        "price_cost": 0,
+                        "price_sale": 0,
+                        "price_discount": 17.9,
+                        "width": 1,
+                        "height": 1,
+                        "length": 1,
+                        "weight": 0.36,
+                        "quantity_managed": true,
+                        "variations": [],
+                        "combinations": "290470124",
+                        "order": 0,
+                        "total_in_stock": 2036,
+                        "stock_status": "in_stock",
+                        "total_orders": null,
+                        "allow_sell_without_customization": false,
+                        "image_reference_sku_id": null,
+                        "purchase_url": "https://seguro.takeandgosuplementos.com.br/r/AVD4WL5VYY",
+                        "created_at": {
+                          "date": "2026-01-19 11:47:30.000000",
+                          "timezone_type": 3,
+                          "timezone": "America/Sao_Paulo"
+                        },
+                        "updated_at": {
+                          "date": "2026-01-19 11:47:30.000000",
+                          "timezone_type": 3,
+                          "timezone": "America/Sao_Paulo"
+                        },
+                        "customizations": {
+                          "data": []
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "marketplace_account": {
+                "data": []
+              },
+              "statuses": {
+                "data": [
+                  {
+                    "id": 3,
+                    "alias": "waiting_payment",
+                    "name": "Aguardando pagamento",
+                    "description": "Aguardando confirmação de pagamento",
+                    "details": null,
+                    "created_at": {
+                      "date": "2026-03-04 13:16:22.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "updated_at": {
+                      "date": "2026-03-04 13:16:22.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    }
+                  },
+                  {
+                    "id": 4,
+                    "alias": "paid",
+                    "name": "Pagamento aprovado",
+                    "description": "O pedido foi pago/capturado",
+                    "details": "Criado por Mercadopago",
+                    "created_at": {
+                      "date": "2026-03-04 13:17:12.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "updated_at": {
+                      "date": "2026-03-04 13:17:12.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    }
+                  },
+                  {
+                    "id": 6,
+                    "alias": "on_carriage",
+                    "name": "Em transporte",
+                    "description": "O pedido já foi postado para a transportadora",
+                    "details": "Criado por Matheus Prado Severino",
+                    "created_at": {
+                      "date": "2026-03-04 16:06:27.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "updated_at": {
+                      "date": "2026-03-04 16:06:27.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    }
+                  }
+                ]
+              },
+              "shipping_address": {
+                "data": {
+                  "id": 146451897,
+                  "order_id": 157043691,
+                  "address_name": null,
+                  "receiver": "Karina Servo",
+                  "zipcode": "14033031",
+                  "zip_code": "14033031",
+                  "street": "Rua Angelo Francia",
+                  "number": "234",
+                  "complement": "Quadra 18 lote 6",
+                  "reference": null,
+                  "neighborhood": "Portal da Mata",
+                  "full_address": "Rua Angelo Francia, 234 - Quadra 18 lote 6 - Portal da Mata",
+                  "city": "Ribeirão Preto",
+                  "state": "SP",
+                  "uf": "SP",
+                  "country": "BR"
+                }
+              },
+              "pickup_address": {
+                "data": []
+              },
+              "promocode": {
+                "data": {
+                  "id": 6288321,
+                  "code": "TAKE5",
+                  "description": null,
+                  "customer_id": null,
+                  "active": true,
+                  "discount_type": "p",
+                  "newsletter": false,
+                  "ignore_promotion_products": false,
+                  "free_shipment": false,
+                  "abandoned_cart": false,
+                  "once_per_customer": false,
+                  "for_the_price_of": false,
+                  "cart_default": false,
+                  "accumulate": false,
+                  "min_value": "0.00",
+                  "items_count": 0,
+                  "value": "5.00",
+                  "price_products": null,
+                  "product_quantity": 0,
+                  "quantity": 1000,
+                  "used": 14,
+                  "expired": false,
+                  "payments_ids": [],
+                  "start_at": {
+                    "date": "2026-01-21 12:30:00.000000",
+                    "timezone_type": 3,
+                    "timezone": "America/Sao_Paulo"
+                  },
+                  "end_at": {
+                    "date": "2026-12-31 12:30:00.000000",
+                    "timezone_type": 3,
+                    "timezone": "America/Sao_Paulo"
+                  },
+                  "created_at": {
+                    "date": "2026-01-21 12:31:15.000000",
+                    "timezone_type": 3,
+                    "timezone": "America/Sao_Paulo"
+                  },
+                  "updated_at": {
+                    "date": "2026-03-04 13:16:22.000000",
+                    "timezone_type": 3,
+                    "timezone": "America/Sao_Paulo"
+                  }
+                }
+              },
+              "transactions": {
+                "data": [
+                  {
+                    "id": 182405114,
+                    "customer_id": 251252402,
+                    "payment_id": 43,
+                    "affiliation_id": 780528,
+                    "marketplace_id": null,
+                    "marketplace_account_id": null,
+                    "authorized": true,
+                    "captured": true,
+                    "cancelled": false,
+                    "gateway_transaction_id": "148102954549",
+                    "gateway_order_id": null,
+                    "gateway_authorization_code": null,
+                    "gateway_billet_id": null,
+                    "amount": 189.91,
+                    "buyer_amount": 0,
+                    "installments": 1,
+                    "installment_value": 189.91,
+                    "buyer_installment_value": 0,
+                    "installment_formated": "1x de R$ 189,91",
+                    "buyer_installment_formated": "1x de R$ 0,00",
+                    "bank_name": null,
+                    "bank_alias": null,
+                    "status": "paid",
+                    "error_message": null,
+                    "error_code": null,
+                    "truncated_card": null,
+                    "holder_name": null,
+                    "holder_document": null,
+                    "billet_url": null,
+                    "billet_barcode": null,
+                    "billet_date": null,
+                    "billet_our_number": null,
+                    "billet_document_number": null,
+                    "billet_whatsapp_link": "https://api.whatsapp.com/send?phone=5516982245154&text=",
+                    "antifraud_sale_id": null,
+                    "antifraud_status": null,
+                    "antifraud_score": null,
+                    "sent_to_antifraud": false,
+                    "total_logs": 0,
+                    "capture_date": null,
+                    "authorized_at": {
+                      "date": "2026-03-04 13:16:22.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "captured_at": {
+                      "date": "2026-03-04 13:17:12.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "cancelled_at": null,
+                    "can_be_captured": false,
+                    "can_be_cancelled": true,
+                    "created_at": {
+                      "date": "2026-03-04 13:16:22.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "updated_at": {
+                      "date": "2026-03-04 13:17:12.000000",
+                      "timezone_type": 3,
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "payment": {
+                      "data": {
+                        "id": 43,
+                        "alias": "pix",
+                        "name": "Pix",
+                        "has_config": false,
+                        "active_config": false,
+                        "is_credit_card": false,
+                        "is_deposit": false,
+                        "is_billet": false,
+                        "is_pix": true,
+                        "is_pix_in_installments": false,
+                        "is_wallet": false,
+                        "icon_url": "https://icons.yampi.me/svg/card-pix.svg"
+                      }
+                    },
+                    "metadata": {
+                      "data": {
+                        "pix_expiration_date": "2026-03-04 13:46:21",
+                        "pix_qr_code": "00020126360014br.gov.bcb.pix0114614616140001655204000053039865406189.915802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter1481029545496304EFED"
+                      }
+                    }
+                  }
+                ]
+              },
+              "search": {
+                "data": {
+                  "payment_id": 43,
+                  "antifraud_status": null,
+                  "affiliation_id": 780528,
+                  "products_ids": [
+                    44094702,
+                    43713239
+                  ],
+                  "gateway_transaction_id": "148102954549",
+                  "created_at": "2026-03-04",
+                  "updated_at": "2026-03-04",
+                  "captured_at": "2026-03-04",
+                  "cancelled_at": null,
+                  "date_delivery": "2026-03-19",
+                  "inventory_ids": [],
+                  "payment_method": "pix",
+                  "payment_retry": false,
+                  "has_upsell": false,
+                  "has_order_bump": false,
+                  "has_freebie": true,
+                  "upsell_ids": [],
+                  "order_bump_ids": [],
+                  "freebie_ids": [
+                    5385
+                  ],
+                  "discount_names": [],
+                  "discount_types": []
+                }
+              },
+              "services": {
+                "data": [
+                  {
+                    "shopifyapp": {
+                      "external_id": "6759592296688",
+                      "link": "https://1mt0dp-pk.myshopify.com/admin/orders/6759592296688"
+                    }
+                  }
+                ]
+              },
+              "spreadsheet": {
+                "data": [
+                  {
+                    "product": "Take&Go Start   GLP-1 Support",
+                    "sku": "BX9UODDU4Y",
+                    "quantity": 1,
+                    "total_cost": 0,
+                    "total_item": 199.9,
+                    "customization": "",
+                    "payment_date": "04/03/2026 13:17",
+                    "cancelled_date": "",
+                    "customer": "Karina Servo",
+                    "customer_email": "kakaservo2015@gmail.com",
+                    "customer_phone": "16982245154",
+                    "customer_document": "28864888870",
+                    "status": "Em transporte",
+                    "payment": "Pix",
+                    "credit_card": null,
+                    "delivered": 0,
+                    "shipping_address": "Rua Angelo Francia, 234 - Quadra 18 lote 6 - Portal da Mata",
+                    "shipping_street": "Rua Angelo Francia",
+                    "shipping_number": "234",
+                    "shipping_neighborhood": "Portal da Mata",
+                    "shipping_complement": "Quadra 18 lote 6",
+                    "shipping_city": "Ribeirao Preto",
+                    "shipping_state": "Sao Paulo",
+                    "shipping_zip_code": "14033031",
+                    "gateway_transaction_id": "148102954549",
+                    "billet_barcode": null
+                  },
+                  {
+                    "product": "Take&Go Boosted - Bebida funcional",
+                    "sku": "1XVA4BP9W8",
+                    "quantity": 1,
+                    "total_cost": 0,
+                    "total_item": 0,
+                    "customization": "",
+                    "payment_date": "04/03/2026 13:17",
+                    "cancelled_date": "",
+                    "customer": "Karina Servo",
+                    "customer_email": "kakaservo2015@gmail.com",
+                    "customer_phone": "16982245154",
+                    "customer_document": "28864888870",
+                    "status": "Em transporte",
+                    "payment": "Pix",
+                    "credit_card": null,
+                    "delivered": 0,
+                    "shipping_address": "Rua Angelo Francia, 234 - Quadra 18 lote 6 - Portal da Mata",
+                    "shipping_street": "Rua Angelo Francia",
+                    "shipping_number": "234",
+                    "shipping_neighborhood": "Portal da Mata",
+                    "shipping_complement": "Quadra 18 lote 6",
+                    "shipping_city": "Ribeirao Preto",
+                    "shipping_state": "Sao Paulo",
+                    "shipping_zip_code": "14033031",
+                    "gateway_transaction_id": "148102954549",
+                    "billet_barcode": null
+                  }
+                ]
+              },
+              "metadata": {
+                "data": [
+                  {
+                    "key": "cart_id",
+                    "value": "594884120"
+                  },
+                  {
+                    "key": "cashback_value",
+                    "value": "37.98"
+                  },
+                  {
+                    "key": "discount_highlight",
+                    "value": "pix"
+                  },
+                  {
+                    "key": "platform",
+                    "value": "shopify"
+                  },
+                  {
+                    "key": "platform_order_number",
+                    "value": "1145"
+                  },
+                  {
+                    "key": "source_platform",
+                    "value": "shopify"
+                  }
+                ]
+              },
+              "pix": {
+                "data": {
+                  "pix_qr_code": "00020126360014br.gov.bcb.pix0114614616140001655204000053039865406189.915802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter1481029545496304EFED",
+                  "pix_expiration_date": "2026-03-04 13:46:21"
+                }
+              },
+              "whatsapp": {
+                "data": {
+                  "abandoned_cart": null,
+                  "order_shipped": {
+                    "message": null,
+                    "link": "https://api.whatsapp.com/send?phone=5516982245154&text="
+                  },
+                  "billet": null,
+                  "pix": {
+                    "message": null,
+                    "link": "https://api.whatsapp.com/send?phone=5516982245154&text="
+                  },
+                  "payment_link": null
+                }
+              },
+              "whatsapp_app": {
+                "data": {
+                  "abandoned_cart": null,
+                  "order_shipped": {
+                    "message": null,
+                    "link": "whatsapp://send?phone=5516982245154&text="
+                  },
+                  "billet": null,
+                  "pix": {
+                    "message": null,
+                    "link": "whatsapp://send?phone=5516982245154&text="
+                  },
+                  "payment_link": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/3030bcf9-d5c3-4705-a16e-660b3ec3369b",
+          "executionMode": "production"
+        },
+        "binary": {
+          "data": {
+            "data": "eyJldmVudCI6Im9yZGVyLnN0YXR1cy51cGRhdGVkIiwidGltZSI6IjIwMjYtMDMtMDQgMTY6MDY6MzkiLCJtZXJjaGFudCI6eyJpZCI6MTQ0NjM4NSwiYWxpYXMiOiJ0YWtlZ28ifSwicmVzb3VyY2UiOnsiaWQiOjE1NzA0MzY5MSwibWVyY2hhbnRfaWQiOjE0NDYzODUsImN1c3RvbWVyX2lkIjoyNTEyNTI0MDIsInN0YXR1c19pZCI6NiwiZGVzaXJlX3N0YXR1c19pZCI6WzgsNywxMCwxMV0sImRlc2lyZV9zdGF0dXMiOlsiY2FuY2VsbGVkIiwiZGVsaXZlcmVkIiwiaW52b2ljZWQiLCJzaGlwbWVudF9leGNlcHRpb24iXSwicHJvbW9jb2RlX2lkIjo2Mjg4MzIxLCJtYXJrZXRwbGFjZV9pZCI6bnVsbCwibWFya2V0cGxhY2VfYWNjb3VudF9pZCI6bnVsbCwiYXV0aG9yaXplZCI6dHJ1ZSwic3luY19ieV9lcnAiOmZhbHNlLCJoYXNfcmVjb21tIjpmYWxzZSwiaGFzX3Vwc2VsbCI6ZmFsc2UsImhhc19mcmVlYmllIjp0cnVlLCJoYXNfb3JkZXJfYnVtcCI6ZmFsc2UsIm9yZGVyX2J1bXBfdHlwZXMiOltdLCJoYXNfcGF5bWVudCI6dHJ1ZSwiaXNfdXBzZWxsIjpmYWxzZSwiZGVsaXZlcmVkIjpmYWxzZSwibnVtYmVyIjoxNDQ2Mzg1MjExNTM5OTA0LCJtYXJrZXRwbGFjZV9wYXJ0bmVyX2lkIjpudWxsLCJtYXJrZXRwbGFjZV9zYWxlX251bWJlciI6bnVsbCwidmFsdWVfdG90YWwiOjE4OS45MSwiYnV5ZXJfdmFsdWVfdG90YWwiOjE4OS45MSwidmFsdWVfcHJvZHVjdHMiOjE5OS45LCJ2YWx1ZV9zaGlwbWVudCI6MCwidmFsdWVfdGF4IjowLCJidXllcl92YWx1ZV90YXgiOjAsInZhbHVlX2Rpc2NvdW50IjoxMCwidmFsdWVfd2FsbGV0X2Rpc2NvdW50IjowLCJzaGlwbWVudF9jb3N0IjowLCJzaGlwbWVudF9zZXJ2aWNlIjoiRlJFVEUgRVhQUkVTU08iLCJzaGlwbWVudF9zZXJ2aWNlX2lkIjoiRnJldGUgRXhwcmVzc28iLCJzaGlwbWVudF9pY29uX3VybCI6bnVsbCwic2hpcG1lbnRfcXVvdGVfaWQiOiI1NjQ0NTMwMCIsInRyYWNrX2NvZGUiOiJNRTI2MjU3VVdTMkJSIiwidHJhY2tfdXJsIjoiaHR0cHM6XC9cL3d3dy5sb2dnaS5jb21cL3Jhc3RyZWFkb3JcLyIsImIyd19sYWJlbF91cmwiOm51bGwsImRheXNfZGVsaXZlcnkiOjExLCJkYXRlX2RlbGl2ZXJ5Ijp7ImRhdGUiOiIyMDI2LTAzLTE5IDAwOjAwOjAwLjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn0sImNhcnRfdG9rZW4iOiJoV045U29NUU5TV1VYYThZMFFFMFZoQVkiLCJ1dG1fc291cmNlIjpudWxsLCJ1dG1fY2FtcGFpZ24iOm51bGwsInV0bV9jb250ZW50IjpudWxsLCJ1dG1fdGVybSI6bnVsbCwidXRtX21lZGl1bSI6bnVsbCwidG90YWxfY29tbWVudHMiOjAsInBheW1lbnRzIjpbeyJhbGlhcyI6InBpeCIsIm5hbWUiOiJQaXgiLCJpY29uX3VybCI6Imh0dHBzOlwvXC9pY29ucy55YW1waS5tZVwvc3ZnXC9waXguc3ZnIn1dLCJpcCI6IjE3Ny41Mi44Mi4xNjMiLCJkZXZpY2UiOiJtb2JpbGUiLCJyZW9yZGVyX3VybCI6Imh0dHBzOlwvXC9zZWd1cm8udGFrZWFuZGdvc3VwbGVtZW50b3MuY29tLmJyXC9jYXJ0XC9pdGVtcz9jdXN0b21lclRva2VuPTNkZmQzZDgwLTE3ZTUtMTFmMS05NGRkLTRiMTM5YjY2Y2IyMCZwcm9kdWN0X29wdGlvbl9pZFswXT0yOTI5MzA0MTgmcXVhbnRpdHlbMF09MSZoYXNfcmVjb21tWzBdPTAmcmVkaXJlY3RUbz1jaGVja291dCZza2lwVG9DaGVja291dD0xJnN0b3JlX3Rva2VuPWVjOVc5M21QS1B5VnRETmYwMjZjSGFEM2xmQmpoeFhnTWg5dnUyQVAiLCJjb250ZW50X3N0YXRlbWVudF91cmwiOiJodHRwczpcL1wvYXBpLmRvb2tpLmNvbS5iclwvaHRtbFwvb3JkZXJzXC9jb250ZW50LXN0YXRlbWVudFwvaFdOOVNvTVFOU1dVWGE4WTBRRTBWaEFZP2lkPWRlZjUwMjAwMmExMzQxYmNkNDYxYTI4YTMxZTI1ZTVmNGY0OTA3OTExNDM1OTRlNWQ4ODBmYjEwYmEzYjE0MDE5NDgyZWZkMTVkYzkxM2VkOTA5MTE1MmI2MzYwZjZlNjFiMDgyNDBmNWNlZjhiMzAyNTcwZmUwMzI1YzMzZjRlYjI0NDhkZWQxOTBjODg5ZWNhYzc3MjllZmZmZGE2ZjQxOGMwMTYyZGZiYjAyOGFiYTYwNWJkY2ZmMCIsImJpbGxldF93aGF0c2FwcF9saW5rIjoiaHR0cHM6XC9cL2FwaS53aGF0c2FwcC5jb21cL3NlbmQ/cGhvbmU9NTUxNjk4MjI0NTE1NCZ0ZXh0PSIsImJpbGxldF93aGF0c2FwcF9hcHBfbGluayI6IndoYXRzYXBwOlwvXC9zZW5kP3Bob25lPTU1MTY5ODIyNDUxNTQmdGV4dD0iLCJwdWJsaWNfdXJsIjoiaHR0cHM6XC9cL2FwaS5kb29raS5jb20uYnJcL3YyXC9wdWJsaWNcL29yZGVyc1wvaFdOOVNvTVFOU1dVWGE4WTBRRTBWaEFZIiwiY3JlYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMy0wNCAxMzoxNjoyMi4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9LCJ1cGRhdGVkX2F0Ijp7ImRhdGUiOiIyMDI2LTAzLTA0IDE2OjA2OjI3LjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn0sInN0YXR1cyI6eyJkYXRhIjp7ImlkIjo2LCJhbGlhcyI6Im9uX2NhcnJpYWdlIiwibmFtZSI6IkVtIHRyYW5zcG9ydGUiLCJkZXNjcmlwdGlvbiI6Ik8gcGVkaWRvIGpcdTAwZTEgZm9pIHBvc3RhZG8gcGFyYSBhIHRyYW5zcG9ydGFkb3JhIn19LCJtYXJrZXRwbGFjZSI6eyJkYXRhIjpbXX0sImN1c3RvbWVyIjp7ImRhdGEiOnsiaWQiOjI1MTI1MjQwMiwibWVyY2hhbnRfaWQiOjE0NDYzODUsIm1hcmtldHBsYWNlX2lkIjpudWxsLCJjbHVzdGVyX2lkIjpudWxsLCJhY3RpdmUiOnRydWUsInR5cGUiOiJmIiwibmFtZSI6IkthcmluYSBTZXJ2byIsInJhemFvX3NvY2lhbCI6bnVsbCwiZmlyc3RfbmFtZSI6IkthcmluYSIsImxhc3RfbmFtZSI6IlNlcnZvIiwiZ2VuZXJpY19uYW1lIjoiS2FyaW5hIFNlcnZvIiwiZW1haWwiOiJrYWthc2Vydm8yMDE1QGdtYWlsLmNvbSIsImNucGoiOm51bGwsInN0YXRlX3JlZ2lzdHJhdGlvbiI6bnVsbCwiY3BmIjoiMjg4NjQ4ODg4NzAiLCJiaXJ0aGRheSI6bnVsbCwicGhvbmUiOnsiZnVsbF9udW1iZXIiOiIxNjk4MjI0NTE1NCIsImFyZWFfY29kZSI6IjE2IiwibnVtYmVyIjoiOTgyMjQ1MTU0IiwiZm9ybWF0ZWRfbnVtYmVyIjoiKDE2KSA5ODIyNC01MTU0Iiwid2hhdHNhcHBfbGluayI6Imh0dHBzOlwvXC9hcGkud2hhdHNhcHAuY29tXC9zZW5kP3Bob25lPTU1MTY5ODIyNDUxNTQifSwic29jaWFsX2RyaXZlciI6bnVsbCwic29jaWFsX2lkIjpudWxsLCJuZXdzbGV0dGVyIjpmYWxzZSwid2hhdHNhcHAiOmZhbHNlLCJ1dG1fc291cmNlIjpudWxsLCJ1dG1fY2FtcGFpZ24iOm51bGwsImlwIjoiMTc3LjUyLjgyLjE2MyIsIm5vdGVzIjpudWxsLCJ0b2tlbiI6IjNkZmQzZDgwLTE3ZTUtMTFmMS05NGRkLTRiMTM5YjY2Y2IyMCIsImxvZ2luX3VybCI6Imh0dHBzOlwvXC9zZWd1cm8udGFrZWFuZGdvc3VwbGVtZW50b3MuY29tLmJyXC9hdXRoXC9sb2dpblwvZm9yY2U/dG9rZW49M2RmZDNkODAtMTdlNS0xMWYxLTk0ZGQtNGIxMzliNjZjYjIwIiwiYW5vbnltaXplZCI6ZmFsc2UsImNyZWF0ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTM6MTQ6MzguMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwidXBkYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMy0wNCAxMzoxNDozOC4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9fX0sIml0ZW1zIjp7ImRhdGEiOlt7ImlkIjoyMDU5NTkzMTcsInByb2R1Y3RfaWQiOjQ0MDk0NzAyLCJza3VfaWQiOjI5MjkzMDQxOCwiYnVuZGxlX2lkIjpudWxsLCJidW5kbGVfbmFtZSI6bnVsbCwiZnJlZWJpZV9pZCI6bnVsbCwicHJpY2VfY29zdCI6MCwicHJpY2UiOjE5OS45LCJpdGVtX3NrdSI6IkJYOVVPRERVNFkiLCJxdWFudGl0eSI6MSwic2hpcG1lbnRfY29zdCI6MCwiZ2lmdCI6ZmFsc2UsImdpZnRfdmFsdWUiOjAsImhhc19yZWNvbW0iOjAsImN1c3RvbWl6YXRpb25zIjpbXSwiaXNfZGlnaXRhbCI6ZmFsc2UsInNrdSI6eyJkYXRhIjp7ImlkIjoyOTI5MzA0MTgsInByb2R1Y3RfaWQiOjQ0MDk0NzAyLCJzZWxsZXJfaWQiOm51bGwsInNrdSI6IkJYOVVPRERVNFkiLCJ0b2tlbiI6IlNCQlJGU1lWMEQiLCJlcnBfaWQiOm51bGwsImJsb2NrZWRfc2FsZSI6ZmFsc2UsImJhcmNvZGUiOm51bGwsInRpdGxlIjoiVGFrZSZHbyBTdGFydCAgIEdMUC0xIFN1cHBvcnQiLCJhdmFpbGFiaWxpdHkiOjEsImF2YWlsYWJpbGl0eV9zb2xkb3V0IjotMSwiZGF5c19hdmFpbGFiaWxpdHlfZm9ybWF0ZWQiOiIxIGRpYSBcdTAwZmF0aWwiLCJwcmljZV9jb3N0IjowLCJwcmljZV9zYWxlIjozNDkuOSwicHJpY2VfZGlzY291bnQiOjE5OS45LCJ3aWR0aCI6MSwiaGVpZ2h0IjoxLCJsZW5ndGgiOjEsIndlaWdodCI6MC4zLCJxdWFudGl0eV9tYW5hZ2VkIjp0cnVlLCJ2YXJpYXRpb25zIjpbXSwiY29tYmluYXRpb25zIjoiMjkyOTMwNDE4Iiwib3JkZXIiOjAsInRvdGFsX2luX3N0b2NrIjo4NTksInN0b2NrX3N0YXR1cyI6ImluX3N0b2NrIiwidG90YWxfb3JkZXJzIjpudWxsLCJhbGxvd19zZWxsX3dpdGhvdXRfY3VzdG9taXphdGlvbiI6ZmFsc2UsImltYWdlX3JlZmVyZW5jZV9za3VfaWQiOm51bGwsInB1cmNoYXNlX3VybCI6Imh0dHBzOlwvXC9zZWd1cm8udGFrZWFuZGdvc3VwbGVtZW50b3MuY29tLmJyXC9yXC9TQkJSRlNZVjBEIiwiY3JlYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMi0xOSAxODo1NToyNy4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9LCJ1cGRhdGVkX2F0Ijp7ImRhdGUiOiIyMDI2LTAyLTE5IDE4OjU1OjI3LjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn0sImN1c3RvbWl6YXRpb25zIjp7ImRhdGEiOltdfX19fSx7ImlkIjoyMDU5NTkzMTgsInByb2R1Y3RfaWQiOjQzNzEzMjM5LCJza3VfaWQiOjI5MDQ3MDEyNCwiYnVuZGxlX2lkIjpudWxsLCJidW5kbGVfbmFtZSI6bnVsbCwiZnJlZWJpZV9pZCI6NTM4NSwicHJpY2VfY29zdCI6MCwicHJpY2UiOjAsIml0ZW1fc2t1IjoiMVhWQTRCUDlXOCIsInF1YW50aXR5IjoxLCJzaGlwbWVudF9jb3N0IjowLCJnaWZ0IjpmYWxzZSwiZ2lmdF92YWx1ZSI6MCwiaGFzX3JlY29tbSI6MCwiY3VzdG9taXphdGlvbnMiOltdLCJpc19kaWdpdGFsIjpmYWxzZSwic2t1Ijp7ImRhdGEiOnsiaWQiOjI5MDQ3MDEyNCwicHJvZHVjdF9pZCI6NDM3MTMyMzksInNlbGxlcl9pZCI6bnVsbCwic2t1IjoiMVhWQTRCUDlXOCIsInRva2VuIjoiQVZENFdMNVZZWSIsImVycF9pZCI6bnVsbCwiYmxvY2tlZF9zYWxlIjpmYWxzZSwiYmFyY29kZSI6bnVsbCwidGl0bGUiOiJUYWtlJkdvIEJvb3N0ZWQgLSBCZWJpZGEgZnVuY2lvbmFsIiwiYXZhaWxhYmlsaXR5IjoxLCJhdmFpbGFiaWxpdHlfc29sZG91dCI6LTEsImRheXNfYXZhaWxhYmlsaXR5X2Zvcm1hdGVkIjoiMSBkaWEgXHUwMGZhdGlsIiwicHJpY2VfY29zdCI6MCwicHJpY2Vfc2FsZSI6MCwicHJpY2VfZGlzY291bnQiOjE3LjksIndpZHRoIjoxLCJoZWlnaHQiOjEsImxlbmd0aCI6MSwid2VpZ2h0IjowLjM2LCJxdWFudGl0eV9tYW5hZ2VkIjp0cnVlLCJ2YXJpYXRpb25zIjpbXSwiY29tYmluYXRpb25zIjoiMjkwNDcwMTI0Iiwib3JkZXIiOjAsInRvdGFsX2luX3N0b2NrIjoyMDM2LCJzdG9ja19zdGF0dXMiOiJpbl9zdG9jayIsInRvdGFsX29yZGVycyI6bnVsbCwiYWxsb3dfc2VsbF93aXRob3V0X2N1c3RvbWl6YXRpb24iOmZhbHNlLCJpbWFnZV9yZWZlcmVuY2Vfc2t1X2lkIjpudWxsLCJwdXJjaGFzZV91cmwiOiJodHRwczpcL1wvc2VndXJvLnRha2VhbmRnb3N1cGxlbWVudG9zLmNvbS5iclwvclwvQVZENFdMNVZZWSIsImNyZWF0ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDEtMTkgMTE6NDc6MzAuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwidXBkYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMS0xOSAxMTo0NzozMC4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9LCJjdXN0b21pemF0aW9ucyI6eyJkYXRhIjpbXX19fX1dfSwibWFya2V0cGxhY2VfYWNjb3VudCI6eyJkYXRhIjpbXX0sInN0YXR1c2VzIjp7ImRhdGEiOlt7ImlkIjozLCJhbGlhcyI6IndhaXRpbmdfcGF5bWVudCIsIm5hbWUiOiJBZ3VhcmRhbmRvIHBhZ2FtZW50byIsImRlc2NyaXB0aW9uIjoiQWd1YXJkYW5kbyBjb25maXJtYVx1MDBlN1x1MDBlM28gZGUgcGFnYW1lbnRvIiwiZGV0YWlscyI6bnVsbCwiY3JlYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMy0wNCAxMzoxNjoyMi4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9LCJ1cGRhdGVkX2F0Ijp7ImRhdGUiOiIyMDI2LTAzLTA0IDEzOjE2OjIyLjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn19LHsiaWQiOjQsImFsaWFzIjoicGFpZCIsIm5hbWUiOiJQYWdhbWVudG8gYXByb3ZhZG8iLCJkZXNjcmlwdGlvbiI6Ik8gcGVkaWRvIGZvaSBwYWdvXC9jYXB0dXJhZG8iLCJkZXRhaWxzIjoiQ3JpYWRvIHBvciBNZXJjYWRvcGFnbyIsImNyZWF0ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTM6MTc6MTIuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwidXBkYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMy0wNCAxMzoxNzoxMi4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9fSx7ImlkIjo2LCJhbGlhcyI6Im9uX2NhcnJpYWdlIiwibmFtZSI6IkVtIHRyYW5zcG9ydGUiLCJkZXNjcmlwdGlvbiI6Ik8gcGVkaWRvIGpcdTAwZTEgZm9pIHBvc3RhZG8gcGFyYSBhIHRyYW5zcG9ydGFkb3JhIiwiZGV0YWlscyI6IkNyaWFkbyBwb3IgTWF0aGV1cyBQcmFkbyBTZXZlcmlubyIsImNyZWF0ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTY6MDY6MjcuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwidXBkYXRlZF9hdCI6eyJkYXRlIjoiMjAyNi0wMy0wNCAxNjowNjoyNy4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9fV19LCJzaGlwcGluZ19hZGRyZXNzIjp7ImRhdGEiOnsiaWQiOjE0NjQ1MTg5Nywib3JkZXJfaWQiOjE1NzA0MzY5MSwiYWRkcmVzc19uYW1lIjpudWxsLCJyZWNlaXZlciI6IkthcmluYSBTZXJ2byIsInppcGNvZGUiOiIxNDAzMzAzMSIsInppcF9jb2RlIjoiMTQwMzMwMzEiLCJzdHJlZXQiOiJSdWEgQW5nZWxvIEZyYW5jaWEiLCJudW1iZXIiOiIyMzQiLCJjb21wbGVtZW50IjoiUXVhZHJhIDE4IGxvdGUgNiIsInJlZmVyZW5jZSI6bnVsbCwibmVpZ2hib3Job29kIjoiUG9ydGFsIGRhIE1hdGEiLCJmdWxsX2FkZHJlc3MiOiJSdWEgQW5nZWxvIEZyYW5jaWEsIDIzNCAtIFF1YWRyYSAxOCBsb3RlIDYgLSBQb3J0YWwgZGEgTWF0YSIsImNpdHkiOiJSaWJlaXJcdTAwZTNvIFByZXRvIiwic3RhdGUiOiJTUCIsInVmIjoiU1AiLCJjb3VudHJ5IjoiQlIifX0sInBpY2t1cF9hZGRyZXNzIjp7ImRhdGEiOltdfSwicHJvbW9jb2RlIjp7ImRhdGEiOnsiaWQiOjYyODgzMjEsImNvZGUiOiJUQUtFNSIsImRlc2NyaXB0aW9uIjpudWxsLCJjdXN0b21lcl9pZCI6bnVsbCwiYWN0aXZlIjp0cnVlLCJkaXNjb3VudF90eXBlIjoicCIsIm5ld3NsZXR0ZXIiOmZhbHNlLCJpZ25vcmVfcHJvbW90aW9uX3Byb2R1Y3RzIjpmYWxzZSwiZnJlZV9zaGlwbWVudCI6ZmFsc2UsImFiYW5kb25lZF9jYXJ0IjpmYWxzZSwib25jZV9wZXJfY3VzdG9tZXIiOmZhbHNlLCJmb3JfdGhlX3ByaWNlX29mIjpmYWxzZSwiY2FydF9kZWZhdWx0IjpmYWxzZSwiYWNjdW11bGF0ZSI6ZmFsc2UsIm1pbl92YWx1ZSI6IjAuMDAiLCJpdGVtc19jb3VudCI6MCwidmFsdWUiOiI1LjAwIiwicHJpY2VfcHJvZHVjdHMiOm51bGwsInByb2R1Y3RfcXVhbnRpdHkiOjAsInF1YW50aXR5IjoxMDAwLCJ1c2VkIjoxNCwiZXhwaXJlZCI6ZmFsc2UsInBheW1lbnRzX2lkcyI6W10sInN0YXJ0X2F0Ijp7ImRhdGUiOiIyMDI2LTAxLTIxIDEyOjMwOjAwLjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn0sImVuZF9hdCI6eyJkYXRlIjoiMjAyNi0xMi0zMSAxMjozMDowMC4wMDAwMDAiLCJ0aW1lem9uZV90eXBlIjozLCJ0aW1lem9uZSI6IkFtZXJpY2FcL1Nhb19QYXVsbyJ9LCJjcmVhdGVkX2F0Ijp7ImRhdGUiOiIyMDI2LTAxLTIxIDEyOjMxOjE1LjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn0sInVwZGF0ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTM6MTY6MjIuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifX19LCJ0cmFuc2FjdGlvbnMiOnsiZGF0YSI6W3siaWQiOjE4MjQwNTExNCwiY3VzdG9tZXJfaWQiOjI1MTI1MjQwMiwicGF5bWVudF9pZCI6NDMsImFmZmlsaWF0aW9uX2lkIjo3ODA1MjgsIm1hcmtldHBsYWNlX2lkIjpudWxsLCJtYXJrZXRwbGFjZV9hY2NvdW50X2lkIjpudWxsLCJhdXRob3JpemVkIjp0cnVlLCJjYXB0dXJlZCI6dHJ1ZSwiY2FuY2VsbGVkIjpmYWxzZSwiZ2F0ZXdheV90cmFuc2FjdGlvbl9pZCI6IjE0ODEwMjk1NDU0OSIsImdhdGV3YXlfb3JkZXJfaWQiOm51bGwsImdhdGV3YXlfYXV0aG9yaXphdGlvbl9jb2RlIjpudWxsLCJnYXRld2F5X2JpbGxldF9pZCI6bnVsbCwiYW1vdW50IjoxODkuOTEsImJ1eWVyX2Ftb3VudCI6MCwiaW5zdGFsbG1lbnRzIjoxLCJpbnN0YWxsbWVudF92YWx1ZSI6MTg5LjkxLCJidXllcl9pbnN0YWxsbWVudF92YWx1ZSI6MCwiaW5zdGFsbG1lbnRfZm9ybWF0ZWQiOiIxeCBkZSBSJCAxODksOTEiLCJidXllcl9pbnN0YWxsbWVudF9mb3JtYXRlZCI6IjF4IGRlIFIkIDAsMDAiLCJiYW5rX25hbWUiOm51bGwsImJhbmtfYWxpYXMiOm51bGwsInN0YXR1cyI6InBhaWQiLCJlcnJvcl9tZXNzYWdlIjpudWxsLCJlcnJvcl9jb2RlIjpudWxsLCJ0cnVuY2F0ZWRfY2FyZCI6bnVsbCwiaG9sZGVyX25hbWUiOm51bGwsImhvbGRlcl9kb2N1bWVudCI6bnVsbCwiYmlsbGV0X3VybCI6bnVsbCwiYmlsbGV0X2JhcmNvZGUiOm51bGwsImJpbGxldF9kYXRlIjpudWxsLCJiaWxsZXRfb3VyX251bWJlciI6bnVsbCwiYmlsbGV0X2RvY3VtZW50X251bWJlciI6bnVsbCwiYmlsbGV0X3doYXRzYXBwX2xpbmsiOiJodHRwczpcL1wvYXBpLndoYXRzYXBwLmNvbVwvc2VuZD9waG9uZT01NTE2OTgyMjQ1MTU0JnRleHQ9IiwiYW50aWZyYXVkX3NhbGVfaWQiOm51bGwsImFudGlmcmF1ZF9zdGF0dXMiOm51bGwsImFudGlmcmF1ZF9zY29yZSI6bnVsbCwic2VudF90b19hbnRpZnJhdWQiOmZhbHNlLCJ0b3RhbF9sb2dzIjowLCJjYXB0dXJlX2RhdGUiOm51bGwsImF1dGhvcml6ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTM6MTY6MjIuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwiY2FwdHVyZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTM6MTc6MTIuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwiY2FuY2VsbGVkX2F0IjpudWxsLCJjYW5fYmVfY2FwdHVyZWQiOmZhbHNlLCJjYW5fYmVfY2FuY2VsbGVkIjp0cnVlLCJjcmVhdGVkX2F0Ijp7ImRhdGUiOiIyMDI2LTAzLTA0IDEzOjE2OjIyLjAwMDAwMCIsInRpbWV6b25lX3R5cGUiOjMsInRpbWV6b25lIjoiQW1lcmljYVwvU2FvX1BhdWxvIn0sInVwZGF0ZWRfYXQiOnsiZGF0ZSI6IjIwMjYtMDMtMDQgMTM6MTc6MTIuMDAwMDAwIiwidGltZXpvbmVfdHlwZSI6MywidGltZXpvbmUiOiJBbWVyaWNhXC9TYW9fUGF1bG8ifSwicGF5bWVudCI6eyJkYXRhIjp7ImlkIjo0MywiYWxpYXMiOiJwaXgiLCJuYW1lIjoiUGl4IiwiaGFzX2NvbmZpZyI6ZmFsc2UsImFjdGl2ZV9jb25maWciOmZhbHNlLCJpc19jcmVkaXRfY2FyZCI6ZmFsc2UsImlzX2RlcG9zaXQiOmZhbHNlLCJpc19iaWxsZXQiOmZhbHNlLCJpc19waXgiOnRydWUsImlzX3BpeF9pbl9pbnN0YWxsbWVudHMiOmZhbHNlLCJpc193YWxsZXQiOmZhbHNlLCJpY29uX3VybCI6Imh0dHBzOlwvXC9pY29ucy55YW1waS5tZVwvc3ZnXC9jYXJkLXBpeC5zdmcifX0sIm1ldGFkYXRhIjp7ImRhdGEiOnsicGl4X2V4cGlyYXRpb25fZGF0ZSI6IjIwMjYtMDMtMDQgMTM6NDY6MjEiLCJwaXhfcXJfY29kZSI6IjAwMDIwMTI2MzYwMDE0YnIuZ292LmJjYi5waXgwMTE0NjE0NjE2MTQwMDAxNjU1MjA0MDAwMDUzMDM5ODY1NDA2MTg5LjkxNTgwMkJSNTkxNEVHQ0hGQURFQjM1NTIxNjAwOVNhbyBQYXVsbzYyMjUwNTIxbXBxcmludGVyMTQ4MTAyOTU0NTQ5NjMwNEVGRUQifX19XX0sInNlYXJjaCI6eyJkYXRhIjp7InBheW1lbnRfaWQiOjQzLCJhbnRpZnJhdWRfc3RhdHVzIjpudWxsLCJhZmZpbGlhdGlvbl9pZCI6NzgwNTI4LCJwcm9kdWN0c19pZHMiOls0NDA5NDcwMiw0MzcxMzIzOV0sImdhdGV3YXlfdHJhbnNhY3Rpb25faWQiOiIxNDgxMDI5NTQ1NDkiLCJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wNCIsInVwZGF0ZWRfYXQiOiIyMDI2LTAzLTA0IiwiY2FwdHVyZWRfYXQiOiIyMDI2LTAzLTA0IiwiY2FuY2VsbGVkX2F0IjpudWxsLCJkYXRlX2RlbGl2ZXJ5IjoiMjAyNi0wMy0xOSIsImludmVudG9yeV9pZHMiOltdLCJwYXltZW50X21ldGhvZCI6InBpeCIsInBheW1lbnRfcmV0cnkiOmZhbHNlLCJoYXNfdXBzZWxsIjpmYWxzZSwiaGFzX29yZGVyX2J1bXAiOmZhbHNlLCJoYXNfZnJlZWJpZSI6dHJ1ZSwidXBzZWxsX2lkcyI6W10sIm9yZGVyX2J1bXBfaWRzIjpbXSwiZnJlZWJpZV9pZHMiOls1Mzg1XSwiZGlzY291bnRfbmFtZXMiOltdLCJkaXNjb3VudF90eXBlcyI6W119fSwic2VydmljZXMiOnsiZGF0YSI6W3sic2hvcGlmeWFwcCI6eyJleHRlcm5hbF9pZCI6IjY3NTk1OTIyOTY2ODgiLCJsaW5rIjoiaHR0cHM6XC9cLzFtdDBkcC1way5teXNob3BpZnkuY29tXC9hZG1pblwvb3JkZXJzXC82NzU5NTkyMjk2Njg4In19XX0sInNwcmVhZHNoZWV0Ijp7ImRhdGEiOlt7InByb2R1Y3QiOiJUYWtlJkdvIFN0YXJ0ICAgR0xQLTEgU3VwcG9ydCIsInNrdSI6IkJYOVVPRERVNFkiLCJxdWFudGl0eSI6MSwidG90YWxfY29zdCI6MCwidG90YWxfaXRlbSI6MTk5LjksImN1c3RvbWl6YXRpb24iOiIiLCJwYXltZW50X2RhdGUiOiIwNFwvMDNcLzIwMjYgMTM6MTciLCJjYW5jZWxsZWRfZGF0ZSI6IiIsImN1c3RvbWVyIjoiS2FyaW5hIFNlcnZvIiwiY3VzdG9tZXJfZW1haWwiOiJrYWthc2Vydm8yMDE1QGdtYWlsLmNvbSIsImN1c3RvbWVyX3Bob25lIjoiMTY5ODIyNDUxNTQiLCJjdXN0b21lcl9kb2N1bWVudCI6IjI4ODY0ODg4ODcwIiwic3RhdHVzIjoiRW0gdHJhbnNwb3J0ZSIsInBheW1lbnQiOiJQaXgiLCJjcmVkaXRfY2FyZCI6bnVsbCwiZGVsaXZlcmVkIjowLCJzaGlwcGluZ19hZGRyZXNzIjoiUnVhIEFuZ2VsbyBGcmFuY2lhLCAyMzQgLSBRdWFkcmEgMTggbG90ZSA2IC0gUG9ydGFsIGRhIE1hdGEiLCJzaGlwcGluZ19zdHJlZXQiOiJSdWEgQW5nZWxvIEZyYW5jaWEiLCJzaGlwcGluZ19udW1iZXIiOiIyMzQiLCJzaGlwcGluZ19uZWlnaGJvcmhvb2QiOiJQb3J0YWwgZGEgTWF0YSIsInNoaXBwaW5nX2NvbXBsZW1lbnQiOiJRdWFkcmEgMTggbG90ZSA2Iiwic2hpcHBpbmdfY2l0eSI6IlJpYmVpcmFvIFByZXRvIiwic2hpcHBpbmdfc3RhdGUiOiJTYW8gUGF1bG8iLCJzaGlwcGluZ196aXBfY29kZSI6IjE0MDMzMDMxIiwiZ2F0ZXdheV90cmFuc2FjdGlvbl9pZCI6IjE0ODEwMjk1NDU0OSIsImJpbGxldF9iYXJjb2RlIjpudWxsfSx7InByb2R1Y3QiOiJUYWtlJkdvIEJvb3N0ZWQgLSBCZWJpZGEgZnVuY2lvbmFsIiwic2t1IjoiMVhWQTRCUDlXOCIsInF1YW50aXR5IjoxLCJ0b3RhbF9jb3N0IjowLCJ0b3RhbF9pdGVtIjowLCJjdXN0b21pemF0aW9uIjoiIiwicGF5bWVudF9kYXRlIjoiMDRcLzAzXC8yMDI2IDEzOjE3IiwiY2FuY2VsbGVkX2RhdGUiOiIiLCJjdXN0b21lciI6IkthcmluYSBTZXJ2byIsImN1c3RvbWVyX2VtYWlsIjoia2FrYXNlcnZvMjAxNUBnbWFpbC5jb20iLCJjdXN0b21lcl9waG9uZSI6IjE2OTgyMjQ1MTU0IiwiY3VzdG9tZXJfZG9jdW1lbnQiOiIyODg2NDg4ODg3MCIsInN0YXR1cyI6IkVtIHRyYW5zcG9ydGUiLCJwYXltZW50IjoiUGl4IiwiY3JlZGl0X2NhcmQiOm51bGwsImRlbGl2ZXJlZCI6MCwic2hpcHBpbmdfYWRkcmVzcyI6IlJ1YSBBbmdlbG8gRnJhbmNpYSwgMjM0IC0gUXVhZHJhIDE4IGxvdGUgNiAtIFBvcnRhbCBkYSBNYXRhIiwic2hpcHBpbmdfc3RyZWV0IjoiUnVhIEFuZ2VsbyBGcmFuY2lhIiwic2hpcHBpbmdfbnVtYmVyIjoiMjM0Iiwic2hpcHBpbmdfbmVpZ2hib3Job29kIjoiUG9ydGFsIGRhIE1hdGEiLCJzaGlwcGluZ19jb21wbGVtZW50IjoiUXVhZHJhIDE4IGxvdGUgNiIsInNoaXBwaW5nX2NpdHkiOiJSaWJlaXJhbyBQcmV0byIsInNoaXBwaW5nX3N0YXRlIjoiU2FvIFBhdWxvIiwic2hpcHBpbmdfemlwX2NvZGUiOiIxNDAzMzAzMSIsImdhdGV3YXlfdHJhbnNhY3Rpb25faWQiOiIxNDgxMDI5NTQ1NDkiLCJiaWxsZXRfYmFyY29kZSI6bnVsbH1dfSwibWV0YWRhdGEiOnsiZGF0YSI6W3sia2V5IjoiY2FydF9pZCIsInZhbHVlIjoiNTk0ODg0MTIwIn0seyJrZXkiOiJjYXNoYmFja192YWx1ZSIsInZhbHVlIjoiMzcuOTgifSx7ImtleSI6ImRpc2NvdW50X2hpZ2hsaWdodCIsInZhbHVlIjoicGl4In0seyJrZXkiOiJwbGF0Zm9ybSIsInZhbHVlIjoic2hvcGlmeSJ9LHsia2V5IjoicGxhdGZvcm1fb3JkZXJfbnVtYmVyIiwidmFsdWUiOiIxMTQ1In0seyJrZXkiOiJzb3VyY2VfcGxhdGZvcm0iLCJ2YWx1ZSI6InNob3BpZnkifV19LCJwaXgiOnsiZGF0YSI6eyJwaXhfcXJfY29kZSI6IjAwMDIwMTI2MzYwMDE0YnIuZ292LmJjYi5waXgwMTE0NjE0NjE2MTQwMDAxNjU1MjA0MDAwMDUzMDM5ODY1NDA2MTg5LjkxNTgwMkJSNTkxNEVHQ0hGQURFQjM1NTIxNjAwOVNhbyBQYXVsbzYyMjUwNTIxbXBxcmludGVyMTQ4MTAyOTU0NTQ5NjMwNEVGRUQiLCJwaXhfZXhwaXJhdGlvbl9kYXRlIjoiMjAyNi0wMy0wNCAxMzo0NjoyMSJ9fSwid2hhdHNhcHAiOnsiZGF0YSI6eyJhYmFuZG9uZWRfY2FydCI6bnVsbCwib3JkZXJfc2hpcHBlZCI6eyJtZXNzYWdlIjpudWxsLCJsaW5rIjoiaHR0cHM6XC9cL2FwaS53aGF0c2FwcC5jb21cL3NlbmQ/cGhvbmU9NTUxNjk4MjI0NTE1NCZ0ZXh0PSJ9LCJiaWxsZXQiOm51bGwsInBpeCI6eyJtZXNzYWdlIjpudWxsLCJsaW5rIjoiaHR0cHM6XC9cL2FwaS53aGF0c2FwcC5jb21cL3NlbmQ/cGhvbmU9NTUxNjk4MjI0NTE1NCZ0ZXh0PSJ9LCJwYXltZW50X2xpbmsiOm51bGx9fSwid2hhdHNhcHBfYXBwIjp7ImRhdGEiOnsiYWJhbmRvbmVkX2NhcnQiOm51bGwsIm9yZGVyX3NoaXBwZWQiOnsibWVzc2FnZSI6bnVsbCwibGluayI6IndoYXRzYXBwOlwvXC9zZW5kP3Bob25lPTU1MTY5ODIyNDUxNTQmdGV4dD0ifSwiYmlsbGV0IjpudWxsLCJwaXgiOnsibWVzc2FnZSI6bnVsbCwibGluayI6IndoYXRzYXBwOlwvXC9zZW5kP3Bob25lPTU1MTY5ODIyNDUxNTQmdGV4dD0ifSwicGF5bWVudF9saW5rIjpudWxsfX19fQ==",
+            "mimeType": "application/json"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "c645868c-0ad2-457e-806d-29c4d6d3576a",
+  "activeVersionId": "c645868c-0ad2-457e-806d-29c4d6d3576a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-06T21:54:53.927Z",
+      "createdAt": "2026-01-06T21:54:53.927Z",
+      "role": "workflow:owner",
+      "workflowId": "AGWBCw82QWpF2AEv",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-09T19:15:04.461Z",
+    "createdAt": "2026-03-09T19:15:02.991Z",
+    "versionId": "c645868c-0ad2-457e-806d-29c4d6d3576a",
+    "workflowId": "AGWBCw82QWpF2AEv",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "wh_NbJAn0m8owwBMkxHWssOsSt7hcGXhPzYFaldF",
+          "height": 80,
+          "width": 384
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -32,
+          -208
+        ],
+        "id": "ac5b06f7-d58b-4733-b500-defe108e6f68",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- Nome: \"Buscar Flows Ativos (CORREÇÃO)\"\nSELECT \n  fe.id AS flow_execution_id,\n  fe.flow_code,\n  fe.lead_id,\n  fe.checkout_id,\n  fe.status\nFROM flow_executions fe\nJOIN flow_definitions fd_existing ON fe.flow_code = fd_existing.flow_code\nCROSS JOIN flow_definitions fd_new\nWHERE \n  fe.status = 'active'\n  AND fd_new.flow_code = $2  -- código do novo fluxo\n  AND (\n      -- REGRA DE OURO: Busca pelo Checkout ID (Prioridade Máxima)\n      fe.checkout_id = $3\n      OR\n      -- Rede de segurança: Busca pelo Lead ID\n      fe.lead_id = $1\n  )\nLIMIT 1;",
+          "options": {
+            "queryReplacement": "={{ $node[\"Resolver Lead\"].json.id }}, \n{{ $node[\"Receptor\"].json.flow_code }}, \n{{ $node[\"Receptor\"].json.checkout_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2928,
+          -368
+        ],
+        "id": "3af68156-9e4b-4437-b7cc-8273a84c95a8",
+        "name": "Busca flow ativo",
+        "alwaysOutputData": true,
+        "executeOnce": false,
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "07f9eb7a-370e-4391-bf80-667128156f86",
+        "name": "DELETE Scheduler API1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          3744,
+          -512
+        ],
+        "notesInFlow": true,
+        "onError": "continueRegularOutput",
+        "notes": "Ajuste a URL da sua API de agendamento aqui"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"id\": \"{{ $json.step_db_id }}\",\n  \"scheduleTo\": \"{{ $json.scheduled_for }}\",\n  \"payload\": {\n    \"execution_flow_step_id\": \"{{ $json.step_db_id }}\"\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/366f8652-fc71-43cb-bf54-f371eba66495\"\n}\n",
+          "options": {}
+        },
+        "id": "76f75b9c-9abb-4239-b969-b5688dfe6f39",
+        "name": "POST Scheduler API1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          5008,
+          -352
+        ],
+        "notesInFlow": true,
+        "onError": "continueRegularOutput",
+        "notes": "⚠️ COLOQUE A URL DO WORKFLOW DE BAIXO NO CAMPO webhook_url"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE flow_step_executions\nSET schedule_id = $1\nWHERE id = $2;",
+          "options": {
+            "queryReplacement": "={{ $json.messageId }}, {{ $('Registrar Flow').item.json.step_db_id }}"
+          }
+        },
+        "id": "62ee6cfb-d688-494e-8b31-49d910089d51",
+        "name": "Salvar Schedule ID1",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          5184,
+          -352
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.flow_execution_id }}",
+                "operation": "isNotEmpty"
+              }
+            ]
+          }
+        },
+        "id": "fab3a9a5-e432-4642-8f70-3e108c9d70aa",
+        "name": "Tem fluxo?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          3072,
+          -368
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH results AS (\n    SELECT \n        fse.id::TEXT, \n        fse.schedule_id::TEXT\n    FROM \"public\".\"flow_step_executions\" fse\n    INNER JOIN \"public\".\"flow_executions\" fe ON fse.flow_execution_id = fe.id\n    WHERE fe.lead_id = $1::uuid \n      AND fe.checkout_id = $2::text\n      AND fse.status = 'scheduled'\n)\nSELECT id, schedule_id FROM results\nUNION ALL\nSELECT 'nao encontrado', NULL\nWHERE NOT EXISTS (SELECT 1 FROM results);",
+          "options": {
+            "queryReplacement": "={{ $node[\"Resolver Lead\"].json.id }}, \n{{ $node[\"Receptor\"].json.checkout_id }}"
+          }
+        },
+        "id": "1dd504a7-58a1-4edf-85fd-a499d0a095b0",
+        "name": "Buscar Steps Agendados",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          3552,
+          -512
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE flow_step_executions\nSET status = 'cancelled', cancelled_at = NOW()\nWHERE id = $1;",
+          "options": {
+            "queryReplacement": "={{ $('Buscar Steps Agendados').item.json.id }}"
+          }
+        },
+        "id": "1a9ac026-1b6e-43a7-9c34-3b4070928eab",
+        "name": "Marca Step Cancelled",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          3936,
+          -512
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          4096,
+          -512
+        ],
+        "id": "83c4781d-380b-4d9b-a201-95ff005e86db",
+        "name": "Limit"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "6c7bad76-588a-4f20-b3b5-cebc39f53429",
+        "name": "Loop Agendamento1",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          4784,
+          -352
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- ⚠️ MUDANÇA: Recebe lista de IDs da query anterior\nUPDATE flow_executions\nSET status = 'cancelled', cancelled_at = NOW()\nWHERE id = $1::uuid\n  AND status = 'active'\nRETURNING id;",
+          "options": {
+            "queryReplacement": "={{ $json.flow_execution_id }}"
+          }
+        },
+        "id": "0977069b-7a1d-4bb5-b5b9-9a76faae7edb",
+        "name": "Cancelar Antigos",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          3376,
+          -512
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "564283d1-554f-4ee8-96b2-09fb54e8f315",
+                "leftValue": "={{ $json.ignore }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1776,
+          -416
+        ],
+        "id": "392507ce-40ed-4e8e-90f8-9a39dbddd5d3",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "FlowAnteriorCancelado",
+                "inputValue": "true"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          4256,
+          -512
+        ],
+        "id": "51410380-789d-4691-afd2-57721fc67d6a",
+        "name": "cancelado"
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "FlowCriado",
+                "inputValue": "={{ $('Receptor').item.json.flow_code }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          5184,
+          -496
+        ],
+        "id": "38e083f7-3a2d-41d9-873c-50546248d749",
+        "name": "criado"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- Nome do nó: \"Gravar Checkout Event\"\nINSERT INTO checkout_events (\n  lead_id,\n  platform,\n  external_id,\n  external_checkout_id,\n  event_type,\n  payload,\n  created_at\n)\nVALUES (\n  NULL,  -- Será atualizado depois que resolver lead_id\n  'yampi',\n  $1,    -- order_id\n  $2,    -- checkout_id\n  $3,    -- original_event\n  $4,    -- raw_payload (JSONB)\n  NOW()\n)\nRETURNING id as checkout_event_id;",
+          "options": {
+            "queryReplacement": "={{ [\n  $('Receptor').item.json.order_id, \n  $('Receptor').item.json.checkout_id, \n  $('Receptor').item.json.original_event, \n  JSON.stringify($('Receptor').item.json.raw_payload)\n] }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1968,
+          -416
+        ],
+        "id": "9fbca25b-69f3-45ad-bfec-14ed200e3bcd",
+        "name": "Resolver Checkout",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH found AS (\n    -- 1. Tenta encontrar o lead existente por Telefone OU Email\n    SELECT id\n    FROM leads\n    WHERE normalize_phone(phone) = normalize_phone($3)\n       OR (email IS NOT NULL AND email <> '' AND email = $4)\n    ORDER BY\n        (normalize_phone(phone) = normalize_phone($3)) DESC, -- Prioridade para telefone\n        (email = $4) DESC\n    LIMIT 1\n),\nupdated AS (\n    -- 2. Se achou, ATUALIZA FORÇANDO OS NOVOS DADOS (Removido COALESCE)\n    UPDATE leads\n    SET\n        last_activity_at = NOW(),\n        email = $4,         -- Atualiza com o email novo\n        first_name = $1,    -- Atualiza com o primeiro nome novo (TESTE)\n        full_name = $2      -- Atualiza com o nome completo novo\n    WHERE id IN (SELECT id FROM found)\n    RETURNING id\n),\ninserted AS (\n    -- 3. Se não achou, INSERE\n    INSERT INTO leads (\n        first_name,\n        full_name,\n        phone,\n        email,\n        created_at,\n        last_activity_at\n    )\n    SELECT\n        $1,\n        $2,\n        normalize_phone($3),\n        $4,\n        NOW(),\n        NOW()\n    WHERE NOT EXISTS (SELECT 1 FROM found)\n    \n    -- Se houver conflito de telefone não detectado no passo 1, \n    -- ele também força a atualização para o nome novo aqui.\n    ON CONFLICT (phone) DO UPDATE \n    SET \n        first_name = EXCLUDED.first_name,\n        full_name = EXCLUDED.full_name,\n        email = EXCLUDED.email,\n        last_activity_at = NOW()\n    \n    RETURNING id\n)\n-- 4. Retorna o ID final\nSELECT id FROM updated\nUNION ALL\nSELECT id FROM inserted\nLIMIT 1;",
+          "options": {
+            "queryReplacement": "={{ $('Receptor').item.json.name }}, {{ $('Receptor').item.json.full_name }}, {{ $('Receptor').item.json.phone }}, {{ $('Receptor').item.json.email }}"
+          }
+        },
+        "id": "adb8e370-e0fa-4cda-9166-979a1ac390f4",
+        "name": "Resolver Lead",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          2112,
+          -416
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "\nWITH upserted_flow AS (\n  INSERT INTO flow_executions (\n    flow_code,\n    lead_id,\n    checkout_id,\n    context,\n    status,\n    started_at\n  )\n  VALUES (\n    $1::text,    -- Flow Code\n    $2::uuid,    -- Lead ID (Forçado para UUID)\n    $3::text,    -- Checkout ID (Forçado para Texto)\n    $4::jsonb,   -- Contexto\n    'active',\n    NOW()\n  )\n  -- AQUI ESTÁ A CORREÇÃO FINAL:\n  -- A condição abaixo copia exatamente a definição do seu índice\n  ON CONFLICT (lead_id, checkout_id, flow_code) \n  WHERE status = 'active' AND checkout_id IS NOT NULL\n  \n  DO UPDATE SET \n    started_at = NOW(),       -- Reinicia o timer\n    context = EXCLUDED.context, -- Atualiza o carrinho\n    status = 'active'         -- Mantém ativo\n  RETURNING id, started_at\n),\n\n-- Passo de Segurança: Limpa steps agendados velhos desse fluxo\ncleanup_old_steps AS (\n  DELETE FROM flow_step_executions\n  WHERE flow_execution_id IN (SELECT id FROM upserted_flow)\n    AND status = 'scheduled'\n)\n\n-- Insere os novos steps\nINSERT INTO flow_step_executions (\n  flow_execution_id, \n  step_order, \n  scheduled_for, \n  status\n)\nSELECT \n  upserted_flow.id,\n  (step->>'order')::int,\n  upserted_flow.started_at + ((step->>'delay_minutes')::int || ' minutes')::interval,\n  'scheduled'\nFROM flow_definitions,\n     jsonb_array_elements(steps) as step,\n     upserted_flow\nWHERE flow_code = $1::text\nRETURNING \n  id as step_db_id, \n  scheduled_for, \n  flow_execution_id,\n  step_order;",
+          "options": {
+            "queryReplacement": "={{ $node[\"Receptor\"].json.flow_code }},{{ $node[\"Resolver Lead\"].json.id }},{{ $node[\"Receptor\"].json.checkout_id }},\n{{ JSON.stringify($node[\"Receptor\"].json) }}\n\n"
+          }
+        },
+        "id": "7eb51671-6bb9-4f9c-b46a-1b33866c8d83",
+        "name": "Registrar Flow",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          4512,
+          -352
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// PROCESSADOR DE EVENTOS YAMPI v3.5 (Revisão 04-03)\n// ============================================\n\nconst inputJson = items[0].json;\nconst body = inputJson.body || {};\nconst resource = body.resource;\n\nif (!resource) {\n  return { json: { ignore: true, reason: \"Dados insuficientes no payload (resource ausente)\" } };\n}\n\nconst customerData = resource.customer?.data || {}; \nconst incomingEvent = body.event;\nconst statusAlias = resource.status?.data?.alias || 'unknown';\nconst paymentMethod = resource.payments?.[0]?.alias || resource.payment_method || 'unknown';\n\n// 1. MAPEAMENTO DE EVENTOS\nconst EVENT_MAP = {\n  \"cart.reminder\": \"abandoned_cart\",\n  \"cart.abandoned\": \"abandoned_cart\",\n  \"order.created\": \"CHECK_PAYMENT_LOGIC\",\n  \"order.paid\": \"purchase_approved\",\n  \"payment.approved\": \"purchase_approved\",\n  \"payment.pix_generated\": \"pix_generated\",\n  \"order.shipped\": \"order_shipped\",\n  \"payment.denied\": \"card_denied\",\n  \"transaction.payment.refused\": \"card_denied\"\n};\n\n// 2. CONFIGURAÇÃO DE VARIÁVEIS\nconst VARIABLE_CONFIG = {\n  basic: {\n    first_name: { path: 'customer.data.first_name', required: true },\n    full_name: { path: 'customer.data.name', required: true },\n    email: { path: 'customer.data.email', required: false }\n  },\n  checkout: {\n    checkout_id: { path: 'id', required: true },\n    url_carrinho: { path: 'checkout_url', required: false },\n    url_carrinho_alt: { path: 'simulate_url', required: false },\n    reorder_url: { path: 'reorder_url', required: false },\n    valor_total: { path: 'value_total', required: false }\n  },\n  utm: {\n    utm_source: { path: 'utm_source', required: false },\n    utm_campaign: { path: 'utm_campaign', required: false },\n    utm_medium: { path: 'utm_medium', required: false }\n  },\n  delivery: {\n    tracking_public_url: { path: 'public_url', required: false },\n    delivery_date: { path: 'date_delivery.date', required: false },\n    address: { path: 'shipping_address.data.full_address', required: false },\n  },\n  pix: {\n    pix_code: { \n      paths: ['pix.data.pix_qr_code', 'payments[0].metadata.data.pix_qr_code'],\n      required: false \n    }\n  },\n  boleto: {\n    boleto_url: { path: 'payments[0].boleto_url', required: false },\n    linha_digitavel: { path: 'payments[0].boleto_code', required: false }\n  },\n  shipping: {\n    tracking_code: { path: 'tracking_code', required: false },\n    tracking_url: { path: 'tracking_url', required: false },\n    // 🟢 MELHORIA: Captura de Bairro e Estado\n    bairro: { path: 'shipping_address.data.neighborhood', required: false },\n    estado: { path: 'shipping_address.data.state', required: false },\n    address: { \n      custom: (res) => {\n        const addr = res.shipping_address?.data;\n        if (!addr) return null;\n        \n        // 🟢 MELHORIA: Identifica se o endereço é de uma Unidade de Retirada\n        const isPickup = res.metadata?.data?.some(m => m.key === 'pickup_config_id' && m.value);\n        const prefixo = isPickup ? \"📍 [RETIRADA] \" : \"\";\n        \n        return `${prefixo}${addr.street}, ${addr.number} - ${addr.city}/${addr.state} - CEP: ${addr.zipcode}`;\n      }\n    }\n  }\n};\n\n// 3. FUNÇÕES AUXILIARES\nfunction getNestedValue(obj, path) {\n  if (!path) return null;\n  return path.split('.').reduce((curr, key) => {\n    const match = key.match(/^(\\w+)\\[(\\d+)\\]$/);\n    if (match) return curr?.[match[1]]?.[parseInt(match[2])];\n    return curr?.[key];\n  }, obj);\n}\n\nfunction extractBySpec(resource, spec) {\n  if (spec.custom) return spec.custom(resource);\n  if (spec.paths) {\n    for (const p of spec.paths) {\n      const v = getNestedValue(resource, p);\n      if (v) return v;\n    }\n    return null;\n  }\n  return getNestedValue(resource, spec.path) || null;\n}\n\nfunction extractVariables(resource, flowCode) {\n  const vars = {};\n  Object.entries(VARIABLE_CONFIG.basic).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.checkout).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.utm).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.delivery).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  \n  // 🟢 MELHORIA: Sempre tenta extrair dados de shipping (address, bairro, estado)\n  // Isso garante que pedidos de qualquer fluxo tenham endereço completo\n  Object.entries(VARIABLE_CONFIG.shipping).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n\n  if (flowCode === 'pix_generated') {\n    Object.entries(VARIABLE_CONFIG.pix).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n  if (flowCode === 'boleto_generated') {\n    Object.entries(VARIABLE_CONFIG.boleto).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n\n  try {\n    const pUrl = resource.items?.data?.[0]?.sku?.data?.purchase_url;\n    if (pUrl) vars.purchase_url = pUrl;\n  } catch (e) {}\n\n  if (resource.items && resource.items.data) {\n    vars.lista_produtos = resource.items.data\n      .map(item => `🔸 *${item.quantity}x ${item.sku?.data?.title || 'Produto'}*`)\n      .join('\\n');\n  } else {\n    vars.lista_produtos = \"*Produtos não identificados*\";\n  }\n  \n  const AUTO_CAPTURE = [\n    'discount_value', 'coupon_code', 'items_quantity', \n    'shipping_value', 'installments', 'payment_date',\n    'track_code', 'track_url' \n  ];\n  \n  AUTO_CAPTURE.forEach(field => {\n    if (resource[field] !== undefined && resource[field] !== null) {\n      vars[field] = resource[field];\n    }\n  });\n  \n  return vars;\n}\n\nfunction tratarTelefone(rawPhone) {\n  if (!rawPhone) return null;\n  let nums = rawPhone.toString().replace(/\\D/g, '');\n  if (nums.startsWith('55')) nums = nums.substring(2);\n  if (nums.length === 11) nums = nums.substring(0, 2) + nums.substring(3);\n  return '55' + nums;\n}\n\n// 4. LÓGICA CENTRAL DE DECISÃO\nlet flowCode = EVENT_MAP[incomingEvent] || null;\n\nif (incomingEvent === 'order.created' || flowCode === 'CHECK_PAYMENT_LOGIC') {\n  if (['refused', 'cancelled'].includes(statusAlias)) {\n    flowCode = (paymentMethod === 'credit_card') ? 'card_denied' : null;\n  }\n  else if (statusAlias === 'waiting_payment') {\n    if (paymentMethod === 'pix') flowCode = 'pix_generated';\n    else if (['billet', 'boleto'].includes(paymentMethod)) flowCode = 'boleto_generated';\n    else flowCode = null;\n  }\n  else if (['paid', 'approved'].includes(statusAlias)) {\n    flowCode = 'purchase_approved';\n  }\n} \nelse if (incomingEvent === 'order.status.updated') {\n  if (['on_carriage', 'shipped', 'delivered_transport'].includes(statusAlias)) {\n    flowCode = 'order_shipped';\n  } else {\n    flowCode = null;\n  }\n}\n\n// --- IMPLEMENTAÇÃO RETIRADA LOCAL ---\nif (flowCode === 'purchase_approved' && resource.metadata && resource.metadata.data) {\n  const isPickup = resource.metadata.data.find(meta => meta.key === 'pickup_config_id' && meta.value);\n  if (isPickup) {\n    flowCode = 'retirada_local';\n  }\n}\n\nif (!flowCode) {\n  return { json: { ignore: true, reason: `Status ignorado: ${statusAlias}` } };\n}\n\nconst telefoneFinal = tratarTelefone(customerData.phone?.full_number || customerData.phone?.number);\nlet docNum = (customerData.cpf || customerData.cnpj || '').replace(/\\D/g, '');\n\nconst contextData = extractVariables(resource, flowCode);\n\nconst output = {\n    flow_code: flowCode,\n    original_event: incomingEvent,\n    phone: telefoneFinal,\n    email: customerData.email,\n    name: customerData.first_name,\n    full_name: customerData.name,\n    doc_number: docNum,\n    checkout_id: resource.id,\n    order_id: resource.id,\n    total_value: resource.value_total,\n    payment_method: paymentMethod,\n    current_status: statusAlias,\n    raw_payload: body\n};\n\nreturn {\n  json: Object.assign(output, contextData) \n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1456,
+          -416
+        ],
+        "id": "d5170133-afb8-40a2-9a33-95680e007906",
+        "name": "Receptor"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE checkout_events\nSET lead_id = $1\nWHERE id = $2;",
+          "options": {
+            "queryReplacement": "={{ $json.id }}, {{ $('Resolver Checkout').item.json.checkout_event_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2288,
+          -416
+        ],
+        "id": "fb671ba4-229f-45c1-8511-06cec1718f35",
+        "name": "Execute a SQL query",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "evento",
+                "value": "={{ $json.current_status }}"
+              },
+              {
+                "key": "flow_code",
+                "value": "={{ $json.flow_code }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          1616,
+          -416
+        ],
+        "id": "3aa1a103-c329-47e4-acf1-6049ae2936c4",
+        "name": "Execution Data"
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "flow",
+                "value": "ignorado"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          2112,
+          -560
+        ],
+        "id": "612fdb4b-bfec-4ae4-81b8-c9ea15bebd9c",
+        "name": "Execution Data1"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- 1. PROMOVE O LEAD PARA CLIENTE (Com CPF, Bairro e Estado)\nINSERT INTO public.clientes (id, nome, email, whatsapp, cidade, doc_number, bairro, estado)\nSELECT \n    id, \n    COALESCE(full_name, first_name, 'Cliente'), \n    COALESCE(email, $6), \n    COALESCE(phone, $7), \n    $8, $12, $13, $14\nFROM public.leads \nWHERE id = $2\nON CONFLICT (id) DO UPDATE SET \n    email = EXCLUDED.email, \n    whatsapp = EXCLUDED.whatsapp,\n    cidade = EXCLUDED.cidade,\n    doc_number = EXCLUDED.doc_number,\n    bairro = EXCLUDED.bairro,\n    estado = EXCLUDED.estado;\n\n-- 2. INSERE O PEDIDO E VINCULA EVENTO\nINSERT INTO public.pedidos (id, cliente_id, status, valor_pedido, valor_desconto, cidade, endereco_completo, tipo_frete, data_pedido)\nVALUES ($1, $2, $3, $4, CAST($9 AS NUMERIC), $8, $10, $11, NOW())\nON CONFLICT (id) DO UPDATE SET \n    status = EXCLUDED.status, \n    valor_pedido = EXCLUDED.valor_pedido,\n    endereco_completo = EXCLUDED.endereco_completo,\n    tipo_frete = EXCLUDED.tipo_frete;\n\n-- VINCULAÇÃO DE TABELAS (Melhoria 04-03)\nUPDATE public.checkout_events SET lead_id = $2 WHERE external_id = $1;\n\n-- 3. LIMPEZA E INSERÇÃO DE ITENS\nDELETE FROM public.pedido_itens WHERE pedido_id = $1;\n\nINSERT INTO public.pedido_itens (pedido_id, produto_nome, sku, quantidade, preco_unitario)\nSELECT $1, x.nome, x.sku, x.quantidade, x.preco\nFROM json_to_recordset($5::json) AS x(nome text, sku text, quantidade int, preco decimal);\n\n-- 4. ATUALIZA TOTAIS DO CLIENTE\nUPDATE public.clientes \nSET \n    total_orders = sub.qtd,\n    valor_total_gasto = sub.total,\n    data_ultima_compra = NOW()\nFROM (\n    SELECT COUNT(*) as qtd, SUM(COALESCE(valor_pedido, 0)) as total \n    FROM public.pedidos \n    WHERE cliente_id = $2\n) AS sub\nWHERE public.clientes.id = $2;",
+          "options": {
+            "queryReplacement": "={{ $node[\"Receptor\"].json.order_id }},\n{{ $node[\"Resolver Lead\"].json.id }},\n{{ $node[\"Receptor\"].json.current_status }},\n{{ $node[\"Receptor\"].json.total_value }},\n{{ JSON.stringify($node[\"Receptor\"].json.raw_payload.resource.items.data.map(item => ({\n  nome: item.sku?.data?.title || 'Produto sem nome',\n  sku: item.item_sku || item.sku?.data?.sku || 'N/A',\n  quantidade: parseInt(item.quantity) || 1,\n  preco: parseFloat(item.price) || 0\n}))) }},\n{{ $node[\"Receptor\"].json.email || $node[\"Receptor\"].json.raw_payload.resource.customer.data.email }},\n{{ $node[\"Receptor\"].json.phone || $node[\"Receptor\"].json.raw_payload.resource.customer.data.phone.full_number }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipping_address.data.city || 'Não informada' }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.value_discount || 0 }},\n{{ ($node[\"Receptor\"].json.address || \"\").replace(',', ' -') }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipment_service || 'Retirada' }},\n{{ $('Receptor').item.json.doc_number }},{{ $('Receptor').item.json.bairro }},{{ $('Receptor').item.json.estado }}\n"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2464,
+          -64
+        ],
+        "id": "cfc733d7-501e-49f2-bb8f-207814c654ef",
+        "name": "Gravar itens de pedido/cliente",
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('If').item.json.flow_code }}",
+                      "rightValue": "=purchase_approved",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "f7c34ee0-ded6-4987-8215-bea7c61374fa"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Compra APROVADA"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "e982345a-6ed2-4154-87d9-1b754d56af7c",
+                      "leftValue": "={{ $('If').item.json.flow_code }}",
+                      "rightValue": "order_shipped",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Pedido Enviado"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "87f229be-6412-4d1f-b71a-46f3d788df68",
+                      "leftValue": "={{ $('If').item.json.flow_code }}",
+                      "rightValue": "retirada_local",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Retirada local"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "b25c012f-ecd3-48f9-b6b5-8f96b2ed1231",
+                      "leftValue": "={{ $('If').item.json.flow_code }}",
+                      "rightValue": ".*",
+                      "operator": {
+                        "type": "string",
+                        "operation": "regex"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Passa o resto"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          2464,
+          -448
+        ],
+        "id": "7f21b59f-d319-4f2b-a27b-47e7cce27c87",
+        "name": "Switch",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE public.pedidos\nSET \n    status = 'shipped',\n    track_code = $2,\n    track_url = $3\nWHERE id = $1;",
+          "options": {
+            "queryReplacement": "={{ $node[\"Receptor\"].json.order_id }},\n{{ $('If').item.json.raw_payload.resource.track_code }},\n{{ $('If').item.json.raw_payload.resource.track_url }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2464,
+          -224
+        ],
+        "id": "f1a968d5-8270-4bab-9107-701a5817551b",
+        "name": "SALVAR TRACKING_CODE",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "3030bcf9-d5c3-4705-a16e-660b3ec3369b",
+          "options": {
+            "rawBody": true
+          }
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          1296,
+          -416
+        ],
+        "id": "462a389f-b991-46f4-b897-9119f7cd13c3",
+        "name": "Webhook",
+        "webhookId": "3030bcf9-d5c3-4705-a16e-660b3ec3369b"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b4e59f32-9faf-4828-a8f2-1a9e053576af",
+                "name": "headers",
+                "value": "={{ $json.headers }}",
+                "type": "object"
+              },
+              {
+                "id": "8ddfce39-e03c-4991-b70a-6f4557d568b6",
+                "name": "body",
+                "value": "={{ $json.body }}",
+                "type": "object"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          832,
+          304
+        ],
+        "id": "ad1c9fa2-51c9-49b7-9993-24f3fc02b306",
+        "name": "Edit Fields",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// PROCESSADOR DE EVENTOS YAMPI v3.4 (Suporte Retirada Local)\n// ============================================\n\n// Proteção contra payloads vazios\nconst inputJson = items[0].json;\nconst body = inputJson.body || {};\nconst resource = body.resource;\n\n// Se não houver dados, ele ignora graciosamente em vez de travar\nif (!resource) {\n  return { json: { ignore: true, reason: \"Dados insuficientes no payload (resource ausente)\" } };\n}\n\nconst customerData = resource.customer?.data || {}; \nconst incomingEvent = body.event;\nconst statusAlias = resource.status?.data?.alias || 'unknown';\nconst paymentMethod = resource.payments?.[0]?.alias || resource.payment_method || 'unknown';\n\n// 1. MAPEAMENTO DE EVENTOS\nconst EVENT_MAP = {\n  \"cart.reminder\": \"abandoned_cart\",\n  \"cart.abandoned\": \"abandoned_cart\",\n  \"order.created\": \"CHECK_PAYMENT_LOGIC\",\n  \"order.paid\": \"purchase_approved\",\n  \"payment.approved\": \"purchase_approved\",\n  \"payment.pix_generated\": \"pix_generated\",\n  \"order.shipped\": \"order_shipped\",\n  \"payment.denied\": \"card_denied\",\n  \"transaction.payment.refused\": \"card_denied\"\n};\n\n// 2. CONFIGURAÇÃO DE VARIÁVEIS\nconst VARIABLE_CONFIG = {\n  basic: {\n    first_name: { path: 'customer.data.first_name', required: true },\n    full_name: { path: 'customer.data.name', required: true },\n    email: { path: 'customer.data.email', required: false }\n  },\n  checkout: {\n    checkout_id: { path: 'id', required: true },\n    url_carrinho: { path: 'checkout_url', required: false },\n    url_carrinho_alt: { path: 'simulate_url', required: false },\n    reorder_url: { path: 'reorder_url', required: false },\n    valor_total: { path: 'value_total', required: false }\n  },\n  utm: {\n    utm_source: { path: 'utm_source', required: false },\n    utm_campaign: { path: 'utm_campaign', required: false },\n    utm_medium: { path: 'utm_medium', required: false }\n  },\n  delivery: {\n    tracking_public_url: { path: 'public_url', required: false },\n    delivery_date: { path: 'date_delivery.date', required: false },\n    address: { path: 'shipping_address.data.full_address', required: false },\n  },\n  pix: {\n    pix_code: { \n      paths: ['pix.data.pix_qr_code', 'payments[0].metadata.data.pix_qr_code'],\n      required: false \n    }\n  },\n  boleto: {\n    boleto_url: { path: 'payments[0].boleto_url', required: false },\n    linha_digitavel: { path: 'payments[0].boleto_code', required: false }\n  },\n  shipping: {\n    tracking_code: { path: 'tracking_code', required: false },\n    tracking_url: { path: 'tracking_url', required: false },\n    address: { \n      custom: (res) => {\n        const addr = res.shipping_address?.data;\n        if (!addr) return null;\n        return `${addr.street}, ${addr.number} - ${addr.city}/${addr.state} - CEP: ${addr.zipcode}`;\n      }\n    }\n  }\n};\n\n// 3. FUNÇÕES AUXILIARES\nfunction getNestedValue(obj, path) {\n  return path.split('.').reduce((curr, key) => {\n    const match = key.match(/^(\\w+)\\[(\\d+)\\]$/);\n    if (match) return curr?.[match[1]]?.[parseInt(match[2])];\n    return curr?.[key];\n  }, obj);\n}\n\nfunction extractBySpec(resource, spec) {\n  if (spec.custom) return spec.custom(resource);\n  if (spec.paths) {\n    for (const p of spec.paths) {\n      const v = getNestedValue(resource, p);\n      if (v) return v;\n    }\n    return null;\n  }\n  return getNestedValue(resource, spec.path) || null;\n}\n\nfunction extractVariables(resource, flowCode) {\n  const vars = {};\n  Object.entries(VARIABLE_CONFIG.basic).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.checkout).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.utm).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  Object.entries(VARIABLE_CONFIG.delivery).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  \n  if (flowCode === 'pix_generated') {\n    Object.entries(VARIABLE_CONFIG.pix).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n  if (flowCode === 'boleto_generated') {\n    Object.entries(VARIABLE_CONFIG.boleto).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n  if (flowCode === 'order_shipped') {\n    Object.entries(VARIABLE_CONFIG.shipping).forEach(([k, s]) => vars[k] = extractBySpec(resource, s));\n  }\n\n  // ✅ CORREÇÃO: Captura da purchase_url no SKU mantendo o padrão\n  try {\n    const pUrl = resource.items?.data?.[0]?.sku?.data?.purchase_url;\n    if (pUrl) vars.purchase_url = pUrl;\n  } catch (e) {}\n\n// ✅ CRIAÇÃO DA LISTA DE PRODUTOS\n  if (resource.items && resource.items.data) {\n    vars.lista_produtos = resource.items.data\n      .map(item => `🔸 *${item.quantity}x ${item.sku?.data?.title || 'Produto'}*`)\n      .join('\\n');\n  } else {\n    vars.lista_produtos = \"*Produtos não identificados*\";\n  }\n  \n  const AUTO_CAPTURE = [\n    'discount_value', 'coupon_code', 'items_quantity', \n    'shipping_value', 'installments', 'payment_date',\n    'track_code', 'track_url' \n  ];\n  \n  AUTO_CAPTURE.forEach(field => {\n    if (resource[field] !== undefined && resource[field] !== null) {\n      vars[field] = resource[field];\n    }\n  });\n  \n  return vars;\n}\n\nfunction tratarTelefone(rawPhone) {\n  if (!rawPhone) return null;\n  let nums = rawPhone.toString().replace(/\\D/g, '');\n  if (nums.startsWith('55')) nums = nums.substring(2);\n  if (nums.length === 11) nums = nums.substring(0, 2) + nums.substring(3);\n  return '55' + nums;\n}\n\n// 4. LÓGICA CENTRAL DE DECISÃO\nlet flowCode = EVENT_MAP[incomingEvent] || null;\n\nif (incomingEvent === 'order.created' || flowCode === 'CHECK_PAYMENT_LOGIC') {\n  if (['refused', 'cancelled'].includes(statusAlias)) {\n    flowCode = (paymentMethod === 'credit_card') ? 'card_denied' : null;\n  }\n  else if (statusAlias === 'waiting_payment') {\n    if (paymentMethod === 'pix') flowCode = 'pix_generated';\n    else if (['billet', 'boleto'].includes(paymentMethod)) flowCode = 'boleto_generated';\n    else flowCode = null;\n  }\n  else if (['paid', 'approved'].includes(statusAlias)) {\n    flowCode = 'purchase_approved';\n  }\n} \nelse if (incomingEvent === 'order.status.updated') {\n  if (['on_carriage', 'shipped', 'delivered_transport'].includes(statusAlias)) {\n    flowCode = 'order_shipped';\n  } else {\n    flowCode = null;\n  }\n}\n\n// --- IMPLEMENTAÇÃO RETIRADA LOCAL ---\n// Verifica se é um evento de compra aprovada e se existe pickup_config_id no metadata\nif (flowCode === 'purchase_approved' && resource.metadata && resource.metadata.data) {\n  const isPickup = resource.metadata.data.find(meta => meta.key === 'pickup_config_id' && meta.value);\n  if (isPickup) {\n    flowCode = 'retirada_local';\n  }\n}\n// ------------------------------------\n\n// 5. OUTPUT ORIGINAL SEM ALTERAR NÍVEIS\nif (!flowCode) {\n  return { json: { ignore: true, reason: `Status ignorado: ${statusAlias}` } };\n}\n\nconst telefoneFinal = tratarTelefone(customerData.phone?.full_number || customerData.phone?.number);\nlet docNum = (customerData.cpf || customerData.cnpj || '').replace(/\\D/g, '');\n\nconst contextData = extractVariables(resource, flowCode);\n\nconst output = {\n    flow_code: flowCode,\n    original_event: incomingEvent,\n    phone: telefoneFinal,\n    email: customerData.email,\n    name: customerData.first_name,\n    full_name: customerData.name,\n    doc_number: docNum,\n    checkout_id: resource.id,\n    order_id: resource.id,\n    total_value: resource.value_total,\n    payment_method: paymentMethod,\n    current_status: statusAlias,\n    raw_payload: body\n};\n\n// ✅ VOLTANDO PARA O Object.assign QUE VOCÊ TINHA\nreturn {\n  json: Object.assign(output, contextData) \n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1824,
+          544
+        ],
+        "id": "53014c99-9302-4cb7-93ec-ce34fd97cef3",
+        "name": "Receptor1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- 1. PROMOVE O LEAD PARA CLIENTE\nINSERT INTO public.clientes (id, nome, email, whatsapp, cidade)\nSELECT \n    id, \n    COALESCE(full_name, first_name, 'Cliente'), \n    COALESCE(email, $6), \n    COALESCE(phone, $7), \n    $8\nFROM public.leads \nWHERE id = $2\nON CONFLICT (id) DO UPDATE SET \n    email = EXCLUDED.email, \n    whatsapp = EXCLUDED.whatsapp,\n    cidade = EXCLUDED.cidade;\n\n-- 2. INSERE O PEDIDO\nINSERT INTO public.pedidos (id, cliente_id, status, valor_pedido, valor_desconto, cidade, endereco_completo, tipo_frete, data_pedido)\nVALUES (\n    $1, \n    $2, \n    $3, \n    $4, \n    CAST($9 AS NUMERIC), \n    $8, \n    $10, -- Endereço Completo\n    $11, -- Tipo de Frete\n    NOW()\n)\nON CONFLICT (id) DO UPDATE SET \n    status = EXCLUDED.status, \n    valor_pedido = EXCLUDED.valor_pedido,\n    endereco_completo = EXCLUDED.endereco_completo,\n    tipo_frete = EXCLUDED.tipo_frete;\n\n-- 3. LIMPEZA E INSERÇÃO DE ITENS\nDELETE FROM public.pedido_itens WHERE pedido_id = $1;\n\nINSERT INTO public.pedido_itens (pedido_id, produto_nome, sku, quantidade, preco_unitario)\nSELECT $1, x.nome, x.sku, x.quantidade, x.preco\nFROM json_to_recordset($5::json) AS x(nome text, sku text, quantidade int, preco decimal);\n\n-- 4. ATUALIZA TOTAIS DO CLIENTE\nUPDATE public.clientes \nSET \n    total_orders = sub.qtd,\n    valor_total_gasto = sub.total,\n    data_ultima_compra = NOW()\nFROM (\n    SELECT COUNT(*) as qtd, SUM(COALESCE(valor_pedido, 0)) as total \n    FROM public.pedidos \n    WHERE cliente_id = $2\n) AS sub\nWHERE public.clientes.id = $2;",
+          "options": {
+            "queryReplacement": "={{ $node[\"Receptor\"].json.order_id }},\n{{ $node[\"Resolver Lead\"].json.id }},\n{{ $node[\"Receptor\"].json.current_status }},\n{{ $node[\"Receptor\"].json.total_value }},\n{{ JSON.stringify($node[\"Receptor\"].json.raw_payload.resource.items.data.map(item => ({\n  nome: item.sku?.data?.title || 'Produto sem nome',\n  sku: item.item_sku || item.sku?.data?.sku || 'N/A',\n  quantidade: parseInt(item.quantity) || 1,\n  preco: parseFloat(item.price) || 0\n}))) }},\n{{ $node[\"Receptor\"].json.email || $node[\"Receptor\"].json.raw_payload.resource.customer.data.email }},\n{{ $node[\"Receptor\"].json.phone || $node[\"Receptor\"].json.raw_payload.resource.customer.data.phone.full_number }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipping_address.data.city || 'Não informada' }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.value_discount || 0 }},\n{{ ($node[\"Receptor\"].json.address || \"\").replace(',', ' -') }},\n{{ $node[\"Receptor\"].json.raw_payload.resource.shipment_service || 'Retirada' }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1968,
+          544
+        ],
+        "id": "c133d96f-237c-4a94-a499-826b7e392af4",
+        "name": "Gravar itens de pedido/cliente1",
+        "alwaysOutputData": true,
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "content": "backup\n",
+          "height": 240,
+          "width": 704
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1648,
+          512
+        ],
+        "id": "3306ab29-8e2e-4de4-bdff-714241f28b63",
+        "name": "Sticky Note1"
+      }
+    ],
+    "connections": {
+      "Busca flow ativo": {
+        "main": [
+          [
+            {
+              "node": "Tem fluxo?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DELETE Scheduler API1": {
+        "main": [
+          [
+            {
+              "node": "Marca Step Cancelled",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "POST Scheduler API1": {
+        "main": [
+          [
+            {
+              "node": "Salvar Schedule ID1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Salvar Schedule ID1": {
+        "main": [
+          [
+            {
+              "node": "Loop Agendamento1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem fluxo?": {
+        "main": [
+          [
+            {
+              "node": "Cancelar Antigos",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Registrar Flow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Steps Agendados": {
+        "main": [
+          [
+            {
+              "node": "DELETE Scheduler API1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marca Step Cancelled": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "cancelado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Agendamento1": {
+        "main": [
+          [
+            {
+              "node": "criado",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "POST Scheduler API1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cancelar Antigos": {
+        "main": [
+          [
+            {
+              "node": "Buscar Steps Agendados",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Execution Data1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Resolver Checkout",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "cancelado": {
+        "main": [
+          [
+            {
+              "node": "Registrar Flow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Resolver Checkout": {
+        "main": [
+          [
+            {
+              "node": "Resolver Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Resolver Lead": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Registrar Flow": {
+        "main": [
+          [
+            {
+              "node": "Loop Agendamento1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Receptor": {
+        "main": [
+          [
+            {
+              "node": "Execution Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execution Data": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gravar itens de pedido/cliente": {
+        "main": [
+          [
+            {
+              "node": "Busca flow ativo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Gravar itens de pedido/cliente",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "SALVAR TRACKING_CODE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Gravar itens de pedido/cliente",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Busca flow ativo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SALVAR TRACKING_CODE": {
+        "main": [
+          [
+            {
+              "node": "Busca flow ativo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Receptor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version c645868c",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
