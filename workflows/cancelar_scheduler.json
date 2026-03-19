@@ -1,0 +1,2466 @@
+{
+  "updatedAt": "2026-03-04T19:51:30.450Z",
+  "createdAt": "2026-01-14T23:32:57.645Z",
+  "id": "iJCYotH5KVyKzKcuuClRx",
+  "name": "Cancelar Scheduler",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## I'm a note \nPrecisa chegar:  Flow \nExecution ID",
+        "width": 848
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -1216
+      ],
+      "id": "574d8cf2-0866-4d24-be98-dfefa3236046",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nUPDATE flow_step_executions\nSET status = 'cancelled'\nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled';\n\n\nUPDATE flow_executions\nSET status = 'cancelled', cancelled_at = NOW()\nWHERE id = $1::uuid;",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').item.json.body.flow_execution_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1056,
+        768
+      ],
+      "id": "a1f4ac57-b826-4c4c-8696-4a657e270ae1",
+      "name": "ATUALIZAR STATUS",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "72a26ef7-fef8-425c-8b0a-7cd691b3a065",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -64,
+        -128
+      ],
+      "id": "8f3a517e-dff9-420f-98e7-d3924c091e2c",
+      "name": "Webhook",
+      "webhookId": "72a26ef7-fef8-425c-8b0a-7cd691b3a065"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "evento",
+              "value": "={{ $json.status }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        1808,
+        848
+      ],
+      "id": "4ad22124-3c20-4f60-9577-c4254bcd5847",
+      "name": "Execution Data",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.schedule_id }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1056,
+        -304
+      ],
+      "id": "e9e591e4-e5e3-422f-94b1-3ecc56549819",
+      "name": "Delete Scheduler",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega os dados principais da atualização\nconst executionData = $input.item.json.body.data.rows[0];\nconst context = executionData.context;\nconst payload = context.raw_payload;\n\n// Organiza apenas o que importa para a automação\nreturn {\n  info: {\n    id_execucao: executionData.id,\n    checkout_id: executionData.checkout_id,\n    flow_code: executionData.flow_code,\n    status_atual: executionData.status,\n  },\n  cliente: {\n    nome: context.full_name,\n    primeiro_nome: context.first_name,\n    email: context.email,\n    whatsapp: context.phone,\n    documento: context.doc_number\n  },\n  pagamento: {\n    metodo: context.payment_method,\n    valor_total: context.valor_total,\n    pix_copia_cola: context.pix_code,\n    pix_vencimento: payload.resource.pix.data.pix_expiration_date\n  },\n  produto: {\n    nome: payload.resource.items.data[0].sku.data.title,\n    sku: payload.resource.items.data[0].item_sku,\n    link_venda: payload.resource.items.data[0].sku.data.purchase_url\n  },\n  entrega: {\n    endereco_completo: context.address,\n    cidade: payload.resource.shipping_address.data.city,\n    estado: payload.resource.shipping_address.data.state\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -128
+      ],
+      "id": "de234a1c-0768-4f90-b10c-8c113a9e58b4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node[\"Code in JavaScript\"].json.info.status_atual }}",
+                    "rightValue": "cancelled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "398ca0cb-67d8-4e02-81bc-759161068437"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cancelado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "39745b58-05db-4a48-bbf8-5cdbfd9a0f74",
+                    "leftValue": "={{ $node[\"Code in JavaScript\"].json.info.status_atual }}",
+                    "rightValue": "paused",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pausado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c4dc9597-76c7-47ee-8a06-ec0249605d8a",
+                    "leftValue": "={{ $node[\"Code in JavaScript\"].json.info.status_atual }}",
+                    "rightValue": "active",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ATIVO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -144
+      ],
+      "id": "effa19e3-d391-4abd-b8ae-c0a56effca2e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "/* 1. Se for PAUSED, marca o step atual como SKIPPED para \"limpar\" a fila */\nUPDATE flow_step_executions\nSET status = 'skipped'\nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled'\n  AND $2 = 'paused';\n\n/* 2. Se for CANCELLED, marca como CANCELLED mesmo */\nUPDATE flow_step_executions\nSET status = 'cancelled'\nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled'\n  AND $2 = 'cancelled';\n\n/* 3. Atualiza a execução principal */\nUPDATE flow_executions\nSET status = $2,\n    cancelled_at = CASE WHEN $2 = 'cancelled' THEN NOW() ELSE cancelled_at END\nWHERE id = $1::uuid;\n\n/* 4. Retorna os IDs para deletar no Scheduler externo */\nSELECT id as step_id, schedule_id FROM flow_step_executions\nWHERE flow_execution_id = $1::uuid AND status IN ('skipped', 'cancelled');",
+        "options": {
+          "queryReplacement": "=\n{{ $json.info.id_execucao }}\n{{ $json.info.status_atual }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        944
+      ],
+      "id": "d5dd5c44-b742-486f-be5f-754c806fb7fe",
+      "name": "Agendamentos",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE flow_step_executions \nSET \n    schedule_id = '{{ $json.messageId || $json.id }}', \n    cancelled_at = NULL,\n    executed_at = NULL\nWHERE flow_execution_id = '{{ $(\"REATIVAR FLUXO\").item.json.flow_execution_id }}'::uuid\n  AND step_order = {{ $(\"REATIVAR FLUXO\").item.json.step_order }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1280,
+        32
+      ],
+      "id": "9f073276-c1c5-47c8-a74c-c7c67ab3d5d8",
+      "name": "SALVA SCHEDULE",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega os dados principais da atualização\nconst executionData = $input.item.json.body.data.rows[0];\nconst context = executionData.context;\nconst payload = context.raw_payload;\n\n// Organiza apenas o que importa para a automação\nreturn {\n  info: {\n    id_execucao: executionData.id,\n    checkout_id: executionData.checkout_id,\n    flow_code: executionData.flow_code,\n    status_atual: executionData.status,\n  },\n  cliente: {\n    nome: context.full_name,\n    primeiro_nome: context.first_name,\n    email: context.email,\n    whatsapp: context.phone,\n    documento: context.doc_number\n  },\n  pagamento: {\n    metodo: context.payment_method,\n    valor_total: context.valor_total,\n    pix_copia_cola: context.pix_code,\n    pix_vencimento: payload.resource.pix.data.pix_expiration_date\n  },\n  produto: {\n    nome: payload.resource.items.data[0].sku.data.title,\n    sku: payload.resource.items.data[0].item_sku,\n    link_venda: payload.resource.items.data[0].sku.data.purchase_url\n  },\n  entrega: {\n    endereco_completo: context.address,\n    cidade: payload.resource.shipping_address.data.city,\n    estado: payload.resource.shipping_address.data.state\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        752
+      ],
+      "id": "73288051-cf6f-4353-9f0a-570f4c993e85",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "/* 1. Atualiza os steps pendentes com o status que veio (cancelled ou paused) */\nUPDATE flow_step_executions\nSET status = $2 \nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled';\n\n/* 2. Atualiza a execução principal (Removido updated_at) */\nUPDATE flow_executions\nSET \n  status = $2, \n  cancelled_at = CASE WHEN $2 = 'cancelled' THEN NOW() ELSE cancelled_at END\nWHERE id = $1::uuid;\n\n/* 3. Retorna os dados para o n8n deletar no Scheduler Externo */\nSELECT \n  id as step_id,\n  schedule_id,\n  status\nFROM flow_step_executions\nWHERE flow_execution_id = $1::uuid\n  AND status = $2;",
+        "options": {
+          "queryReplacement": "=\n{{ $json.info.id_execucao }}\n{{ $json.info.status_atual }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1408,
+        752
+      ],
+      "id": "7d2f84f3-2e69-43f7-b7ed-55a6dd25cc3f",
+      "name": "Agendamentos1",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "59155250-adfb-4c2f-aff3-56589b2ba81b",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1584,
+        752
+      ],
+      "id": "69b2325e-807d-4db8-a68b-75061b4f5d6f",
+      "name": "If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.step_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1808,
+        640
+      ],
+      "id": "5c6eb730-1cf9-4586-978e-41c4e54f3915",
+      "name": "Delete Scheduler1",
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH steps_futuros AS (\n    -- 1. Pega TODOS os steps que estão agendados no momento\n    SELECT id, schedule_id, step_order\n    FROM flow_step_executions\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'scheduled'\n),\ncongela_steps AS (\n    -- 2. Coloca eles na \"geladeira\" (paused_standby) para não perdermos a data original\n    UPDATE flow_step_executions\n    SET status = 'paused_standby'\n    WHERE id IN (SELECT id FROM steps_futuros)\n),\npausa_execucao AS (\n    -- 3. Pausa a execução principal do cliente\n    UPDATE flow_executions\n    SET status = 'paused'\n    WHERE id = $1::uuid\n)\n-- 4. Retorna a lista para o n8n ir na API e DELETAR todos\nSELECT schedule_id, step_order \nFROM steps_futuros\nORDER BY step_order ASC;",
+        "options": {
+          "queryReplacement": "={{ $json.info.id_execucao }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        848,
+        -128
+      ],
+      "id": "7ea19e66-f159-43b2-8a77-c616456c111f",
+      "name": "PULAR STEP",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH marcacao_cancelados AS (\n    -- 1. Cancela TODOS os steps futuros de uma vez e captura os IDs do Scheduler\n    UPDATE flow_step_executions\n    SET \n        status = 'cancelled',\n        cancelled_at = NOW()\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'scheduled'\n    RETURNING id AS step_id, schedule_id, step_order\n),\ncancela_execucao AS (\n    -- 2. Mata a execução principal\n    UPDATE flow_executions\n    SET \n        status = 'cancelled',\n        cancelled_at = NOW()\n    WHERE id = $1::uuid\n)\n-- 3. Retorna a lista de TODOS os steps pendentes para o n8n deletar na API\nSELECT \n    step_id, \n    schedule_id, \n    step_order \nFROM marcacao_cancelados\nORDER BY step_order ASC;",
+        "options": {
+          "queryReplacement": "={{ $json.info.id_execucao }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        848,
+        -304
+      ],
+      "id": "2f990b7c-d417-4095-94bd-6217196c822f",
+      "name": "marca como cancelado todos",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH reativa_execucao AS (\n    -- 1. Acorda o cliente\n    UPDATE flow_executions\n    SET status = 'active'\n    WHERE id = $1::uuid\n),\ndescarta_vencidos AS (\n    -- 2. Descarta quem venceu durante a pausa\n    UPDATE flow_step_executions\n    SET status = 'skipped', cancelled_at = NOW()\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'paused_standby'\n      AND scheduled_for <= NOW()\n),\nrecupera_sobreviventes AS (\n    -- 3. Reativa os que ainda estão no futuro e captura os dados\n    UPDATE flow_step_executions\n    SET status = 'scheduled'\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'paused_standby'\n      AND scheduled_for > NOW()\n    RETURNING flow_execution_id, scheduled_for AS scheduled_at, step_order\n)\n-- 4. Retorna para o n8n no formato exato que o seu nó HTTP POST exige!\nSELECT \n    flow_execution_id, \n    scheduled_at, \n    step_order \nFROM recupera_sobreviventes\nORDER BY step_order ASC;",
+        "options": {
+          "queryReplacement": "={{ $json.info.id_execucao }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        848,
+        32
+      ],
+      "id": "942ebaca-3d47-4512-a6c8-210a0225408c",
+      "name": "REATIVAR FLUXO",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"{{ $json.flow_execution_id }}_{{ $json.step_order }}\",\n  \"scheduleTo\": \"{{ $json.scheduled_at }}\",\n  \"payload\": {\n    \"execution_flow_step_id\": \"{{ $json.flow_execution_id }}\",\n    \"step_order\": {{ $json.step_order }}\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/366f8652-fc71-43cb-bf54-f371eba66495\"\n}",
+        "options": {}
+      },
+      "id": "4108fbad-d77b-4b15-b6db-6b17bf4dda2a",
+      "name": "AGENDAR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1056,
+        32
+      ],
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "⚠️ COLOQUE A URL DO WORKFLOW DE BAIXO NO CAMPO webhook_url"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.schedule_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1056,
+        -128
+      ],
+      "id": "1963322d-b28a-4b63-9fdf-b0da6aa530b1",
+      "name": "DELETA/CONGELA",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "ATUALIZAR STATUS": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "marca como cancelado todos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PULAR STEP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "REATIVAR FLUXO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamentos": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Agendamentos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamentos1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Delete Scheduler1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PULAR STEP": {
+      "main": [
+        [
+          {
+            "node": "DELETA/CONGELA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "marca como cancelado todos": {
+      "main": [
+        [
+          {
+            "node": "Delete Scheduler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REATIVAR FLUXO": {
+      "main": [
+        [
+          {
+            "node": "AGENDAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGENDAR": {
+      "main": [
+        [
+          {
+            "node": "SALVA SCHEDULE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.10.0",
+            "content-length": "27722",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "records.after.update",
+            "id": "54dd6b23-570e-48cc-bc51-a2899146dbe1",
+            "data": {
+              "table_id": "mz6slpm2p0rq89w",
+              "table_name": "flow_executions",
+              "previous_rows": [
+                {
+                  "id": "a73d00d9-d5e1-41a7-a923-c7d5a4733766",
+                  "flow_code": "abandoned_cart",
+                  "status": "active",
+                  "started_at": "2026-03-01 23:20:29+00:00",
+                  "cancelled_at": null,
+                  "flow_step_executions": 5,
+                  "checkout_id": "155948069",
+                  "context": {
+                    "name": "TESTE",
+                    "email": "gustavoopoas@gmail.com",
+                    "phone": "554599746605",
+                    "address": "Rua Maria José Nogueira, 198 - CAPELA - Jardim Coopagro",
+                    "order_id": 155948069,
+                    "flow_code": "abandoned_cart",
+                    "full_name": "TESTE GUSTAVOO",
+                    "doc_number": "08412862996",
+                    "first_name": "TESTE",
+                    "utm_medium": null,
+                    "utm_source": "tp",
+                    "checkout_id": 155948069,
+                    "raw_payload": {
+                      "time": "2026-02-19 13:55:07",
+                      "event": "order.paid",
+                      "merchant": {
+                        "id": 1446385,
+                        "alias": "takego"
+                      },
+                      "resource": {
+                        "id": 155948069,
+                        "ip": "186.194.144.175",
+                        "pix": {
+                          "data": {
+                            "pix_qr_code": "00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                            "pix_expiration_date": "2026-02-18 17:11:47"
+                          }
+                        },
+                        "items": {
+                          "data": [
+                            {
+                              "id": 204242603,
+                              "sku": {
+                                "data": {
+                                  "id": 290470124,
+                                  "sku": "1XVA4BP9W8",
+                                  "order": 0,
+                                  "title": "Take&Go Boosted - Bebida funcional",
+                                  "token": "AVD4WL5VYY",
+                                  "width": 1,
+                                  "erp_id": null,
+                                  "height": 1,
+                                  "length": 1,
+                                  "weight": 0.36,
+                                  "barcode": null,
+                                  "seller_id": null,
+                                  "created_at": {
+                                    "date": "2026-01-19 11:47:30.000000",
+                                    "timezone": "America/Sao_Paulo",
+                                    "timezone_type": 3
+                                  },
+                                  "price_cost": 0,
+                                  "price_sale": 0,
+                                  "product_id": 43713239,
+                                  "updated_at": {
+                                    "date": "2026-01-19 11:47:30.000000",
+                                    "timezone": "America/Sao_Paulo",
+                                    "timezone_type": 3
+                                  },
+                                  "variations": [],
+                                  "availability": 1,
+                                  "blocked_sale": false,
+                                  "combinations": "290470124",
+                                  "purchase_url": "https://seguro.takeandgosuplementos.com.br/r/AVD4WL5VYY",
+                                  "total_orders": null,
+                                  "customizations": {
+                                    "data": []
+                                  },
+                                  "price_discount": 17.9,
+                                  "total_in_stock": 2070,
+                                  "quantity_managed": true,
+                                  "availability_soldout": -1,
+                                  "image_reference_sku_id": null,
+                                  "days_availability_formated": "1 dia útil",
+                                  "allow_sell_without_customization": false
+                                }
+                              },
+                              "gift": false,
+                              "price": 17.9,
+                              "sku_id": 290470124,
+                              "item_sku": "1XVA4BP9W8",
+                              "quantity": 1,
+                              "bundle_id": null,
+                              "freebie_id": null,
+                              "gift_value": 0,
+                              "has_recomm": 0,
+                              "is_digital": false,
+                              "price_cost": 0,
+                              "product_id": 43713239,
+                              "bundle_name": null,
+                              "shipment_cost": 0,
+                              "customizations": []
+                            }
+                          ]
+                        },
+                        "device": "desktop",
+                        "number": 1446385933976703,
+                        "search": {
+                          "data": {
+                            "created_at": "2026-02-18",
+                            "has_upsell": false,
+                            "payment_id": 43,
+                            "updated_at": "2026-02-19",
+                            "upsell_ids": [],
+                            "captured_at": "2026-02-19",
+                            "freebie_ids": [],
+                            "has_freebie": false,
+                            "cancelled_at": "2026-02-18",
+                            "products_ids": [
+                              43713239
+                            ],
+                            "date_delivery": "2026-03-06",
+                            "inventory_ids": [],
+                            "payment_retry": false,
+                            "affiliation_id": 780528,
+                            "discount_names": [],
+                            "discount_types": [],
+                            "has_order_bump": false,
+                            "order_bump_ids": [],
+                            "payment_method": "pix",
+                            "antifraud_status": null,
+                            "gateway_transaction_id": "146097502293"
+                          }
+                        },
+                        "status": {
+                          "data": {
+                            "id": 4,
+                            "name": "Pagamento aprovado",
+                            "alias": "paid",
+                            "description": "O pedido foi pago/capturado"
+                          }
+                        },
+                        "customer": {
+                          "data": {
+                            "id": 249507773,
+                            "ip": "186.194.144.175",
+                            "cpf": "08412862996",
+                            "cnpj": null,
+                            "name": "TESTE GUSTAVOO",
+                            "type": "f",
+                            "email": "gustavoopoas@gmail.com",
+                            "notes": null,
+                            "phone": {
+                              "number": "999746605",
+                              "area_code": "45",
+                              "full_number": "45999746605",
+                              "whatsapp_link": "https://api.whatsapp.com/send?phone=5545999746605",
+                              "formated_number": "(45) 99974-6605"
+                            },
+                            "token": "34544c60-07ff-11f1-95f1-5d23322c1b40",
+                            "active": true,
+                            "birthday": null,
+                            "whatsapp": false,
+                            "last_name": "GUSTAVOO",
+                            "login_url": "https://seguro.takeandgosuplementos.com.br/auth/login/force?token=34544c60-07ff-11f1-95f1-5d23322c1b40",
+                            "social_id": null,
+                            "anonymized": false,
+                            "cluster_id": null,
+                            "created_at": {
+                              "date": "2026-02-12 07:40:10.000000",
+                              "timezone": "America/Sao_Paulo",
+                              "timezone_type": 3
+                            },
+                            "first_name": "TESTE",
+                            "newsletter": false,
+                            "updated_at": {
+                              "date": "2026-02-18 16:40:26.000000",
+                              "timezone": "America/Sao_Paulo",
+                              "timezone_type": 3
+                            },
+                            "utm_source": "tp",
+                            "merchant_id": 1446385,
+                            "generic_name": "TESTE GUSTAVOO",
+                            "razao_social": null,
+                            "utm_campaign": "ad82",
+                            "social_driver": null,
+                            "marketplace_id": null,
+                            "state_registration": null
+                          }
+                        },
+                        "metadata": {
+                          "data": [
+                            {
+                              "key": "cart_id",
+                              "value": "591717978"
+                            },
+                            {
+                              "key": "discount_highlight",
+                              "value": "pix"
+                            },
+                            {
+                              "key": "platform",
+                              "value": "shopify"
+                            },
+                            {
+                              "key": "platform_order_number",
+                              "value": "1108"
+                            },
+                            {
+                              "key": "source_platform",
+                              "value": "shopify"
+                            }
+                          ]
+                        },
+                        "payments": [
+                          {
+                            "name": "Pix",
+                            "alias": "pix",
+                            "icon_url": "https://icons.yampi.me/svg/pix.svg"
+                          }
+                        ],
+                        "services": {
+                          "data": [
+                            {
+                              "shopifyapp": {
+                                "link": "https://1mt0dp-pk.myshopify.com/admin/orders/6735177515248",
+                                "external_id": "6735177515248"
+                              }
+                            }
+                          ]
+                        },
+                        "statuses": {
+                          "data": [
+                            {
+                              "id": 3,
+                              "name": "Aguardando pagamento",
+                              "alias": "waiting_payment",
+                              "details": null,
+                              "created_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "updated_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "description": "Aguardando confirmação de pagamento"
+                            },
+                            {
+                              "id": 4,
+                              "name": "Pagamento aprovado",
+                              "alias": "paid",
+                              "details": "TESTE",
+                              "created_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "updated_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "description": "O pedido foi pago/capturado"
+                            },
+                            {
+                              "id": 8,
+                              "name": "Cancelado",
+                              "alias": "cancelled",
+                              "details": "Criado por Mercadopago",
+                              "created_at": {
+                                "date": "2026-02-18 18:15:52.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "updated_at": {
+                                "date": "2026-02-18 18:15:52.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "description": "O pedido foi cancelado"
+                            }
+                          ]
+                        },
+                        "utm_term": null,
+                        "whatsapp": {
+                          "data": {
+                            "pix": {
+                              "link": "https://api.whatsapp.com/send?phone=5545999746605&text=Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                              "message": "Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320"
+                            },
+                            "billet": null,
+                            "payment_link": null,
+                            "order_shipped": null,
+                            "abandoned_cart": null
+                          }
+                        },
+                        "delivered": false,
+                        "is_upsell": false,
+                        "promocode": {
+                          "data": []
+                        },
+                        "status_id": 4,
+                        "track_url": null,
+                        "value_tax": 0,
+                        "authorized": true,
+                        "cart_token": "hWN8wCGWzbj314qIzaLFkj3q",
+                        "created_at": {
+                          "date": "2026-02-18 16:41:48.000000",
+                          "timezone": "America/Sao_Paulo",
+                          "timezone_type": 3
+                        },
+                        "has_recomm": false,
+                        "has_upsell": false,
+                        "public_url": "https://api.dooki.com.br/v2/public/orders/hWN8wCGWzbj314qIzaLFkj3q",
+                        "track_code": null,
+                        "updated_at": {
+                          "date": "2026-02-19 13:54:56.000000",
+                          "timezone": "America/Sao_Paulo",
+                          "timezone_type": 3
+                        },
+                        "utm_medium": null,
+                        "utm_source": "tp",
+                        "customer_id": 249507773,
+                        "has_freebie": false,
+                        "has_payment": true,
+                        "marketplace": {
+                          "data": []
+                        },
+                        "merchant_id": 1446385,
+                        "reorder_url": "https://seguro.takeandgosuplementos.com.br/cart/items?customerToken=34544c60-07ff-11f1-95f1-5d23322c1b40&product_option_id[0]=290470124&quantity[0]=1&has_recomm[0]=0&redirectTo=checkout&skipToCheckout=1&store_token=ec9W93mPKPyVtDNf026cHaD3lfBjhxXgMh9vu2AP",
+                        "spreadsheet": {
+                          "data": [
+                            {
+                              "sku": "1XVA4BP9W8",
+                              "status": "Pagamento aprovado",
+                              "payment": "Pix",
+                              "product": "Take&Go Boosted - Bebida funcional",
+                              "customer": "TESTE GUSTAVOO",
+                              "quantity": 1,
+                              "delivered": 0,
+                              "total_cost": 0,
+                              "total_item": 17.9,
+                              "credit_card": null,
+                              "payment_date": "19/02/2026 13:54",
+                              "customization": "",
+                              "shipping_city": "Toledo",
+                              "billet_barcode": null,
+                              "cancelled_date": "18/02/2026 18:15",
+                              "customer_email": "gustavoopoas@gmail.com",
+                              "customer_phone": "45999746605",
+                              "shipping_state": "Parana",
+                              "shipping_number": "198",
+                              "shipping_street": "Rua Maria Jose Nogueira",
+                              "shipping_address": "Rua Maria Jose Nogueira, 198 - CAPELA - Jardim Coopagro",
+                              "customer_document": "08412862996",
+                              "shipping_zip_code": "85903430",
+                              "shipping_complement": "CAPELA",
+                              "shipping_neighborhood": "Jardim Coopagro",
+                              "gateway_transaction_id": "146097502293"
+                            }
+                          ]
+                        },
+                        "sync_by_erp": false,
+                        "utm_content": null,
+                        "value_total": 17.36,
+                        "promocode_id": null,
+                        "transactions": {
+                          "data": [
+                            {
+                              "id": 181186146,
+                              "amount": 17.36,
+                              "status": "paid",
+                              "payment": {
+                                "data": {
+                                  "id": 43,
+                                  "name": "Pix",
+                                  "alias": "pix",
+                                  "is_pix": true,
+                                  "icon_url": "https://icons.yampi.me/svg/card-pix.svg",
+                                  "is_billet": false,
+                                  "is_wallet": false,
+                                  "has_config": false,
+                                  "is_deposit": false,
+                                  "active_config": false,
+                                  "is_credit_card": false,
+                                  "is_pix_in_installments": false
+                                }
+                              },
+                              "captured": true,
+                              "metadata": {
+                                "data": {
+                                  "pix_qr_code": "00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                                  "pix_expiration_date": "2026-02-18 17:11:47"
+                                }
+                              },
+                              "bank_name": null,
+                              "cancelled": true,
+                              "authorized": true,
+                              "bank_alias": null,
+                              "billet_url": null,
+                              "created_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "error_code": null,
+                              "payment_id": 43,
+                              "total_logs": 0,
+                              "updated_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "billet_date": null,
+                              "captured_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "customer_id": 249507773,
+                              "holder_name": null,
+                              "buyer_amount": 0,
+                              "cancelled_at": {
+                                "date": "2026-02-18 18:15:52.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "capture_date": null,
+                              "installments": 1,
+                              "authorized_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "error_message": null,
+                              "affiliation_id": 780528,
+                              "billet_barcode": null,
+                              "marketplace_id": null,
+                              "truncated_card": null,
+                              "antifraud_score": null,
+                              "can_be_captured": false,
+                              "holder_document": null,
+                              "antifraud_status": null,
+                              "can_be_cancelled": false,
+                              "gateway_order_id": null,
+                              "antifraud_sale_id": null,
+                              "billet_our_number": null,
+                              "gateway_billet_id": null,
+                              "installment_value": 17.36,
+                              "sent_to_antifraud": false,
+                              "billet_whatsapp_link": "https://api.whatsapp.com/send?phone=5545999746605&text=",
+                              "installment_formated": "1x de R$ 17,36",
+                              "billet_document_number": null,
+                              "gateway_transaction_id": "146097502293",
+                              "marketplace_account_id": null,
+                              "buyer_installment_value": 0,
+                              "buyer_installment_formated": "1x de R$ 0,00",
+                              "gateway_authorization_code": null
+                            }
+                          ]
+                        },
+                        "utm_campaign": null,
+                        "whatsapp_app": {
+                          "data": {
+                            "pix": {
+                              "link": "whatsapp://send?phone=5545999746605&text=Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                              "message": "Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320"
+                            },
+                            "billet": null,
+                            "payment_link": null,
+                            "order_shipped": null,
+                            "abandoned_cart": null
+                          }
+                        },
+                        "b2w_label_url": null,
+                        "date_delivery": {
+                          "date": "2026-03-06 00:00:00.000000",
+                          "timezone": "America/Sao_Paulo",
+                          "timezone_type": 3
+                        },
+                        "days_delivery": 11,
+                        "desire_status": [
+                          "cancelled",
+                          "delivered",
+                          "handling_products",
+                          "invoiced",
+                          "on_carriage",
+                          "ready_for_shipping",
+                          "refused",
+                          "shipment_exception"
+                        ],
+                        "shipment_cost": 0,
+                        "has_order_bump": false,
+                        "marketplace_id": null,
+                        "pickup_address": {
+                          "data": []
+                        },
+                        "total_comments": 0,
+                        "value_discount": 0.54,
+                        "value_products": 17.9,
+                        "value_shipment": 0,
+                        "buyer_value_tax": 0,
+                        "desire_status_id": [
+                          8,
+                          7,
+                          5,
+                          10,
+                          6,
+                          12,
+                          9,
+                          11
+                        ],
+                        "order_bump_types": [],
+                        "shipment_service": "FRETE EXPRESSO",
+                        "shipping_address": {
+                          "data": {
+                            "id": 145467666,
+                            "uf": "PR",
+                            "city": "Toledo",
+                            "state": "PR",
+                            "number": "198",
+                            "street": "Rua Maria José Nogueira",
+                            "country": "BR",
+                            "zipcode": "85903430",
+                            "order_id": 155948069,
+                            "receiver": "TESTE GUSTAVOO",
+                            "zip_code": "85903430",
+                            "reference": null,
+                            "complement": "CAPELA",
+                            "address_name": null,
+                            "full_address": "Rua Maria José Nogueira, 198 - CAPELA - Jardim Coopagro",
+                            "neighborhood": "Jardim Coopagro"
+                          }
+                        },
+                        "buyer_value_total": 17.36,
+                        "shipment_icon_url": null,
+                        "shipment_quote_id": "56445300",
+                        "marketplace_account": {
+                          "data": []
+                        },
+                        "shipment_service_id": "Frete Expresso",
+                        "billet_whatsapp_link": "https://api.whatsapp.com/send?phone=5545999746605&text=",
+                        "content_statement_url": "https://api.dooki.com.br/html/orders/content-statement/hWN8wCGWzbj314qIzaLFkj3q?id=def502005371b966deae253caabacf1e5eca2b6daf06361388c6992dbfb637a3559bb1a436d90c2e67b396c5363295063a513d075330c786f83a54a4cad9bcda329a0a21774c42de0a37269ca9a948198b648ade7b60194c5b248fb58e",
+                        "value_wallet_discount": 0,
+                        "marketplace_account_id": null,
+                        "marketplace_partner_id": null,
+                        "marketplace_sale_number": null,
+                        "billet_whatsapp_app_link": "whatsapp://send?phone=5545999746605&text="
+                      }
+                    },
+                    "reorder_url": "https://seguro.takeandgosuplementos.com.br/cart/items?customerToken=34544c60-07ff-11f1-95f1-5d23322c1b40&product_option_id[0]=290470124&quantity[0]=1&has_recomm[0]=0&redirectTo=checkout&skipToCheckout=1&store_token=ec9W93mPKPyVtDNf026cHaD3lfBjhxXgMh9vu2AP",
+                    "total_value": 17.36,
+                    "valor_total": 17.36,
+                    "purchase_url": "https://seguro.takeandgosuplementos.com.br/r/AVD4WL5VYY",
+                    "url_carrinho": null,
+                    "utm_campaign": null,
+                    "delivery_date": "2026-03-06 00:00:00.000000",
+                    "current_status": "paid",
+                    "lista_produtos": "1x Take&Go Boosted - Bebida funcional",
+                    "original_event": "cart.reminder",
+                    "payment_method": "pix",
+                    "url_carrinho_alt": null,
+                    "tracking_public_url": "https://api.dooki.com.br/v2/public/orders/hWN8wCGWzbj314qIzaLFkj3q"
+                  },
+                  "leads": {
+                    "id": "1914509d-8690-4d70-91f4-bf73606bdd2e",
+                    "full_name": "TESTE GUSTAVOO"
+                  }
+                }
+              ],
+              "rows": [
+                {
+                  "id": "a73d00d9-d5e1-41a7-a923-c7d5a4733766",
+                  "flow_code": "abandoned_cart",
+                  "status": "cancelled",
+                  "started_at": "2026-03-01 23:20:29+00:00",
+                  "cancelled_at": null,
+                  "flow_step_executions": 5,
+                  "checkout_id": "155948069",
+                  "context": {
+                    "name": "TESTE",
+                    "email": "gustavoopoas@gmail.com",
+                    "phone": "554599746605",
+                    "address": "Rua Maria José Nogueira, 198 - CAPELA - Jardim Coopagro",
+                    "order_id": 155948069,
+                    "flow_code": "abandoned_cart",
+                    "full_name": "TESTE GUSTAVOO",
+                    "doc_number": "08412862996",
+                    "first_name": "TESTE",
+                    "utm_medium": null,
+                    "utm_source": "tp",
+                    "checkout_id": 155948069,
+                    "raw_payload": {
+                      "time": "2026-02-19 13:55:07",
+                      "event": "order.paid",
+                      "merchant": {
+                        "id": 1446385,
+                        "alias": "takego"
+                      },
+                      "resource": {
+                        "id": 155948069,
+                        "ip": "186.194.144.175",
+                        "pix": {
+                          "data": {
+                            "pix_qr_code": "00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                            "pix_expiration_date": "2026-02-18 17:11:47"
+                          }
+                        },
+                        "items": {
+                          "data": [
+                            {
+                              "id": 204242603,
+                              "sku": {
+                                "data": {
+                                  "id": 290470124,
+                                  "sku": "1XVA4BP9W8",
+                                  "order": 0,
+                                  "title": "Take&Go Boosted - Bebida funcional",
+                                  "token": "AVD4WL5VYY",
+                                  "width": 1,
+                                  "erp_id": null,
+                                  "height": 1,
+                                  "length": 1,
+                                  "weight": 0.36,
+                                  "barcode": null,
+                                  "seller_id": null,
+                                  "created_at": {
+                                    "date": "2026-01-19 11:47:30.000000",
+                                    "timezone": "America/Sao_Paulo",
+                                    "timezone_type": 3
+                                  },
+                                  "price_cost": 0,
+                                  "price_sale": 0,
+                                  "product_id": 43713239,
+                                  "updated_at": {
+                                    "date": "2026-01-19 11:47:30.000000",
+                                    "timezone": "America/Sao_Paulo",
+                                    "timezone_type": 3
+                                  },
+                                  "variations": [],
+                                  "availability": 1,
+                                  "blocked_sale": false,
+                                  "combinations": "290470124",
+                                  "purchase_url": "https://seguro.takeandgosuplementos.com.br/r/AVD4WL5VYY",
+                                  "total_orders": null,
+                                  "customizations": {
+                                    "data": []
+                                  },
+                                  "price_discount": 17.9,
+                                  "total_in_stock": 2070,
+                                  "quantity_managed": true,
+                                  "availability_soldout": -1,
+                                  "image_reference_sku_id": null,
+                                  "days_availability_formated": "1 dia útil",
+                                  "allow_sell_without_customization": false
+                                }
+                              },
+                              "gift": false,
+                              "price": 17.9,
+                              "sku_id": 290470124,
+                              "item_sku": "1XVA4BP9W8",
+                              "quantity": 1,
+                              "bundle_id": null,
+                              "freebie_id": null,
+                              "gift_value": 0,
+                              "has_recomm": 0,
+                              "is_digital": false,
+                              "price_cost": 0,
+                              "product_id": 43713239,
+                              "bundle_name": null,
+                              "shipment_cost": 0,
+                              "customizations": []
+                            }
+                          ]
+                        },
+                        "device": "desktop",
+                        "number": 1446385933976703,
+                        "search": {
+                          "data": {
+                            "created_at": "2026-02-18",
+                            "has_upsell": false,
+                            "payment_id": 43,
+                            "updated_at": "2026-02-19",
+                            "upsell_ids": [],
+                            "captured_at": "2026-02-19",
+                            "freebie_ids": [],
+                            "has_freebie": false,
+                            "cancelled_at": "2026-02-18",
+                            "products_ids": [
+                              43713239
+                            ],
+                            "date_delivery": "2026-03-06",
+                            "inventory_ids": [],
+                            "payment_retry": false,
+                            "affiliation_id": 780528,
+                            "discount_names": [],
+                            "discount_types": [],
+                            "has_order_bump": false,
+                            "order_bump_ids": [],
+                            "payment_method": "pix",
+                            "antifraud_status": null,
+                            "gateway_transaction_id": "146097502293"
+                          }
+                        },
+                        "status": {
+                          "data": {
+                            "id": 4,
+                            "name": "Pagamento aprovado",
+                            "alias": "paid",
+                            "description": "O pedido foi pago/capturado"
+                          }
+                        },
+                        "customer": {
+                          "data": {
+                            "id": 249507773,
+                            "ip": "186.194.144.175",
+                            "cpf": "08412862996",
+                            "cnpj": null,
+                            "name": "TESTE GUSTAVOO",
+                            "type": "f",
+                            "email": "gustavoopoas@gmail.com",
+                            "notes": null,
+                            "phone": {
+                              "number": "999746605",
+                              "area_code": "45",
+                              "full_number": "45999746605",
+                              "whatsapp_link": "https://api.whatsapp.com/send?phone=5545999746605",
+                              "formated_number": "(45) 99974-6605"
+                            },
+                            "token": "34544c60-07ff-11f1-95f1-5d23322c1b40",
+                            "active": true,
+                            "birthday": null,
+                            "whatsapp": false,
+                            "last_name": "GUSTAVOO",
+                            "login_url": "https://seguro.takeandgosuplementos.com.br/auth/login/force?token=34544c60-07ff-11f1-95f1-5d23322c1b40",
+                            "social_id": null,
+                            "anonymized": false,
+                            "cluster_id": null,
+                            "created_at": {
+                              "date": "2026-02-12 07:40:10.000000",
+                              "timezone": "America/Sao_Paulo",
+                              "timezone_type": 3
+                            },
+                            "first_name": "TESTE",
+                            "newsletter": false,
+                            "updated_at": {
+                              "date": "2026-02-18 16:40:26.000000",
+                              "timezone": "America/Sao_Paulo",
+                              "timezone_type": 3
+                            },
+                            "utm_source": "tp",
+                            "merchant_id": 1446385,
+                            "generic_name": "TESTE GUSTAVOO",
+                            "razao_social": null,
+                            "utm_campaign": "ad82",
+                            "social_driver": null,
+                            "marketplace_id": null,
+                            "state_registration": null
+                          }
+                        },
+                        "metadata": {
+                          "data": [
+                            {
+                              "key": "cart_id",
+                              "value": "591717978"
+                            },
+                            {
+                              "key": "discount_highlight",
+                              "value": "pix"
+                            },
+                            {
+                              "key": "platform",
+                              "value": "shopify"
+                            },
+                            {
+                              "key": "platform_order_number",
+                              "value": "1108"
+                            },
+                            {
+                              "key": "source_platform",
+                              "value": "shopify"
+                            }
+                          ]
+                        },
+                        "payments": [
+                          {
+                            "name": "Pix",
+                            "alias": "pix",
+                            "icon_url": "https://icons.yampi.me/svg/pix.svg"
+                          }
+                        ],
+                        "services": {
+                          "data": [
+                            {
+                              "shopifyapp": {
+                                "link": "https://1mt0dp-pk.myshopify.com/admin/orders/6735177515248",
+                                "external_id": "6735177515248"
+                              }
+                            }
+                          ]
+                        },
+                        "statuses": {
+                          "data": [
+                            {
+                              "id": 3,
+                              "name": "Aguardando pagamento",
+                              "alias": "waiting_payment",
+                              "details": null,
+                              "created_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "updated_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "description": "Aguardando confirmação de pagamento"
+                            },
+                            {
+                              "id": 4,
+                              "name": "Pagamento aprovado",
+                              "alias": "paid",
+                              "details": "TESTE",
+                              "created_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "updated_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "description": "O pedido foi pago/capturado"
+                            },
+                            {
+                              "id": 8,
+                              "name": "Cancelado",
+                              "alias": "cancelled",
+                              "details": "Criado por Mercadopago",
+                              "created_at": {
+                                "date": "2026-02-18 18:15:52.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "updated_at": {
+                                "date": "2026-02-18 18:15:52.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "description": "O pedido foi cancelado"
+                            }
+                          ]
+                        },
+                        "utm_term": null,
+                        "whatsapp": {
+                          "data": {
+                            "pix": {
+                              "link": "https://api.whatsapp.com/send?phone=5545999746605&text=Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                              "message": "Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320"
+                            },
+                            "billet": null,
+                            "payment_link": null,
+                            "order_shipped": null,
+                            "abandoned_cart": null
+                          }
+                        },
+                        "delivered": false,
+                        "is_upsell": false,
+                        "promocode": {
+                          "data": []
+                        },
+                        "status_id": 4,
+                        "track_url": null,
+                        "value_tax": 0,
+                        "authorized": true,
+                        "cart_token": "hWN8wCGWzbj314qIzaLFkj3q",
+                        "created_at": {
+                          "date": "2026-02-18 16:41:48.000000",
+                          "timezone": "America/Sao_Paulo",
+                          "timezone_type": 3
+                        },
+                        "has_recomm": false,
+                        "has_upsell": false,
+                        "public_url": "https://api.dooki.com.br/v2/public/orders/hWN8wCGWzbj314qIzaLFkj3q",
+                        "track_code": null,
+                        "updated_at": {
+                          "date": "2026-02-19 13:54:56.000000",
+                          "timezone": "America/Sao_Paulo",
+                          "timezone_type": 3
+                        },
+                        "utm_medium": null,
+                        "utm_source": "tp",
+                        "customer_id": 249507773,
+                        "has_freebie": false,
+                        "has_payment": true,
+                        "marketplace": {
+                          "data": []
+                        },
+                        "merchant_id": 1446385,
+                        "reorder_url": "https://seguro.takeandgosuplementos.com.br/cart/items?customerToken=34544c60-07ff-11f1-95f1-5d23322c1b40&product_option_id[0]=290470124&quantity[0]=1&has_recomm[0]=0&redirectTo=checkout&skipToCheckout=1&store_token=ec9W93mPKPyVtDNf026cHaD3lfBjhxXgMh9vu2AP",
+                        "spreadsheet": {
+                          "data": [
+                            {
+                              "sku": "1XVA4BP9W8",
+                              "status": "Pagamento aprovado",
+                              "payment": "Pix",
+                              "product": "Take&Go Boosted - Bebida funcional",
+                              "customer": "TESTE GUSTAVOO",
+                              "quantity": 1,
+                              "delivered": 0,
+                              "total_cost": 0,
+                              "total_item": 17.9,
+                              "credit_card": null,
+                              "payment_date": "19/02/2026 13:54",
+                              "customization": "",
+                              "shipping_city": "Toledo",
+                              "billet_barcode": null,
+                              "cancelled_date": "18/02/2026 18:15",
+                              "customer_email": "gustavoopoas@gmail.com",
+                              "customer_phone": "45999746605",
+                              "shipping_state": "Parana",
+                              "shipping_number": "198",
+                              "shipping_street": "Rua Maria Jose Nogueira",
+                              "shipping_address": "Rua Maria Jose Nogueira, 198 - CAPELA - Jardim Coopagro",
+                              "customer_document": "08412862996",
+                              "shipping_zip_code": "85903430",
+                              "shipping_complement": "CAPELA",
+                              "shipping_neighborhood": "Jardim Coopagro",
+                              "gateway_transaction_id": "146097502293"
+                            }
+                          ]
+                        },
+                        "sync_by_erp": false,
+                        "utm_content": null,
+                        "value_total": 17.36,
+                        "promocode_id": null,
+                        "transactions": {
+                          "data": [
+                            {
+                              "id": 181186146,
+                              "amount": 17.36,
+                              "status": "paid",
+                              "payment": {
+                                "data": {
+                                  "id": 43,
+                                  "name": "Pix",
+                                  "alias": "pix",
+                                  "is_pix": true,
+                                  "icon_url": "https://icons.yampi.me/svg/card-pix.svg",
+                                  "is_billet": false,
+                                  "is_wallet": false,
+                                  "has_config": false,
+                                  "is_deposit": false,
+                                  "active_config": false,
+                                  "is_credit_card": false,
+                                  "is_pix_in_installments": false
+                                }
+                              },
+                              "captured": true,
+                              "metadata": {
+                                "data": {
+                                  "pix_qr_code": "00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                                  "pix_expiration_date": "2026-02-18 17:11:47"
+                                }
+                              },
+                              "bank_name": null,
+                              "cancelled": true,
+                              "authorized": true,
+                              "bank_alias": null,
+                              "billet_url": null,
+                              "created_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "error_code": null,
+                              "payment_id": 43,
+                              "total_logs": 0,
+                              "updated_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "billet_date": null,
+                              "captured_at": {
+                                "date": "2026-02-19 13:54:56.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "customer_id": 249507773,
+                              "holder_name": null,
+                              "buyer_amount": 0,
+                              "cancelled_at": {
+                                "date": "2026-02-18 18:15:52.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "capture_date": null,
+                              "installments": 1,
+                              "authorized_at": {
+                                "date": "2026-02-18 16:41:48.000000",
+                                "timezone": "America/Sao_Paulo",
+                                "timezone_type": 3
+                              },
+                              "error_message": null,
+                              "affiliation_id": 780528,
+                              "billet_barcode": null,
+                              "marketplace_id": null,
+                              "truncated_card": null,
+                              "antifraud_score": null,
+                              "can_be_captured": false,
+                              "holder_document": null,
+                              "antifraud_status": null,
+                              "can_be_cancelled": false,
+                              "gateway_order_id": null,
+                              "antifraud_sale_id": null,
+                              "billet_our_number": null,
+                              "gateway_billet_id": null,
+                              "installment_value": 17.36,
+                              "sent_to_antifraud": false,
+                              "billet_whatsapp_link": "https://api.whatsapp.com/send?phone=5545999746605&text=",
+                              "installment_formated": "1x de R$ 17,36",
+                              "billet_document_number": null,
+                              "gateway_transaction_id": "146097502293",
+                              "marketplace_account_id": null,
+                              "buyer_installment_value": 0,
+                              "buyer_installment_formated": "1x de R$ 0,00",
+                              "gateway_authorization_code": null
+                            }
+                          ]
+                        },
+                        "utm_campaign": null,
+                        "whatsapp_app": {
+                          "data": {
+                            "pix": {
+                              "link": "whatsapp://send?phone=5545999746605&text=Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320",
+                              "message": "Oi TESTE. O seu pedido foi reservado com sucesso.%0a%0a*1 - TakeGo Boosted - Bebida funcional*%0a%0aPara garantir os seus produtos, você precisa pagar o PIX o mais rápido possível, tá? Para pagar, copie e cole o texto abaixo no Aplicativo onde você configurou suas chaves PIX: %0a%0a00020126360014br.gov.bcb.pix011461461614000165520400005303986540517.365802BR5914EGCHFADEB355216009Sao Paulo62250521mpqrinter14609750229363047320"
+                            },
+                            "billet": null,
+                            "payment_link": null,
+                            "order_shipped": null,
+                            "abandoned_cart": null
+                          }
+                        },
+                        "b2w_label_url": null,
+                        "date_delivery": {
+                          "date": "2026-03-06 00:00:00.000000",
+                          "timezone": "America/Sao_Paulo",
+                          "timezone_type": 3
+                        },
+                        "days_delivery": 11,
+                        "desire_status": [
+                          "cancelled",
+                          "delivered",
+                          "handling_products",
+                          "invoiced",
+                          "on_carriage",
+                          "ready_for_shipping",
+                          "refused",
+                          "shipment_exception"
+                        ],
+                        "shipment_cost": 0,
+                        "has_order_bump": false,
+                        "marketplace_id": null,
+                        "pickup_address": {
+                          "data": []
+                        },
+                        "total_comments": 0,
+                        "value_discount": 0.54,
+                        "value_products": 17.9,
+                        "value_shipment": 0,
+                        "buyer_value_tax": 0,
+                        "desire_status_id": [
+                          8,
+                          7,
+                          5,
+                          10,
+                          6,
+                          12,
+                          9,
+                          11
+                        ],
+                        "order_bump_types": [],
+                        "shipment_service": "FRETE EXPRESSO",
+                        "shipping_address": {
+                          "data": {
+                            "id": 145467666,
+                            "uf": "PR",
+                            "city": "Toledo",
+                            "state": "PR",
+                            "number": "198",
+                            "street": "Rua Maria José Nogueira",
+                            "country": "BR",
+                            "zipcode": "85903430",
+                            "order_id": 155948069,
+                            "receiver": "TESTE GUSTAVOO",
+                            "zip_code": "85903430",
+                            "reference": null,
+                            "complement": "CAPELA",
+                            "address_name": null,
+                            "full_address": "Rua Maria José Nogueira, 198 - CAPELA - Jardim Coopagro",
+                            "neighborhood": "Jardim Coopagro"
+                          }
+                        },
+                        "buyer_value_total": 17.36,
+                        "shipment_icon_url": null,
+                        "shipment_quote_id": "56445300",
+                        "marketplace_account": {
+                          "data": []
+                        },
+                        "shipment_service_id": "Frete Expresso",
+                        "billet_whatsapp_link": "https://api.whatsapp.com/send?phone=5545999746605&text=",
+                        "content_statement_url": "https://api.dooki.com.br/html/orders/content-statement/hWN8wCGWzbj314qIzaLFkj3q?id=def502005371b966deae253caabacf1e5eca2b6daf06361388c6992dbfb637a3559bb1a436d90c2e67b396c5363295063a513d075330c786f83a54a4cad9bcda329a0a21774c42de0a37269ca9a948198b648ade7b60194c5b248fb58e",
+                        "value_wallet_discount": 0,
+                        "marketplace_account_id": null,
+                        "marketplace_partner_id": null,
+                        "marketplace_sale_number": null,
+                        "billet_whatsapp_app_link": "whatsapp://send?phone=5545999746605&text="
+                      }
+                    },
+                    "reorder_url": "https://seguro.takeandgosuplementos.com.br/cart/items?customerToken=34544c60-07ff-11f1-95f1-5d23322c1b40&product_option_id[0]=290470124&quantity[0]=1&has_recomm[0]=0&redirectTo=checkout&skipToCheckout=1&store_token=ec9W93mPKPyVtDNf026cHaD3lfBjhxXgMh9vu2AP",
+                    "total_value": 17.36,
+                    "valor_total": 17.36,
+                    "purchase_url": "https://seguro.takeandgosuplementos.com.br/r/AVD4WL5VYY",
+                    "url_carrinho": null,
+                    "utm_campaign": null,
+                    "delivery_date": "2026-03-06 00:00:00.000000",
+                    "current_status": "paid",
+                    "lista_produtos": "1x Take&Go Boosted - Bebida funcional",
+                    "original_event": "cart.reminder",
+                    "payment_method": "pix",
+                    "url_carrinho_alt": null,
+                    "tracking_public_url": "https://api.dooki.com.br/v2/public/orders/hWN8wCGWzbj314qIzaLFkj3q"
+                  },
+                  "leads": {
+                    "id": "1914509d-8690-4d70-91f4-bf73606bdd2e",
+                    "full_name": "TESTE GUSTAVOO"
+                  }
+                }
+              ]
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/72a26ef7-fef8-425c-8b0a-7cd691b3a065",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "5e776b82-8169-42ca-a19b-665fee24a19d",
+  "activeVersionId": "5e776b82-8169-42ca-a19b-665fee24a19d",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-14T23:32:57.645Z",
+      "createdAt": "2026-01-14T23:32:57.645Z",
+      "role": "workflow:owner",
+      "workflowId": "iJCYotH5KVyKzKcuuClRx",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-04T19:51:32.166Z",
+    "createdAt": "2026-03-04T19:51:30.454Z",
+    "versionId": "5e776b82-8169-42ca-a19b-665fee24a19d",
+    "workflowId": "iJCYotH5KVyKzKcuuClRx",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## I'm a note \nPrecisa chegar:  Flow \nExecution ID",
+          "width": 848
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          544,
+          -1216
+        ],
+        "id": "574d8cf2-0866-4d24-be98-dfefa3236046",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "\nUPDATE flow_step_executions\nSET status = 'cancelled'\nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled';\n\n\nUPDATE flow_executions\nSET status = 'cancelled', cancelled_at = NOW()\nWHERE id = $1::uuid;",
+          "options": {
+            "queryReplacement": "={{ $('Webhook').item.json.body.flow_execution_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1056,
+          768
+        ],
+        "id": "a1f4ac57-b826-4c4c-8696-4a657e270ae1",
+        "name": "ATUALIZAR STATUS",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "72a26ef7-fef8-425c-8b0a-7cd691b3a065",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -64,
+          -128
+        ],
+        "id": "8f3a517e-dff9-420f-98e7-d3924c091e2c",
+        "name": "Webhook",
+        "webhookId": "72a26ef7-fef8-425c-8b0a-7cd691b3a065"
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "evento",
+                "value": "={{ $json.status }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          1808,
+          848
+        ],
+        "id": "4ad22124-3c20-4f60-9577-c4254bcd5847",
+        "name": "Execution Data",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.schedule_id }}",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {}
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1056,
+          -304
+        ],
+        "id": "e9e591e4-e5e3-422f-94b1-3ecc56549819",
+        "name": "Delete Scheduler",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Pega os dados principais da atualização\nconst executionData = $input.item.json.body.data.rows[0];\nconst context = executionData.context;\nconst payload = context.raw_payload;\n\n// Organiza apenas o que importa para a automação\nreturn {\n  info: {\n    id_execucao: executionData.id,\n    checkout_id: executionData.checkout_id,\n    flow_code: executionData.flow_code,\n    status_atual: executionData.status,\n  },\n  cliente: {\n    nome: context.full_name,\n    primeiro_nome: context.first_name,\n    email: context.email,\n    whatsapp: context.phone,\n    documento: context.doc_number\n  },\n  pagamento: {\n    metodo: context.payment_method,\n    valor_total: context.valor_total,\n    pix_copia_cola: context.pix_code,\n    pix_vencimento: payload.resource.pix.data.pix_expiration_date\n  },\n  produto: {\n    nome: payload.resource.items.data[0].sku.data.title,\n    sku: payload.resource.items.data[0].item_sku,\n    link_venda: payload.resource.items.data[0].sku.data.purchase_url\n  },\n  entrega: {\n    endereco_completo: context.address,\n    cidade: payload.resource.shipping_address.data.city,\n    estado: payload.resource.shipping_address.data.state\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          144,
+          -128
+        ],
+        "id": "de234a1c-0768-4f90-b10c-8c113a9e58b4",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $node[\"Code in JavaScript\"].json.info.status_atual }}",
+                      "rightValue": "cancelled",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "398ca0cb-67d8-4e02-81bc-759161068437"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Cancelado"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "39745b58-05db-4a48-bbf8-5cdbfd9a0f74",
+                      "leftValue": "={{ $node[\"Code in JavaScript\"].json.info.status_atual }}",
+                      "rightValue": "paused",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Pausado"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "c4dc9597-76c7-47ee-8a06-ec0249605d8a",
+                      "leftValue": "={{ $node[\"Code in JavaScript\"].json.info.status_atual }}",
+                      "rightValue": "active",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "ATIVO"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          384,
+          -144
+        ],
+        "id": "effa19e3-d391-4abd-b8ae-c0a56effca2e",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "/* 1. Se for PAUSED, marca o step atual como SKIPPED para \"limpar\" a fila */\nUPDATE flow_step_executions\nSET status = 'skipped'\nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled'\n  AND $2 = 'paused';\n\n/* 2. Se for CANCELLED, marca como CANCELLED mesmo */\nUPDATE flow_step_executions\nSET status = 'cancelled'\nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled'\n  AND $2 = 'cancelled';\n\n/* 3. Atualiza a execução principal */\nUPDATE flow_executions\nSET status = $2,\n    cancelled_at = CASE WHEN $2 = 'cancelled' THEN NOW() ELSE cancelled_at END\nWHERE id = $1::uuid;\n\n/* 4. Retorna os IDs para deletar no Scheduler externo */\nSELECT id as step_id, schedule_id FROM flow_step_executions\nWHERE flow_execution_id = $1::uuid AND status IN ('skipped', 'cancelled');",
+          "options": {
+            "queryReplacement": "=\n{{ $json.info.id_execucao }}\n{{ $json.info.status_atual }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1344,
+          944
+        ],
+        "id": "d5dd5c44-b742-486f-be5f-754c806fb7fe",
+        "name": "Agendamentos",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE flow_step_executions \nSET \n    schedule_id = '{{ $json.messageId || $json.id }}', \n    cancelled_at = NULL,\n    executed_at = NULL\nWHERE flow_execution_id = '{{ $(\"REATIVAR FLUXO\").item.json.flow_execution_id }}'::uuid\n  AND step_order = {{ $(\"REATIVAR FLUXO\").item.json.step_order }};",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1280,
+          32
+        ],
+        "id": "9f073276-c1c5-47c8-a74c-c7c67ab3d5d8",
+        "name": "SALVA SCHEDULE",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Pega os dados principais da atualização\nconst executionData = $input.item.json.body.data.rows[0];\nconst context = executionData.context;\nconst payload = context.raw_payload;\n\n// Organiza apenas o que importa para a automação\nreturn {\n  info: {\n    id_execucao: executionData.id,\n    checkout_id: executionData.checkout_id,\n    flow_code: executionData.flow_code,\n    status_atual: executionData.status,\n  },\n  cliente: {\n    nome: context.full_name,\n    primeiro_nome: context.first_name,\n    email: context.email,\n    whatsapp: context.phone,\n    documento: context.doc_number\n  },\n  pagamento: {\n    metodo: context.payment_method,\n    valor_total: context.valor_total,\n    pix_copia_cola: context.pix_code,\n    pix_vencimento: payload.resource.pix.data.pix_expiration_date\n  },\n  produto: {\n    nome: payload.resource.items.data[0].sku.data.title,\n    sku: payload.resource.items.data[0].item_sku,\n    link_venda: payload.resource.items.data[0].sku.data.purchase_url\n  },\n  entrega: {\n    endereco_completo: context.address,\n    cidade: payload.resource.shipping_address.data.city,\n    estado: payload.resource.shipping_address.data.state\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1216,
+          752
+        ],
+        "id": "73288051-cf6f-4353-9f0a-570f4c993e85",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "/* 1. Atualiza os steps pendentes com o status que veio (cancelled ou paused) */\nUPDATE flow_step_executions\nSET status = $2 \nWHERE flow_execution_id = $1::uuid \n  AND status = 'scheduled';\n\n/* 2. Atualiza a execução principal (Removido updated_at) */\nUPDATE flow_executions\nSET \n  status = $2, \n  cancelled_at = CASE WHEN $2 = 'cancelled' THEN NOW() ELSE cancelled_at END\nWHERE id = $1::uuid;\n\n/* 3. Retorna os dados para o n8n deletar no Scheduler Externo */\nSELECT \n  id as step_id,\n  schedule_id,\n  status\nFROM flow_step_executions\nWHERE flow_execution_id = $1::uuid\n  AND status = $2;",
+          "options": {
+            "queryReplacement": "=\n{{ $json.info.id_execucao }}\n{{ $json.info.status_atual }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1408,
+          752
+        ],
+        "id": "7d2f84f3-2e69-43f7-b7ed-55a6dd25cc3f",
+        "name": "Agendamentos1",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "59155250-adfb-4c2f-aff3-56589b2ba81b",
+                "leftValue": "",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1584,
+          752
+        ],
+        "id": "69b2325e-807d-4db8-a68b-75061b4f5d6f",
+        "name": "If",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.step_id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1808,
+          640
+        ],
+        "id": "5c6eb730-1cf9-4586-978e-41c4e54f3915",
+        "name": "Delete Scheduler1",
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH steps_futuros AS (\n    -- 1. Pega TODOS os steps que estão agendados no momento\n    SELECT id, schedule_id, step_order\n    FROM flow_step_executions\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'scheduled'\n),\ncongela_steps AS (\n    -- 2. Coloca eles na \"geladeira\" (paused_standby) para não perdermos a data original\n    UPDATE flow_step_executions\n    SET status = 'paused_standby'\n    WHERE id IN (SELECT id FROM steps_futuros)\n),\npausa_execucao AS (\n    -- 3. Pausa a execução principal do cliente\n    UPDATE flow_executions\n    SET status = 'paused'\n    WHERE id = $1::uuid\n)\n-- 4. Retorna a lista para o n8n ir na API e DELETAR todos\nSELECT schedule_id, step_order \nFROM steps_futuros\nORDER BY step_order ASC;",
+          "options": {
+            "queryReplacement": "={{ $json.info.id_execucao }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          848,
+          -128
+        ],
+        "id": "7ea19e66-f159-43b2-8a77-c616456c111f",
+        "name": "PULAR STEP",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH marcacao_cancelados AS (\n    -- 1. Cancela TODOS os steps futuros de uma vez e captura os IDs do Scheduler\n    UPDATE flow_step_executions\n    SET \n        status = 'cancelled',\n        cancelled_at = NOW()\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'scheduled'\n    RETURNING id AS step_id, schedule_id, step_order\n),\ncancela_execucao AS (\n    -- 2. Mata a execução principal\n    UPDATE flow_executions\n    SET \n        status = 'cancelled',\n        cancelled_at = NOW()\n    WHERE id = $1::uuid\n)\n-- 3. Retorna a lista de TODOS os steps pendentes para o n8n deletar na API\nSELECT \n    step_id, \n    schedule_id, \n    step_order \nFROM marcacao_cancelados\nORDER BY step_order ASC;",
+          "options": {
+            "queryReplacement": "={{ $json.info.id_execucao }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          848,
+          -304
+        ],
+        "id": "2f990b7c-d417-4095-94bd-6217196c822f",
+        "name": "marca como cancelado todos",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH reativa_execucao AS (\n    -- 1. Acorda o cliente\n    UPDATE flow_executions\n    SET status = 'active'\n    WHERE id = $1::uuid\n),\ndescarta_vencidos AS (\n    -- 2. Descarta quem venceu durante a pausa\n    UPDATE flow_step_executions\n    SET status = 'skipped', cancelled_at = NOW()\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'paused_standby'\n      AND scheduled_for <= NOW()\n),\nrecupera_sobreviventes AS (\n    -- 3. Reativa os que ainda estão no futuro e captura os dados\n    UPDATE flow_step_executions\n    SET status = 'scheduled'\n    WHERE flow_execution_id = $1::uuid \n      AND status = 'paused_standby'\n      AND scheduled_for > NOW()\n    RETURNING flow_execution_id, scheduled_for AS scheduled_at, step_order\n)\n-- 4. Retorna para o n8n no formato exato que o seu nó HTTP POST exige!\nSELECT \n    flow_execution_id, \n    scheduled_at, \n    step_order \nFROM recupera_sobreviventes\nORDER BY step_order ASC;",
+          "options": {
+            "queryReplacement": "={{ $json.info.id_execucao }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          848,
+          32
+        ],
+        "id": "942ebaca-3d47-4512-a6c8-210a0225408c",
+        "name": "REATIVAR FLUXO",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"id\": \"{{ $json.flow_execution_id }}_{{ $json.step_order }}\",\n  \"scheduleTo\": \"{{ $json.scheduled_at }}\",\n  \"payload\": {\n    \"execution_flow_step_id\": \"{{ $json.flow_execution_id }}\",\n    \"step_order\": {{ $json.step_order }}\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/366f8652-fc71-43cb-bf54-f371eba66495\"\n}",
+          "options": {}
+        },
+        "id": "4108fbad-d77b-4b15-b6db-6b17bf4dda2a",
+        "name": "AGENDAR",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          1056,
+          32
+        ],
+        "notesInFlow": true,
+        "onError": "continueRegularOutput",
+        "notes": "⚠️ COLOQUE A URL DO WORKFLOW DE BAIXO NO CAMPO webhook_url"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.schedule_id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1056,
+          -128
+        ],
+        "id": "1963322d-b28a-4b63-9fdf-b0da6aa530b1",
+        "name": "DELETA/CONGELA",
+        "onError": "continueErrorOutput"
+      }
+    ],
+    "connections": {
+      "ATUALIZAR STATUS": {
+        "main": [
+          []
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "marca como cancelado todos",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "PULAR STEP",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "REATIVAR FLUXO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agendamentos": {
+        "main": [
+          []
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Agendamentos1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agendamentos1": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Delete Scheduler1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execution Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PULAR STEP": {
+        "main": [
+          [
+            {
+              "node": "DELETA/CONGELA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "marca como cancelado todos": {
+        "main": [
+          [
+            {
+              "node": "Delete Scheduler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "REATIVAR FLUXO": {
+        "main": [
+          [
+            {
+              "node": "AGENDAR",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AGENDAR": {
+        "main": [
+          [
+            {
+              "node": "SALVA SCHEDULE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 5e776b82",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
