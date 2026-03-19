@@ -1,0 +1,97 @@
+{
+  "updatedAt": "2026-01-28T15:31:32.386Z",
+  "createdAt": "2026-01-15T21:54:51.598Z",
+  "id": "C4j35J7kqOBS7G4lBoUan",
+  "name": "Acionador Manual",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -32
+      ],
+      "id": "07b4c363-ab74-4ee9-be98-9eafc4dfff0f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/process-next-lead-2a8acc88-debe-484a-8004-1691eea6acbd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        176,
+        -48
+      ],
+      "id": "ddb1cf2e-17b2-420a-9814-1bf839672a62",
+      "name": "HTTP Request"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "9a9deae9-f0e8-47b4-9259-3170e2f664c7",
+  "activeVersionId": "5ca8bbae-ae4a-4ac7-af6f-f16448ac27bc",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-15T21:54:51.598Z",
+      "createdAt": "2026-01-15T21:54:51.598Z",
+      "role": "workflow:owner",
+      "workflowId": "C4j35J7kqOBS7G4lBoUan",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-15T21:54:54.114Z",
+    "createdAt": "2026-01-15T21:54:51.598Z",
+    "versionId": "5ca8bbae-ae4a-4ac7-af6f-f16448ac27bc",
+    "workflowId": "C4j35J7kqOBS7G4lBoUan",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "df4e2c39-c74c-4927-972c-31afad6f253c",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "1a9291f9-17e8-4b5f-ad21-cfd3cd2c0973",
+        "name": "Acionar WF Executor",
+        "webhookId": "df4e2c39-c74c-4927-972c-31afad6f253c"
+      }
+    ],
+    "connections": {},
+    "authors": "Jesreel David Hobus",
+    "name": "Version 5ca8bbae",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
