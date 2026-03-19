@@ -1,0 +1,1661 @@
+{
+  "updatedAt": "2025-12-31T13:39:03.653Z",
+  "createdAt": "2025-11-04T13:54:19.242Z",
+  "id": "GKu1xeB8wmoL6nsw",
+  "name": "WF1.2: PROCESSAR_QUIZ (Cron)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -16
+      ],
+      "id": "05be1f16-58b9-4139-85a2-982b3daff5ff",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  dedup_key,\n  quiz_type,\n  stage_current,\n  data,\n  webhook_count,\n  last_webhook_at,\n  created_at\nFROM quiz_responses\nWHERE processado = false\n  AND agenda_processamento <= now()\nORDER BY \n  stage_current DESC,  -- Hot leads (etapa 13) primeiro\n  created_at ASC       -- Mais antigos primeiro (FIFO)\nLIMIT 50;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -192,
+        -16
+      ],
+      "id": "e86f2af6-3cac-4fb3-8a37-d36051e3f53f",
+      "name": "Buscar Quiz Pendentes",
+      "credentials": {
+        "postgres": {
+          "id": "RFxQbe3djw1COy76",
+          "name": "aplic_tech_postgres_leads_intake"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "744d9806-e01f-41a7-b189-57da4b5f8fd3",
+              "leftValue": "={{ $json }}",
+              "rightValue": "=0",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "7bdf5086-ccb7-4d16-9d4a-03e7c27dc112",
+      "name": "Tem Pendente"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        592,
+        -32
+      ],
+      "id": "84f079e1-920a-43f0-9590-cde6e6040b22",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE quiz_responses\nSET \n  processado = true,\n  score = {{ $json.score }},\n  estrategia = '{{ $json.estrategia }}',\n  updated_at = now()\nWHERE id = '{{ $json.quiz_id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1184,
+        -16
+      ],
+      "id": "4234004f-480f-4fdc-b7a9-e73418e9f4c1",
+      "name": "Marcar como Processado",
+      "credentials": {
+        "postgres": {
+          "id": "RFxQbe3djw1COy76",
+          "name": "aplic_tech_postgres_leads_intake"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Calcula score e define estratégia - CORRIGIDO\n// ============================================\n\nconst stage = $json.stage_current;\nconst contexto = $json.contexto;\nconst jornada = contexto.jornada_quiz;\n\n// Scoring baseado em etapa\nfunction calcularScore(stage) {\n  if (stage <= 4) return 20;\n  if (stage <= 6) return 40;\n  if (stage <= 11) return 60;\n  return 90;\n}\n\n// Estratégia de abordagem da IA\nfunction definirEstrategia(stage, contexto) {\n  const jornada = contexto.jornada_quiz;\n  \n  // ✅ Hot lead (completou E pegou cupom)\n  if (stage === 13 && jornada.cupom_aceito && jornada.completou_quiz) {\n    return {\n      tipo: 'cupom_imediato',\n      tom: 'urgente_e_felicitacao',\n      objetivo: 'agendar_consulta',\n      primeira_mensagem: 'parabenizar_cupom_marcar_consulta'\n    };\n  }\n  \n  // ✅ Completou mas não aceitou cupom ainda (etapa 13 mas sem cupom)\n  if (stage === 13 && !jornada.cupom_aceito) {\n    return {\n      tipo: 'consultiva_fechamento',\n      tom: 'empático_motivador',\n      objetivo: 'incentivar_cupom',\n      primeira_mensagem: 'reforcar_beneficios_cupom'\n    };\n  }\n  \n  // Abandonou após ver comparativo\n  if (stage >= 10 && jornada.viu_comparativo) {\n    return {\n      tipo: 'consultiva_valor',\n      tom: 'empático_educativo',\n      objetivo: 'mostrar_resultados',\n      primeira_mensagem: 'retomar_comparativo_mostrar_valor'\n    };\n  }\n  \n  // Parou na parte de medicação\n  if (stage >= 5 && stage <= 9) {\n    return {\n      tipo: 'consultiva_exploracao',\n      tom: 'empático_explorador',\n      objetivo: 'entender_barreiras',\n      primeira_mensagem: 'explorar_preocupacao_validar_medo',\n      objection_conhecida: contexto.experiencia_medicacao.preocupacao_principal\n    };\n  }\n  \n  // Abandonou muito cedo\n  return {\n    tipo: 'descarte_suave',\n    tom: 'educativo_leve',\n    objetivo: 'reengajar_ou_descartar',\n    primeira_mensagem: 'mensagem_educativa_reabertura'\n  };\n}\n\nconst score = calcularScore(stage);\nconst estrategia = definirEstrategia(stage, contexto);\n\n// Adiciona ao contexto\ncontexto.scoring = {\n  score: score,\n  intencao: score >= 70 ? 'alta' : score >= 40 ? 'media' : 'baixa'\n};\n\ncontexto.estrategia_ia = estrategia;\n\nreturn {\n  quiz_id: $json.quiz_id,\n  dedup_key: $json.dedup_key,\n  score: score,\n  estrategia: estrategia.tipo,\n  contexto_completo: contexto\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -16
+      ],
+      "id": "7ea42918-c7f9-4fff-87b0-7af7e360e3bd",
+      "name": "Calcular Score e Estratégia"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Consolida dados do quiz - ADAPTADO para estrutura real\n// ============================================\n\nconst quiz = $input.item.json;\nconst data = quiz.data || {};\n\n// ✅ CORREÇÃO: Criando referências para os objetos aninhados\nconst leadData = data.lead || {};\nconst leadInfo = leadData.info || {};\nconst systemData = data.sistema || {};\n\n// ✅ CORREÇÃO: Buscando dados de 'leadData' e 'leadInfo'\nconst nome = leadData.nome;\nconst telefone = leadData.telefone;\nconst email = leadData.email;\nconst cidade = leadData.cidade;\nconst peso_atual = leadInfo.peso_atual ? parseInt(leadInfo.peso_atual) : null;\nconst altura = leadInfo.altura ? parseInt(leadInfo.altura) : null;\nconst idade = leadInfo.idade ? parseInt(leadInfo.idade) : null; // 'idade' não existe no seu exemplo, mas mantive a lógica\n\n// Campos calculados ou vindos do quiz\n// ✅ CORREÇÃO: Buscando de 'systemData'\nconst quiz_completed = systemData.completou_quiz || false;\nconst cupom_aceito = systemData.cupom_aceito || data.cupom_aceito || false; // Verificando em ambos os locais\n\n// Calcula peso desejado se existir no data\n// ✅ CORREÇÃO: Buscando de 'leadInfo'\nconst peso_desejado = leadInfo.peso_desejado ? parseInt(leadInfo.peso_desejado) : null;\n\n// ✅ Respostas qualitativas (podem estar como etapa_X ou campos específicos)\n// ✅ CORREÇÃO: Buscando de 'leadInfo'\nconst ja_usou_medicacao = leadInfo.ja_usou_medicacao || null;\nconst experiencia_uso = leadInfo.experiencia_uso || null;\nconst preocupacao_principal = leadInfo.preocupacao_principal || null;\n\n// Calcula IMC\nfunction calcularIMC(peso, altura) {\n  if (!peso || !altura) return null;\n  const alturaMetros = altura / 100;\n  const imc = peso / (alturaMetros * alturaMetros);\n  return Math.round(imc * 10) / 10;\n}\n\nfunction categoriaIMC(imc) {\n  if (!imc) return null;\n  if (imc < 18.5) return 'abaixo_do_peso';\n  if (imc < 25) return 'peso_normal';\n  if (imc < 30) return 'sobrepeso';\n  if (imc < 35) return 'obesidade_grau_1';\n  if (imc < 40) return 'obesidade_grau_2';\n  return 'obesidade_grau_3';\n}\n\nconst imc = calcularIMC(peso_atual, altura);\n\n// ✅ Detecta comportamento do quiz (baseado em campos do data)\n// ✅ CORREÇÃO: Simplificado para usar 'systemData'\nconst viu_comparativo = systemData.viu_comparativo || false;\nconst viu_depoimentos = systemData.viu_depoimentos || false;\n\n// Conta cliques educacionais\n// ✅ CORREÇÃO: Simplificado para usar 'systemData'\nconst cliques_educacao = systemData.cliques_educacao || 0;\n\n// Contexto estruturado para IA\nconst contexto_ia = {\n  lead_id: quiz.id,\n  quiz_type: quiz.quiz_type,\n  \n  dados_pessoais: {\n    nome: nome,\n    telefone: telefone,\n    email: email,\n    cidade: cidade,\n    idade: idade\n  },\n  \n  dados_biometricos: {\n    peso_atual_kg: peso_atual,\n    altura_cm: altura,\n    peso_desejado_kg: peso_desejado,\n    diferenca_kg: peso_atual && peso_desejado ? peso_atual - peso_desejado : null,\n    imc: imc,\n    imc_categoria: categoriaIMC(imc)\n  },\n  \n  experiencia_medicacao: {\n    ja_usou: ja_usou_medicacao,\n    como_foi_experiencia: experiencia_uso,\n    preocupacao_principal: preocupacao_principal\n  },\n  \n  jornada_quiz: {\n    etapa_final: quiz.stage_current,\n    completou_quiz: quiz_completed,\n    cupom_aceito: cupom_aceito,\n    viu_comparativo: viu_comparativo,\n    viu_depoimentos: viu_depoimentos,\n    quantidade_cliques_educacao: cliques_educacao,\n    webhooks_recebidos: quiz.webhook_count,\n    tempo_total_minutos: Math.round((new Date(quiz.last_webhook_at) - new Date(quiz.created_at)) / 60000)\n  },\n  \n  metadata: {\n    quiz_id: quiz.id,\n    dedup_key: quiz.dedup_key,\n    criado_em: quiz.created_at,\n    processado_em: new Date().toISOString()\n  }\n};\n\nreturn {\n  quiz_id: quiz.id,\n  dedup_key: quiz.dedup_key,\n  stage_current: quiz.stage_current,\n  contexto: contexto_ia\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -16
+      ],
+      "id": "cb68b9ca-a59b-4830-905e-f32ecca9a1c5",
+      "name": "Consolidar Contexto para IA"
+    },
+    {
+      "parameters": {
+        "mode": "exchange",
+        "exchange": "clinic_events",
+        "routingKey": "aquisicao.lead.quiz_enriquecido",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        2336,
+        0
+      ],
+      "id": "77702207-77ce-4668-8e9c-2ee89e69ec0b",
+      "name": "RabbitMQ1",
+      "credentials": {
+        "rabbitmq": {
+          "id": "IruJASyhbIKKogud",
+          "name": "RabbitMQ aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/novo-lead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1504,
+        -16
+      ],
+      "id": "5a0246b2-a04f-46ed-a4fe-646a493be71b",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6253c654-c29d-4903-9fd1-b975eb404132",
+              "name": "fullName",
+              "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo.dados_pessoais.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "09a495e0-3725-4665-8564-67623c0f3389",
+              "name": "email",
+              "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo.dados_pessoais.email }}",
+              "type": "string"
+            },
+            {
+              "id": "32e49b73-a7a0-45b5-9e27-ea88571ee2bf",
+              "name": "phoneNumber",
+              "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo.dados_pessoais.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "4d21021b-a7d1-46a2-969c-b330472fde71",
+              "name": "customFields",
+              "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo }}",
+              "type": "string"
+            },
+            {
+              "id": "8adcf242-d0b9-4b78-b998-3cd4cb706020",
+              "name": "source",
+              "value": "InLead-Teste_v1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        -16
+      ],
+      "id": "8920c585-86ad-416d-9a5f-3f3d1a31c6bd",
+      "name": "Padronizador Ingest Lead",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1744,
+        -16
+      ],
+      "id": "c80756c8-0d30-49e9-a518-9bf30e59fd0c",
+      "name": "Wait",
+      "webhookId": "c2b9ff8f-318f-403d-8f68-93554272534a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE quiz_responses\nSET \n  processado = false,\n  updated_at = now()\nWHERE id = '{{ $('Marcar como Processado').item.json.id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1888,
+        -16
+      ],
+      "id": "f1005842-4746-4941-85e1-80802f9c0327",
+      "name": "Marcar como Não Processado",
+      "credentials": {
+        "postgres": {
+          "id": "RFxQbe3djw1COy76",
+          "name": "aplic_tech_postgres_leads_intake"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.quiz_type }}",
+                    "rightValue": "emagrecimento_v1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "acf4b44b-7e91-4951-9b87-9c0e517fc17b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Quiz Teste - Emagrecimento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "06d0488b-b426-42df-a697-9b9148491154",
+                    "leftValue": "={{ $json.quiz_type }}",
+                    "rightValue": "diagnostico_v1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Quiz Diagnostico"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "82a8dceb-0ab3-4f42-9d06-ec8d1bb413e5",
+                    "leftValue": "={{ $json.quiz_type }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Outras"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        192,
+        -16
+      ],
+      "id": "927f474f-cf82-4922-b510-cd421ab64dd1",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        608,
+        288
+      ],
+      "id": "30ba0b44-d3f9-4081-84fd-ac0dc384b41c",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE quiz_responses\nSET \n  processado = true,\n  score = {{ $json.score }},\n  estrategia = '{{ $json.estrategia }}',\n  updated_at = now()\nWHERE id = '{{ $json.quiz_id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1200,
+        304
+      ],
+      "id": "bb6ea4ce-1ce4-424c-96ce-754c4d57e7aa",
+      "name": "Marcar como Processado1",
+      "credentials": {
+        "postgres": {
+          "id": "RFxQbe3djw1COy76",
+          "name": "aplic_tech_postgres_leads_intake"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Calcula score e define estratégia - VERSÃO 2 (Adaptada)\n// ============================================\n\n// Recupera dados do nó anterior\nconst stage = $json.stage_current;\nconst contexto = $json.contexto;\nconst jornada = contexto.jornada_quiz;\nconst perfil = contexto.perfil_comportamental || {};\nconst experiencia = contexto.experiencia_medicacao || {};\nconst preferencias = contexto.preferencias_venda || {};\n\n// 1. Scoring Inteligente\n// Em vez de fixar no número da etapa, olhamos para o status real\nfunction calcularScore(jornada, stage, preferencias) {\n  // Se completou, é lead quente (90+)\n  if (jornada.completou_quiz) {\n    let baseScore = 90;\n    \n    // Bônus se tem orçamento compatível (se não for o \"Até 500\", ou se for null assumimos que tem)\n    // Ajuste conforme sua regra de negócio. Se 500 for pouco, diminua o score.\n    if (preferencias.orcamento_mensal && !preferencias.orcamento_mensal.includes(\"Até R$500\")) {\n       baseScore += 5; \n    }\n    return Math.min(baseScore, 100);\n  }\n\n  // Se não completou, baseia na etapa\n  if (stage <= 4) return 20; // Início\n  if (stage <= 8) return 40; // Meio\n  if (stage < 11) return 60; // Quase fim\n  return 80; // Erro de status, mas avançado\n}\n\n// 2. Estratégia de Abordagem da IA\nfunction definirEstrategia(contexto) {\n  const jornada = contexto.jornada_quiz;\n  const hist_med = contexto.experiencia_medicacao.historico || \"\";\n  const obstaculo = contexto.perfil_comportamental.maior_obstaculo || \"\";\n  const orcamento = contexto.preferencias_venda.orcamento_mensal || \"\";\n  \n  // ---------------------------------------------\n  // CENÁRIO 1: Lead que JÁ USA medicação (Alta Intenção/Troca)\n  // ---------------------------------------------\n  if (jornada.completou_quiz && (hist_med.includes(\"Sim\") || hist_med.includes(\"já estou usando\"))) {\n    return {\n      tipo: 'competitiva_troca',\n      tom: 'profissional_direto',\n      objetivo: 'mostrar_diferencial',\n      primeira_mensagem: 'Seu objetivo é mostrar que nosso protocolo é mais seguro ou prático do que o que ele já usa. Valide a experiência dele.',\n      gatilho_mental: 'autoridade_e_praticidade'\n    };\n  }\n\n  // ---------------------------------------------\n  // CENÁRIO 2: Lead Quente (Completou o Quiz)\n  // ---------------------------------------------\n  if (jornada.completou_quiz) {\n    // Sub-cenário: Orçamento apertado\n    if (orcamento.includes(\"Até R$500\")) {\n       return {\n        tipo: 'venda_custo_beneficio',\n        tom: 'empático_acessivel',\n        objetivo: 'viabilizar_tratamento',\n        primeira_mensagem: 'Foque em como o investimento se paga pela saúde e economia com comida/outros remédios.',\n        gatilho_mental: 'economia_inteligente'\n      };\n    }\n\n    // Padrão\n    return {\n      tipo: 'consultiva_fechamento',\n      tom: 'motivador_urgente',\n      objetivo: 'agendar_consulta',\n      primeira_mensagem: 'Parabenize pela decisão de mudar. Use o obstáculo \"' + obstaculo + '\" para mostrar como a solução resolve isso.',\n      gatilho_mental: 'compromisso'\n    };\n  }\n  \n  // ---------------------------------------------\n  // CENÁRIO 3: Abandonou (Recuperação)\n  // ---------------------------------------------\n  \n  // Abandonou no final (Preço ou Dúvida Médica)\n  if (stage >= 9) {\n    return {\n      tipo: 'consultiva_valor',\n      tom: 'empático_educativo',\n      objetivo: 'quebrar_objecao_final',\n      primeira_mensagem: 'Percebi que faltou pouco. Ficou alguma dúvida sobre como funciona a entrega em casa?',\n      gatilho_mental: 'curiosidade'\n    };\n  }\n  \n  // Abandonou no início/meio\n  return {\n    tipo: 'reengajamento_suave',\n    tom: 'ajuda_leve',\n    objetivo: 'descobrir_motivo',\n    primeira_mensagem: 'Vi que você começou seu diagnóstico. Aconteceu algo?',\n    gatilho_mental: 'preocupacao'\n  };\n}\n\nconst score = calcularScore(jornada, stage, preferencias);\nconst estrategia = definirEstrategia(contexto);\n\n// Adiciona dados calculados ao contexto para a IA usar no prompt\ncontexto.inteligencia_vendas = {\n  score: score,\n  classificacao: score >= 90 ? 'HOT' : score >= 60 ? 'WARM' : 'COLD',\n  estrategia_selecionada: estrategia,\n  dicas_ia: `O lead tem IMC ${contexto.dados_biometricos.imc}. Obstáculo principal: ${perfil.maior_obstaculo}. Histórico: ${experiencia.historico}.`\n};\n\nreturn {\n  quiz_id: $json.quiz_id,\n  dedup_key: $json.dedup_key,\n  score: score,\n  estrategia: estrategia.tipo, // Facilitador para filtros no n8n\n  contexto_completo: contexto\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        304
+      ],
+      "id": "24951509-8fd6-46a7-9453-1b7f8a3bd2eb",
+      "name": "Calcular Score e Estratégia1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Consolida dados do quiz - VERSÃO 2 (Atualizada)\n// ============================================\n\nconst quiz = $input.item.json;\nconst data = quiz.data || {};\n\n// 1. Mapeamento dos objetos principais\nconst leadData = data.lead || {};\nconst quizData = data.quiz || {}; // ✅ NOVA ORIGEM DOS DADOS\nconst systemData = data.sistema || {};\n\n// 2. Extração de Dados do Lead\nconst nome = leadData.nome;\nconst telefone = leadData.telefone;\nconst email = leadData.email;\nconst cidade = leadData.cidade;\n\n// 3. Extração e Tratamento de Dados Biométricos (Vêm do objeto 'quiz' agora)\nconst peso_atual = quizData.biometria_peso_atual ? parseInt(quizData.biometria_peso_atual) : null;\nconst altura = quizData.biometria_altura ? parseInt(quizData.biometria_altura) : null;\nconst peso_desejado = quizData.biometria_meta_peso ? parseInt(quizData.biometria_meta_peso) : null;\n\n// OBS: 'idade' não veio no JSON novo. Deixei null ou você pode calcular se tiver a data de nascimento.\nconst idade = null; \n\n// 4. Respostas Qualitativas (Novos campos do JSON)\nconst historico_medicacao = quizData.historico_medicacao || \"Não informado\";\nconst momento_atual = quizData.momento_atual || null;\nconst maior_obstaculo = quizData.maior_obstaculo || null;\nconst motivacao_principal = quizData.motivacao_principal || null;\nconst uso_suplementos = quizData.uso_suplementos || null;\nconst faixa_investimento = quizData.faixa_investimento || null;\nconst preferencia_protocolo = quizData.preferencia_protocolo || null;\n\n// 5. Cálculos (IMC)\nfunction calcularIMC(peso, altura) {\n  if (!peso || !altura) return null;\n  const alturaMetros = altura / 100;\n  const imc = peso / (alturaMetros * alturaMetros);\n  return Math.round(imc * 10) / 10;\n}\n\nfunction categoriaIMC(imc) {\n  if (!imc) return null;\n  if (imc < 18.5) return 'abaixo_do_peso';\n  if (imc < 25) return 'peso_normal';\n  if (imc < 30) return 'sobrepeso';\n  if (imc < 35) return 'obesidade_grau_1';\n  if (imc < 40) return 'obesidade_grau_2';\n  return 'obesidade_grau_3';\n}\n\nconst imc = calcularIMC(peso_atual, altura);\n\n// 6. Dados de Sistema e Jornada\n// Assumindo que se chegou aqui, o quiz foi completado. \n// O campo 'etapa_calculada' no json é 11.\nconst quiz_completed = true; \nconst stage_current = quiz.stage_current || systemData.etapa_calculada;\n\n// ============================================\n// CONSTRUÇÃO DO CONTEXTO PARA IA\n// ============================================\nconst contexto_ia = {\n  lead_id: quiz.id,\n  quiz_type: quiz.quiz_type,\n  \n  dados_pessoais: {\n    nome: nome,\n    telefone: telefone,\n    email: email,\n    cidade: cidade,\n    // Idade removida pois não consta no JSON atual\n  },\n  \n  dados_biometricos: {\n    peso_atual_kg: peso_atual,\n    altura_cm: altura,\n    peso_desejado_kg: peso_desejado,\n    diferenca_kg: (peso_atual && peso_desejado) ? peso_atual - peso_desejado : null,\n    imc: imc,\n    imc_categoria: categoriaIMC(imc)\n  },\n  \n  perfil_comportamental: {\n    momento_vida: momento_atual, // Ex: \"Já emagreci, mas quero manter\"\n    maior_obstaculo: maior_obstaculo, // Ex: \"Falta de tempo e rotina\"\n    motivacao: motivacao_principal, // Ex: \"Cuidar da saúde...\"\n    uso_suplementos: uso_suplementos\n  },\n\n  experiencia_medicacao: {\n    historico: historico_medicacao, // Ex: \"Sim, já estou usando\"\n    // Campos antigos removidos pois não existem neste JSON, usamos o histórico acima\n  },\n  \n  preferencias_venda: {\n    orcamento_mensal: faixa_investimento, // Ex: \"Até R$500\"\n    protocolo_interesse: preferencia_protocolo // Ex: \"Somente Medicação...\"\n  },\n  \n  jornada_quiz: {\n    etapa_final: stage_current,\n    completou_quiz: quiz_completed,\n    webhooks_recebidos: quiz.webhook_count,\n    plataforma: systemData.plataforma, // Win32, Mobile, etc\n    tempo_total_minutos: Math.round((new Date(quiz.last_webhook_at) - new Date(quiz.created_at)) / 60000)\n  },\n  \n  resumo_original: data.resumo_texto, // O texto pronto gerado pelo quiz, útil para fallback\n\n  metadata: {\n    quiz_id: quiz.id,\n    dedup_key: quiz.dedup_key,\n    processado_em: new Date().toISOString()\n  }\n};\n\nreturn {\n  quiz_id: quiz.id,\n  dedup_key: quiz.dedup_key,\n  stage_current: stage_current,\n  contexto: contexto_ia\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        304
+      ],
+      "id": "09e570e6-fbb5-405a-b06d-cacdb3459ab0",
+      "name": "Consolidar Contexto para IA1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/novo-lead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1520,
+        304
+      ],
+      "id": "280fdc43-d7d0-458b-8ce8-b3fd98a56276",
+      "name": "HTTP Request1",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6253c654-c29d-4903-9fd1-b975eb404132",
+              "name": "fullName",
+              "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo.dados_pessoais.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "09a495e0-3725-4665-8564-67623c0f3389",
+              "name": "email",
+              "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo.dados_pessoais.email }}",
+              "type": "string"
+            },
+            {
+              "id": "32e49b73-a7a0-45b5-9e27-ea88571ee2bf",
+              "name": "phoneNumber",
+              "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo.dados_pessoais.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "4d21021b-a7d1-46a2-969c-b330472fde71",
+              "name": "customFields",
+              "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo }}",
+              "type": "string"
+            },
+            {
+              "id": "8adcf242-d0b9-4b78-b998-3cd4cb706020",
+              "name": "source",
+              "value": "InLead-Diagnostico_v1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        304
+      ],
+      "id": "8877eabe-2623-4231-aa90-fb87e6143bb7",
+      "name": "Padronizador Ingest Lead1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        304
+      ],
+      "id": "1a4f8494-2b46-425c-bb5e-8ae40ca2f514",
+      "name": "Wait1",
+      "webhookId": "c2b9ff8f-318f-403d-8f68-93554272534a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE quiz_responses\nSET \n  processado = false,\n  updated_at = now()\nWHERE id = '{{ $('Calcular Score e Estratégia1').item.json.quiz_id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1904,
+        304
+      ],
+      "id": "d84270b9-35c0-41c3-a6eb-269701e7ced6",
+      "name": "Marcar como Não Processado1",
+      "credentials": {
+        "postgres": {
+          "id": "RFxQbe3djw1COy76",
+          "name": "aplic_tech_postgres_leads_intake"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Emagrecimento_v1",
+        "height": 80,
+        "width": 1392
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -128
+      ],
+      "id": "db7e1197-952d-4791-b9bb-c93db1d2ee78",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Diagnostico_v1",
+        "height": 80,
+        "width": 1392
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        192
+      ],
+      "id": "a4e9fff8-e8bf-4a0e-882e-f33efed3c260",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Buscar Quiz Pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Quiz Pendentes": {
+      "main": [
+        [
+          {
+            "node": "Tem Pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Pendente": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Consolidar Contexto para IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Score e Estratégia": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Processado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar Contexto para IA": {
+      "main": [
+        [
+          {
+            "node": "Calcular Score e Estratégia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como Processado": {
+      "main": [
+        [
+          {
+            "node": "Padronizador Ingest Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Padronizador Ingest Lead": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Não Processado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como Não Processado": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Consolidar Contexto para IA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como Processado1": {
+      "main": [
+        [
+          {
+            "node": "Padronizador Ingest Lead1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Score e Estratégia1": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Processado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar Contexto para IA1": {
+      "main": [
+        [
+          {
+            "node": "Calcular Score e Estratégia1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Padronizador Ingest Lead1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Não Processado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como Não Processado1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 100
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-12-30T15:02:58.005-03:00",
+          "Readable date": "December 30th 2025, 3:02:58 pm",
+          "Readable time": "3:02:58 pm",
+          "Day of week": "Tuesday",
+          "Year": "2025",
+          "Month": "December",
+          "Day of month": "30",
+          "Hour": "15",
+          "Minute": "02",
+          "Second": "58",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "b0113002-9c45-4d22-9312-87e4a07a3dc6",
+  "activeVersionId": "b0113002-9c45-4d22-9312-87e4a07a3dc6",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-04T13:54:19.242Z",
+      "createdAt": "2025-11-04T13:54:19.242Z",
+      "role": "workflow:owner",
+      "workflowId": "GKu1xeB8wmoL6nsw",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-31T13:39:05.266Z",
+    "createdAt": "2025-12-31T13:39:03.655Z",
+    "versionId": "b0113002-9c45-4d22-9312-87e4a07a3dc6",
+    "workflowId": "GKu1xeB8wmoL6nsw",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 3
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -400,
+          -16
+        ],
+        "id": "05be1f16-58b9-4139-85a2-982b3daff5ff",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  id,\n  dedup_key,\n  quiz_type,\n  stage_current,\n  data,\n  webhook_count,\n  last_webhook_at,\n  created_at\nFROM quiz_responses\nWHERE processado = false\n  AND agenda_processamento <= now()\nORDER BY \n  stage_current DESC,  -- Hot leads (etapa 13) primeiro\n  created_at ASC       -- Mais antigos primeiro (FIFO)\nLIMIT 50;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          -192,
+          -16
+        ],
+        "id": "e86f2af6-3cac-4fb3-8a37-d36051e3f53f",
+        "name": "Buscar Quiz Pendentes",
+        "credentials": {
+          "postgres": {
+            "id": "RFxQbe3djw1COy76",
+            "name": "aplic_tech_postgres_leads_intake"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "744d9806-e01f-41a7-b189-57da4b5f8fd3",
+                "leftValue": "={{ $json }}",
+                "rightValue": "=0",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -32,
+          -16
+        ],
+        "id": "7bdf5086-ccb7-4d16-9d4a-03e7c27dc112",
+        "name": "Tem Pendente"
+      },
+      {
+        "parameters": {
+          "options": {
+            "reset": false
+          }
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          592,
+          -32
+        ],
+        "id": "84f079e1-920a-43f0-9590-cde6e6040b22",
+        "name": "Loop Over Items"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE quiz_responses\nSET \n  processado = true,\n  score = {{ $json.score }},\n  estrategia = '{{ $json.estrategia }}',\n  updated_at = now()\nWHERE id = '{{ $json.quiz_id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1184,
+          -16
+        ],
+        "id": "4234004f-480f-4fdc-b7a9-e73418e9f4c1",
+        "name": "Marcar como Processado",
+        "credentials": {
+          "postgres": {
+            "id": "RFxQbe3djw1COy76",
+            "name": "aplic_tech_postgres_leads_intake"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// Calcula score e define estratégia - CORRIGIDO\n// ============================================\n\nconst stage = $json.stage_current;\nconst contexto = $json.contexto;\nconst jornada = contexto.jornada_quiz;\n\n// Scoring baseado em etapa\nfunction calcularScore(stage) {\n  if (stage <= 4) return 20;\n  if (stage <= 6) return 40;\n  if (stage <= 11) return 60;\n  return 90;\n}\n\n// Estratégia de abordagem da IA\nfunction definirEstrategia(stage, contexto) {\n  const jornada = contexto.jornada_quiz;\n  \n  // ✅ Hot lead (completou E pegou cupom)\n  if (stage === 13 && jornada.cupom_aceito && jornada.completou_quiz) {\n    return {\n      tipo: 'cupom_imediato',\n      tom: 'urgente_e_felicitacao',\n      objetivo: 'agendar_consulta',\n      primeira_mensagem: 'parabenizar_cupom_marcar_consulta'\n    };\n  }\n  \n  // ✅ Completou mas não aceitou cupom ainda (etapa 13 mas sem cupom)\n  if (stage === 13 && !jornada.cupom_aceito) {\n    return {\n      tipo: 'consultiva_fechamento',\n      tom: 'empático_motivador',\n      objetivo: 'incentivar_cupom',\n      primeira_mensagem: 'reforcar_beneficios_cupom'\n    };\n  }\n  \n  // Abandonou após ver comparativo\n  if (stage >= 10 && jornada.viu_comparativo) {\n    return {\n      tipo: 'consultiva_valor',\n      tom: 'empático_educativo',\n      objetivo: 'mostrar_resultados',\n      primeira_mensagem: 'retomar_comparativo_mostrar_valor'\n    };\n  }\n  \n  // Parou na parte de medicação\n  if (stage >= 5 && stage <= 9) {\n    return {\n      tipo: 'consultiva_exploracao',\n      tom: 'empático_explorador',\n      objetivo: 'entender_barreiras',\n      primeira_mensagem: 'explorar_preocupacao_validar_medo',\n      objection_conhecida: contexto.experiencia_medicacao.preocupacao_principal\n    };\n  }\n  \n  // Abandonou muito cedo\n  return {\n    tipo: 'descarte_suave',\n    tom: 'educativo_leve',\n    objetivo: 'reengajar_ou_descartar',\n    primeira_mensagem: 'mensagem_educativa_reabertura'\n  };\n}\n\nconst score = calcularScore(stage);\nconst estrategia = definirEstrategia(stage, contexto);\n\n// Adiciona ao contexto\ncontexto.scoring = {\n  score: score,\n  intencao: score >= 70 ? 'alta' : score >= 40 ? 'media' : 'baixa'\n};\n\ncontexto.estrategia_ia = estrategia;\n\nreturn {\n  quiz_id: $json.quiz_id,\n  dedup_key: $json.dedup_key,\n  score: score,\n  estrategia: estrategia.tipo,\n  contexto_completo: contexto\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          960,
+          -16
+        ],
+        "id": "7ea42918-c7f9-4fff-87b0-7af7e360e3bd",
+        "name": "Calcular Score e Estratégia"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// Consolida dados do quiz - ADAPTADO para estrutura real\n// ============================================\n\nconst quiz = $input.item.json;\nconst data = quiz.data || {};\n\n// ✅ CORREÇÃO: Criando referências para os objetos aninhados\nconst leadData = data.lead || {};\nconst leadInfo = leadData.info || {};\nconst systemData = data.sistema || {};\n\n// ✅ CORREÇÃO: Buscando dados de 'leadData' e 'leadInfo'\nconst nome = leadData.nome;\nconst telefone = leadData.telefone;\nconst email = leadData.email;\nconst cidade = leadData.cidade;\nconst peso_atual = leadInfo.peso_atual ? parseInt(leadInfo.peso_atual) : null;\nconst altura = leadInfo.altura ? parseInt(leadInfo.altura) : null;\nconst idade = leadInfo.idade ? parseInt(leadInfo.idade) : null; // 'idade' não existe no seu exemplo, mas mantive a lógica\n\n// Campos calculados ou vindos do quiz\n// ✅ CORREÇÃO: Buscando de 'systemData'\nconst quiz_completed = systemData.completou_quiz || false;\nconst cupom_aceito = systemData.cupom_aceito || data.cupom_aceito || false; // Verificando em ambos os locais\n\n// Calcula peso desejado se existir no data\n// ✅ CORREÇÃO: Buscando de 'leadInfo'\nconst peso_desejado = leadInfo.peso_desejado ? parseInt(leadInfo.peso_desejado) : null;\n\n// ✅ Respostas qualitativas (podem estar como etapa_X ou campos específicos)\n// ✅ CORREÇÃO: Buscando de 'leadInfo'\nconst ja_usou_medicacao = leadInfo.ja_usou_medicacao || null;\nconst experiencia_uso = leadInfo.experiencia_uso || null;\nconst preocupacao_principal = leadInfo.preocupacao_principal || null;\n\n// Calcula IMC\nfunction calcularIMC(peso, altura) {\n  if (!peso || !altura) return null;\n  const alturaMetros = altura / 100;\n  const imc = peso / (alturaMetros * alturaMetros);\n  return Math.round(imc * 10) / 10;\n}\n\nfunction categoriaIMC(imc) {\n  if (!imc) return null;\n  if (imc < 18.5) return 'abaixo_do_peso';\n  if (imc < 25) return 'peso_normal';\n  if (imc < 30) return 'sobrepeso';\n  if (imc < 35) return 'obesidade_grau_1';\n  if (imc < 40) return 'obesidade_grau_2';\n  return 'obesidade_grau_3';\n}\n\nconst imc = calcularIMC(peso_atual, altura);\n\n// ✅ Detecta comportamento do quiz (baseado em campos do data)\n// ✅ CORREÇÃO: Simplificado para usar 'systemData'\nconst viu_comparativo = systemData.viu_comparativo || false;\nconst viu_depoimentos = systemData.viu_depoimentos || false;\n\n// Conta cliques educacionais\n// ✅ CORREÇÃO: Simplificado para usar 'systemData'\nconst cliques_educacao = systemData.cliques_educacao || 0;\n\n// Contexto estruturado para IA\nconst contexto_ia = {\n  lead_id: quiz.id,\n  quiz_type: quiz.quiz_type,\n  \n  dados_pessoais: {\n    nome: nome,\n    telefone: telefone,\n    email: email,\n    cidade: cidade,\n    idade: idade\n  },\n  \n  dados_biometricos: {\n    peso_atual_kg: peso_atual,\n    altura_cm: altura,\n    peso_desejado_kg: peso_desejado,\n    diferenca_kg: peso_atual && peso_desejado ? peso_atual - peso_desejado : null,\n    imc: imc,\n    imc_categoria: categoriaIMC(imc)\n  },\n  \n  experiencia_medicacao: {\n    ja_usou: ja_usou_medicacao,\n    como_foi_experiencia: experiencia_uso,\n    preocupacao_principal: preocupacao_principal\n  },\n  \n  jornada_quiz: {\n    etapa_final: quiz.stage_current,\n    completou_quiz: quiz_completed,\n    cupom_aceito: cupom_aceito,\n    viu_comparativo: viu_comparativo,\n    viu_depoimentos: viu_depoimentos,\n    quantidade_cliques_educacao: cliques_educacao,\n    webhooks_recebidos: quiz.webhook_count,\n    tempo_total_minutos: Math.round((new Date(quiz.last_webhook_at) - new Date(quiz.created_at)) / 60000)\n  },\n  \n  metadata: {\n    quiz_id: quiz.id,\n    dedup_key: quiz.dedup_key,\n    criado_em: quiz.created_at,\n    processado_em: new Date().toISOString()\n  }\n};\n\nreturn {\n  quiz_id: quiz.id,\n  dedup_key: quiz.dedup_key,\n  stage_current: quiz.stage_current,\n  contexto: contexto_ia\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          816,
+          -16
+        ],
+        "id": "cb68b9ca-a59b-4830-905e-f32ecca9a1c5",
+        "name": "Consolidar Contexto para IA"
+      },
+      {
+        "parameters": {
+          "mode": "exchange",
+          "exchange": "clinic_events",
+          "routingKey": "aquisicao.lead.quiz_enriquecido",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.rabbitmq",
+        "typeVersion": 1.1,
+        "position": [
+          2336,
+          0
+        ],
+        "id": "77702207-77ce-4668-8e9c-2ee89e69ec0b",
+        "name": "RabbitMQ1",
+        "credentials": {
+          "rabbitmq": {
+            "id": "IruJASyhbIKKogud",
+            "name": "RabbitMQ aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/novo-lead",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1504,
+          -16
+        ],
+        "id": "5a0246b2-a04f-46ed-a4fe-646a493be71b",
+        "name": "HTTP Request",
+        "retryOnFail": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "6253c654-c29d-4903-9fd1-b975eb404132",
+                "name": "fullName",
+                "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo.dados_pessoais.nome }}",
+                "type": "string"
+              },
+              {
+                "id": "09a495e0-3725-4665-8564-67623c0f3389",
+                "name": "email",
+                "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo.dados_pessoais.email }}",
+                "type": "string"
+              },
+              {
+                "id": "32e49b73-a7a0-45b5-9e27-ea88571ee2bf",
+                "name": "phoneNumber",
+                "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo.dados_pessoais.telefone }}",
+                "type": "string"
+              },
+              {
+                "id": "4d21021b-a7d1-46a2-969c-b330472fde71",
+                "name": "customFields",
+                "value": "={{ $('Calcular Score e Estratégia').item.json.contexto_completo }}",
+                "type": "string"
+              },
+              {
+                "id": "8adcf242-d0b9-4b78-b998-3cd4cb706020",
+                "name": "source",
+                "value": "InLead-Teste_v1",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1344,
+          -16
+        ],
+        "id": "8920c585-86ad-416d-9a5f-3f3d1a31c6bd",
+        "name": "Padronizador Ingest Lead",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "amount": 1
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          1744,
+          -16
+        ],
+        "id": "c80756c8-0d30-49e9-a518-9bf30e59fd0c",
+        "name": "Wait",
+        "webhookId": "c2b9ff8f-318f-403d-8f68-93554272534a"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE quiz_responses\nSET \n  processado = false,\n  updated_at = now()\nWHERE id = '{{ $('Marcar como Processado').item.json.id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1888,
+          -16
+        ],
+        "id": "f1005842-4746-4941-85e1-80802f9c0327",
+        "name": "Marcar como Não Processado",
+        "credentials": {
+          "postgres": {
+            "id": "RFxQbe3djw1COy76",
+            "name": "aplic_tech_postgres_leads_intake"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.quiz_type }}",
+                      "rightValue": "emagrecimento_v1",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "acf4b44b-7e91-4951-9b87-9c0e517fc17b"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Quiz Teste - Emagrecimento"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "06d0488b-b426-42df-a697-9b9148491154",
+                      "leftValue": "={{ $json.quiz_type }}",
+                      "rightValue": "diagnostico_v1",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Quiz Diagnostico"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "82a8dceb-0ab3-4f42-9d06-ec8d1bb413e5",
+                      "leftValue": "={{ $json.quiz_type }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "notEmpty",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Outras"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          192,
+          -16
+        ],
+        "id": "927f474f-cf82-4922-b510-cd421ab64dd1",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "options": {
+            "reset": false
+          }
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          608,
+          288
+        ],
+        "id": "30ba0b44-d3f9-4081-84fd-ac0dc384b41c",
+        "name": "Loop Over Items1"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE quiz_responses\nSET \n  processado = true,\n  score = {{ $json.score }},\n  estrategia = '{{ $json.estrategia }}',\n  updated_at = now()\nWHERE id = '{{ $json.quiz_id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1200,
+          304
+        ],
+        "id": "bb6ea4ce-1ce4-424c-96ce-754c4d57e7aa",
+        "name": "Marcar como Processado1",
+        "credentials": {
+          "postgres": {
+            "id": "RFxQbe3djw1COy76",
+            "name": "aplic_tech_postgres_leads_intake"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// Calcula score e define estratégia - VERSÃO 2 (Adaptada)\n// ============================================\n\n// Recupera dados do nó anterior\nconst stage = $json.stage_current;\nconst contexto = $json.contexto;\nconst jornada = contexto.jornada_quiz;\nconst perfil = contexto.perfil_comportamental || {};\nconst experiencia = contexto.experiencia_medicacao || {};\nconst preferencias = contexto.preferencias_venda || {};\n\n// 1. Scoring Inteligente\n// Em vez de fixar no número da etapa, olhamos para o status real\nfunction calcularScore(jornada, stage, preferencias) {\n  // Se completou, é lead quente (90+)\n  if (jornada.completou_quiz) {\n    let baseScore = 90;\n    \n    // Bônus se tem orçamento compatível (se não for o \"Até 500\", ou se for null assumimos que tem)\n    // Ajuste conforme sua regra de negócio. Se 500 for pouco, diminua o score.\n    if (preferencias.orcamento_mensal && !preferencias.orcamento_mensal.includes(\"Até R$500\")) {\n       baseScore += 5; \n    }\n    return Math.min(baseScore, 100);\n  }\n\n  // Se não completou, baseia na etapa\n  if (stage <= 4) return 20; // Início\n  if (stage <= 8) return 40; // Meio\n  if (stage < 11) return 60; // Quase fim\n  return 80; // Erro de status, mas avançado\n}\n\n// 2. Estratégia de Abordagem da IA\nfunction definirEstrategia(contexto) {\n  const jornada = contexto.jornada_quiz;\n  const hist_med = contexto.experiencia_medicacao.historico || \"\";\n  const obstaculo = contexto.perfil_comportamental.maior_obstaculo || \"\";\n  const orcamento = contexto.preferencias_venda.orcamento_mensal || \"\";\n  \n  // ---------------------------------------------\n  // CENÁRIO 1: Lead que JÁ USA medicação (Alta Intenção/Troca)\n  // ---------------------------------------------\n  if (jornada.completou_quiz && (hist_med.includes(\"Sim\") || hist_med.includes(\"já estou usando\"))) {\n    return {\n      tipo: 'competitiva_troca',\n      tom: 'profissional_direto',\n      objetivo: 'mostrar_diferencial',\n      primeira_mensagem: 'Seu objetivo é mostrar que nosso protocolo é mais seguro ou prático do que o que ele já usa. Valide a experiência dele.',\n      gatilho_mental: 'autoridade_e_praticidade'\n    };\n  }\n\n  // ---------------------------------------------\n  // CENÁRIO 2: Lead Quente (Completou o Quiz)\n  // ---------------------------------------------\n  if (jornada.completou_quiz) {\n    // Sub-cenário: Orçamento apertado\n    if (orcamento.includes(\"Até R$500\")) {\n       return {\n        tipo: 'venda_custo_beneficio',\n        tom: 'empático_acessivel',\n        objetivo: 'viabilizar_tratamento',\n        primeira_mensagem: 'Foque em como o investimento se paga pela saúde e economia com comida/outros remédios.',\n        gatilho_mental: 'economia_inteligente'\n      };\n    }\n\n    // Padrão\n    return {\n      tipo: 'consultiva_fechamento',\n      tom: 'motivador_urgente',\n      objetivo: 'agendar_consulta',\n      primeira_mensagem: 'Parabenize pela decisão de mudar. Use o obstáculo \"' + obstaculo + '\" para mostrar como a solução resolve isso.',\n      gatilho_mental: 'compromisso'\n    };\n  }\n  \n  // ---------------------------------------------\n  // CENÁRIO 3: Abandonou (Recuperação)\n  // ---------------------------------------------\n  \n  // Abandonou no final (Preço ou Dúvida Médica)\n  if (stage >= 9) {\n    return {\n      tipo: 'consultiva_valor',\n      tom: 'empático_educativo',\n      objetivo: 'quebrar_objecao_final',\n      primeira_mensagem: 'Percebi que faltou pouco. Ficou alguma dúvida sobre como funciona a entrega em casa?',\n      gatilho_mental: 'curiosidade'\n    };\n  }\n  \n  // Abandonou no início/meio\n  return {\n    tipo: 'reengajamento_suave',\n    tom: 'ajuda_leve',\n    objetivo: 'descobrir_motivo',\n    primeira_mensagem: 'Vi que você começou seu diagnóstico. Aconteceu algo?',\n    gatilho_mental: 'preocupacao'\n  };\n}\n\nconst score = calcularScore(jornada, stage, preferencias);\nconst estrategia = definirEstrategia(contexto);\n\n// Adiciona dados calculados ao contexto para a IA usar no prompt\ncontexto.inteligencia_vendas = {\n  score: score,\n  classificacao: score >= 90 ? 'HOT' : score >= 60 ? 'WARM' : 'COLD',\n  estrategia_selecionada: estrategia,\n  dicas_ia: `O lead tem IMC ${contexto.dados_biometricos.imc}. Obstáculo principal: ${perfil.maior_obstaculo}. Histórico: ${experiencia.historico}.`\n};\n\nreturn {\n  quiz_id: $json.quiz_id,\n  dedup_key: $json.dedup_key,\n  score: score,\n  estrategia: estrategia.tipo, // Facilitador para filtros no n8n\n  contexto_completo: contexto\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          976,
+          304
+        ],
+        "id": "24951509-8fd6-46a7-9453-1b7f8a3bd2eb",
+        "name": "Calcular Score e Estratégia1"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// Consolida dados do quiz - VERSÃO 2 (Atualizada)\n// ============================================\n\nconst quiz = $input.item.json;\nconst data = quiz.data || {};\n\n// 1. Mapeamento dos objetos principais\nconst leadData = data.lead || {};\nconst quizData = data.quiz || {}; // ✅ NOVA ORIGEM DOS DADOS\nconst systemData = data.sistema || {};\n\n// 2. Extração de Dados do Lead\nconst nome = leadData.nome;\nconst telefone = leadData.telefone;\nconst email = leadData.email;\nconst cidade = leadData.cidade;\n\n// 3. Extração e Tratamento de Dados Biométricos (Vêm do objeto 'quiz' agora)\nconst peso_atual = quizData.biometria_peso_atual ? parseInt(quizData.biometria_peso_atual) : null;\nconst altura = quizData.biometria_altura ? parseInt(quizData.biometria_altura) : null;\nconst peso_desejado = quizData.biometria_meta_peso ? parseInt(quizData.biometria_meta_peso) : null;\n\n// OBS: 'idade' não veio no JSON novo. Deixei null ou você pode calcular se tiver a data de nascimento.\nconst idade = null; \n\n// 4. Respostas Qualitativas (Novos campos do JSON)\nconst historico_medicacao = quizData.historico_medicacao || \"Não informado\";\nconst momento_atual = quizData.momento_atual || null;\nconst maior_obstaculo = quizData.maior_obstaculo || null;\nconst motivacao_principal = quizData.motivacao_principal || null;\nconst uso_suplementos = quizData.uso_suplementos || null;\nconst faixa_investimento = quizData.faixa_investimento || null;\nconst preferencia_protocolo = quizData.preferencia_protocolo || null;\n\n// 5. Cálculos (IMC)\nfunction calcularIMC(peso, altura) {\n  if (!peso || !altura) return null;\n  const alturaMetros = altura / 100;\n  const imc = peso / (alturaMetros * alturaMetros);\n  return Math.round(imc * 10) / 10;\n}\n\nfunction categoriaIMC(imc) {\n  if (!imc) return null;\n  if (imc < 18.5) return 'abaixo_do_peso';\n  if (imc < 25) return 'peso_normal';\n  if (imc < 30) return 'sobrepeso';\n  if (imc < 35) return 'obesidade_grau_1';\n  if (imc < 40) return 'obesidade_grau_2';\n  return 'obesidade_grau_3';\n}\n\nconst imc = calcularIMC(peso_atual, altura);\n\n// 6. Dados de Sistema e Jornada\n// Assumindo que se chegou aqui, o quiz foi completado. \n// O campo 'etapa_calculada' no json é 11.\nconst quiz_completed = true; \nconst stage_current = quiz.stage_current || systemData.etapa_calculada;\n\n// ============================================\n// CONSTRUÇÃO DO CONTEXTO PARA IA\n// ============================================\nconst contexto_ia = {\n  lead_id: quiz.id,\n  quiz_type: quiz.quiz_type,\n  \n  dados_pessoais: {\n    nome: nome,\n    telefone: telefone,\n    email: email,\n    cidade: cidade,\n    // Idade removida pois não consta no JSON atual\n  },\n  \n  dados_biometricos: {\n    peso_atual_kg: peso_atual,\n    altura_cm: altura,\n    peso_desejado_kg: peso_desejado,\n    diferenca_kg: (peso_atual && peso_desejado) ? peso_atual - peso_desejado : null,\n    imc: imc,\n    imc_categoria: categoriaIMC(imc)\n  },\n  \n  perfil_comportamental: {\n    momento_vida: momento_atual, // Ex: \"Já emagreci, mas quero manter\"\n    maior_obstaculo: maior_obstaculo, // Ex: \"Falta de tempo e rotina\"\n    motivacao: motivacao_principal, // Ex: \"Cuidar da saúde...\"\n    uso_suplementos: uso_suplementos\n  },\n\n  experiencia_medicacao: {\n    historico: historico_medicacao, // Ex: \"Sim, já estou usando\"\n    // Campos antigos removidos pois não existem neste JSON, usamos o histórico acima\n  },\n  \n  preferencias_venda: {\n    orcamento_mensal: faixa_investimento, // Ex: \"Até R$500\"\n    protocolo_interesse: preferencia_protocolo // Ex: \"Somente Medicação...\"\n  },\n  \n  jornada_quiz: {\n    etapa_final: stage_current,\n    completou_quiz: quiz_completed,\n    webhooks_recebidos: quiz.webhook_count,\n    plataforma: systemData.plataforma, // Win32, Mobile, etc\n    tempo_total_minutos: Math.round((new Date(quiz.last_webhook_at) - new Date(quiz.created_at)) / 60000)\n  },\n  \n  resumo_original: data.resumo_texto, // O texto pronto gerado pelo quiz, útil para fallback\n\n  metadata: {\n    quiz_id: quiz.id,\n    dedup_key: quiz.dedup_key,\n    processado_em: new Date().toISOString()\n  }\n};\n\nreturn {\n  quiz_id: quiz.id,\n  dedup_key: quiz.dedup_key,\n  stage_current: stage_current,\n  contexto: contexto_ia\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          832,
+          304
+        ],
+        "id": "09e570e6-fbb5-405a-b06d-cacdb3459ab0",
+        "name": "Consolidar Contexto para IA1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/novo-lead",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1520,
+          304
+        ],
+        "id": "280fdc43-d7d0-458b-8ce8-b3fd98a56276",
+        "name": "HTTP Request1",
+        "retryOnFail": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "6253c654-c29d-4903-9fd1-b975eb404132",
+                "name": "fullName",
+                "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo.dados_pessoais.nome }}",
+                "type": "string"
+              },
+              {
+                "id": "09a495e0-3725-4665-8564-67623c0f3389",
+                "name": "email",
+                "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo.dados_pessoais.email }}",
+                "type": "string"
+              },
+              {
+                "id": "32e49b73-a7a0-45b5-9e27-ea88571ee2bf",
+                "name": "phoneNumber",
+                "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo.dados_pessoais.telefone }}",
+                "type": "string"
+              },
+              {
+                "id": "4d21021b-a7d1-46a2-969c-b330472fde71",
+                "name": "customFields",
+                "value": "={{ $('Calcular Score e Estratégia1').item.json.contexto_completo }}",
+                "type": "string"
+              },
+              {
+                "id": "8adcf242-d0b9-4b78-b998-3cd4cb706020",
+                "name": "source",
+                "value": "InLead-Diagnostico_v1",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1360,
+          304
+        ],
+        "id": "8877eabe-2623-4231-aa90-fb87e6143bb7",
+        "name": "Padronizador Ingest Lead1",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "amount": 1
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          1760,
+          304
+        ],
+        "id": "1a4f8494-2b46-425c-bb5e-8ae40ca2f514",
+        "name": "Wait1",
+        "webhookId": "c2b9ff8f-318f-403d-8f68-93554272534a"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE quiz_responses\nSET \n  processado = false,\n  updated_at = now()\nWHERE id = '{{ $('Calcular Score e Estratégia1').item.json.quiz_id }}'::uuid\nRETURNING id, dedup_key, score, estrategia;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1904,
+          304
+        ],
+        "id": "d84270b9-35c0-41c3-a6eb-269701e7ced6",
+        "name": "Marcar como Não Processado1",
+        "credentials": {
+          "postgres": {
+            "id": "RFxQbe3djw1COy76",
+            "name": "aplic_tech_postgres_leads_intake"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Emagrecimento_v1",
+          "height": 80,
+          "width": 1392
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          592,
+          -128
+        ],
+        "id": "db7e1197-952d-4791-b9bb-c93db1d2ee78",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Diagnostico_v1",
+          "height": 80,
+          "width": 1392
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          592,
+          192
+        ],
+        "id": "a4e9fff8-e8bf-4a0e-882e-f33efed3c260",
+        "name": "Sticky Note1"
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Buscar Quiz Pendentes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Quiz Pendentes": {
+        "main": [
+          [
+            {
+              "node": "Tem Pendente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem Pendente": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Consolidar Contexto para IA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calcular Score e Estratégia": {
+        "main": [
+          [
+            {
+              "node": "Marcar como Processado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Consolidar Contexto para IA": {
+        "main": [
+          [
+            {
+              "node": "Calcular Score e Estratégia",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marcar como Processado": {
+        "main": [
+          [
+            {
+              "node": "Padronizador Ingest Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Padronizador Ingest Lead": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Marcar como Não Processado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marcar como Não Processado": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Loop Over Items1": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Consolidar Contexto para IA1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marcar como Processado1": {
+        "main": [
+          [
+            {
+              "node": "Padronizador Ingest Lead1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calcular Score e Estratégia1": {
+        "main": [
+          [
+            {
+              "node": "Marcar como Processado1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Consolidar Contexto para IA1": {
+        "main": [
+          [
+            {
+              "node": "Calcular Score e Estratégia1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Padronizador Ingest Lead1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait1": {
+        "main": [
+          [
+            {
+              "node": "Marcar como Não Processado1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marcar como Não Processado1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version b0113002",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
