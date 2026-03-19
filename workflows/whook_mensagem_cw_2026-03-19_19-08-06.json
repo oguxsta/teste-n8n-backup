@@ -1,0 +1,2741 @@
+{
+  "updatedAt": "2026-02-05T17:45:48.962Z",
+  "createdAt": "2025-11-17T12:37:40.038Z",
+  "id": "VYgz9WW7rRSrxikf",
+  "name": "WHook Mensagem CW",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2a4d3140-ea3e-4a09-9501-33581f7d8121-cw-mensagem",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -96
+      ],
+      "id": "e2970d96-70f6-441d-b2f7-fa8c66a3edfb",
+      "name": "Webhook",
+      "webhookId": "2a4d3140-ea3e-4a09-9501-33581f7d8121"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e9061ab-c955-43dc-9cd4-0ae87bf1ff81",
+              "name": "conta.nome",
+              "value": "={{ $('Webhook').item.json.body.account.name }}",
+              "type": "string"
+            },
+            {
+              "id": "972126f5-e668-41a9-ae9e-b71699f8c6d4",
+              "name": "conta.id",
+              "value": "={{ $('Webhook').item.json.body.account.id }}",
+              "type": "string"
+            },
+            {
+              "id": "392552ec-5313-4087-8ce4-7ce84e024ae0",
+              "name": "mensagem.tipo",
+              "value": "={{ $('Webhook').item.json.body.content_type }}",
+              "type": "string"
+            },
+            {
+              "id": "1e4ff58e-5e90-440a-bb38-dbd61605fd4c",
+              "name": "mensagem.conteudo",
+              "value": "={{ $('Webhook').item.json.body.content }}",
+              "type": "string"
+            },
+            {
+              "id": "dce467d1-1d35-45c9-886a-7512008e0af5",
+              "name": "mensagem.canal",
+              "value": "={{ $('Webhook').item.json.body.conversation.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "2ba608cb-7926-4eba-8d87-be22a3182d5d",
+              "name": "contato.id",
+              "value": "={{ $('Webhook').item.json.body.conversation.contact_inbox.contact_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a97ddf3e-b570-4db1-b616-1e259659cb05",
+              "name": "contato.inboxId",
+              "value": "={{ $('Webhook').item.json.body.conversation.contact_inbox.inbox_id }}",
+              "type": "string"
+            },
+            {
+              "id": "6b8f5e06-f9df-4766-8e10-2aa2b5aadbf2",
+              "name": "mensagem.conversationId",
+              "value": "={{ $('Webhook').item.json.body.conversation.id }}",
+              "type": "string"
+            },
+            {
+              "id": "0bcd2dda-70e7-4bdc-adbc-5f16412e361a",
+              "name": "mensagem.tipo",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].message_type }}",
+              "type": "string"
+            },
+            {
+              "id": "c52c7dbf-f427-40f2-96aa-e3b5f0233e0f",
+              "name": "mensagem.status",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].status }}",
+              "type": "string"
+            },
+            {
+              "id": "b4d7b6c5-a07c-4064-a068-876bd3c11069",
+              "name": "agente.senderId",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender_id }}",
+              "type": "string"
+            },
+            {
+              "id": "433d885c-8f78-41fc-b141-c46ecaaf482a",
+              "name": "agente.senderType",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender_type }}",
+              "type": "string"
+            },
+            {
+              "id": "710eeac5-24bf-4606-ad57-cc9fa72e2de4",
+              "name": "agente.agenteAtribuido",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].conversation.assignee_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1bca2d6-a705-492c-838d-8f817a5b82f9",
+              "name": "agente.nome",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.name }}",
+              "type": "string"
+            },
+            {
+              "id": "b92a2362-27bd-41a9-b835-f9776665d65b",
+              "name": "agente.vulgo",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.available_name }}",
+              "type": "string"
+            },
+            {
+              "id": "c08167b0-b124-48bc-9dc2-1d23e5212d72",
+              "name": "agente.tipo",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.type }}",
+              "type": "string"
+            },
+            {
+              "id": "c3222ee8-6c94-45ee-b0d6-2b037e0775d2",
+              "name": "contato.etiquetas",
+              "value": "={{ $('Webhook').item.json.body.conversation.labels }}",
+              "type": "string"
+            },
+            {
+              "id": "01a50ed4-4bef-4d3e-8720-c1b0bfab01fc",
+              "name": "contato.numero",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "8ac84114-211b-426d-bd30-43a0b6519947",
+              "name": "contato.email",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.email }}",
+              "type": "string"
+            },
+            {
+              "id": "a812c851-ae83-4216-b26a-15d7628b3ab3",
+              "name": "contato.nomeCompleto",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.name }}",
+              "type": "string"
+            },
+            {
+              "id": "b2165dfa-5173-476a-8cfb-6778bbeedc34",
+              "name": "contato.leadId",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.custom_attributes.lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "dfa0748d-b016-4cda-9a55-4ea3e3f4dbce",
+              "name": "contato.id",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "46e57cb9-ccef-4ed9-96a9-d3221935193a",
+              "name": "agente.timeAtribuido",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.team.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e3ebfa43-693b-4ce9-bb86-a2e567f5efc9",
+              "name": "agente.nomeTime",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.team.name }}",
+              "type": "string"
+            },
+            {
+              "id": "41baa5ee-ec76-411c-995d-cd458d50c740",
+              "name": "mensagem.statusConversa",
+              "value": "={{ $('Webhook').item.json.body.conversation.status }}",
+              "type": "string"
+            },
+            {
+              "id": "ca644940-a568-4436-9c6e-13c63a2ba290",
+              "name": "mensagem.tipo",
+              "value": "={{ $('Webhook').item.json.body.message_type }}",
+              "type": "string"
+            },
+            {
+              "id": "6b6c4aef-3ab7-46e5-9399-9976b0d92486",
+              "name": "mensagem.privada",
+              "value": "={{ $('Webhook').item.json.body.private }}",
+              "type": "string"
+            },
+            {
+              "id": "8a54cecf-4a31-44ba-a412-acd1fc165c17",
+              "name": "mensagem.evento",
+              "value": "={{ $('Webhook').item.json.body.event }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -96
+      ],
+      "id": "c4f5d56c-718a-47ea-a4e2-5552406a6c1c",
+      "name": "Evento Limpo"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+              "name": "chatwoot.url",
+              "value": "https://chat.aplicgo.com",
+              "type": "string"
+            },
+            {
+              "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+              "name": "dina.url",
+              "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+              "type": "string"
+            },
+            {
+              "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+              "name": "dina.instancia",
+              "value": "Aplic_Comercial",
+              "type": "string"
+            },
+            {
+              "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+              "name": "dina.apikey",
+              "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+              "type": "string"
+            },
+            {
+              "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+              "name": "rabbit.fila.mensagens",
+              "value": "fila_processar_resposta",
+              "type": "string"
+            },
+            {
+              "id": "f701268c-e852-4806-a657-67848639ac46",
+              "name": "chatwoot.apikey",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+              "type": "string"
+            },
+            {
+              "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+              "name": "chatwoot.inboxid",
+              "value": "7",
+              "type": "string"
+            },
+            {
+              "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+              "name": "chatwoot.account",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+              "name": "testes.chatwootcontact",
+              "value": "4019",
+              "type": "string"
+            },
+            {
+              "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+              "name": "testes.chatwootconversation",
+              "value": "4063",
+              "type": "string"
+            },
+            {
+              "id": "f78f3c43-9a54-49ca-b2e0-848a30d797a1",
+              "name": "agente.idMaria",
+              "value": "10",
+              "type": "string"
+            },
+            {
+              "id": "b9b42c44-8bbe-412a-8a97-58f90b055777",
+              "name": "agente.idCamilla",
+              "value": "6",
+              "type": "string"
+            },
+            {
+              "id": "028964c3-9386-482a-9488-95b624cefa97",
+              "name": "agente.idOtavio",
+              "value": "7",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "2e8fe1fc-93ab-4ae0-8e83-2feea9d5aff1",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH input AS (\n  SELECT\n    NULLIF(\n      NULLIF('{{ $('Evento Limpo').item.json.contato.leadId }}', 'null'),\n      ''\n    ) AS lead_id_text\n),\ntentativa AS (\n  UPDATE leads\n  SET atendimento_tipo = 'humano'\n  WHERE id::text = (SELECT lead_id_text FROM input)\n    AND atendimento_tipo <> 'humano'\n  RETURNING id\n)\nSELECT\n  (SELECT lead_id_text FROM input) AS lead_id,\n\n  CASE\n    WHEN (SELECT lead_id_text FROM input) IS NULL\n      THEN 'fallback_sem_lead_id'\n    WHEN EXISTS (SELECT 1 FROM tentativa)\n      THEN 'lead_atualizado_por_fallback'\n    ELSE 'lead_nao_atualizado_fallback'\n  END AS log_evento,\n\n  EXISTS (SELECT 1 FROM tentativa) AS updated;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1856,
+        -96
+      ],
+      "id": "b766da84-b5b5-4c62-9278-d779d920fac1",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1104,
+        -96
+      ],
+      "id": "b17990c6-c62b-4136-95e7-79a6e7d5328e",
+      "name": "Get Tags",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Tags que você deseja adicionar (se não existirem)\nconst tagsParaAdicionar = \"5-atendimento-humano\";\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"5-atendimento-ia\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        -96
+      ],
+      "id": "3df755d8-6874-4b66-b849-dd08b1351ef6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"labels\": [{{ $json.tagsAtualizadas }}]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1360,
+        -96
+      ],
+      "id": "c62ddede-00bb-40fd-91c1-24d3cea5fbba",
+      "name": "Atualizar Tags",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH telefone_limpo AS (\n  SELECT \n    regexp_replace(\n      COALESCE(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '0'\n      ),\n      '[^0-9]',\n      '',\n      'g'\n    ) AS phone_clean,\n\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 13\n      AND substring(regexp_replace(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '[^0-9]', '', 'g'\n      ), 5, 1) = '9'\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4)\n        || substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 6)\n      ELSE NULL\n    END AS phone_sem_9,\n\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 12\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4)\n        || '9'\n        || substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 5)\n      ELSE NULL\n    END AS phone_com_9\n),\nlead_resolvido AS (\n  SELECT id, atendimento_tipo\n  FROM leads\n  WHERE\n    email = NULLIF('{{ $('Evento Limpo').item.json.contato.email }}', '')\n    OR (\n      phone_number IS NOT NULL\n      AND (\n        regexp_replace(phone_number, '[^0-9]', '', 'g') =\n          (SELECT phone_clean FROM telefone_limpo)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') =\n          (SELECT phone_sem_9 FROM telefone_limpo WHERE phone_sem_9 IS NOT NULL)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') =\n          (SELECT phone_com_9 FROM telefone_limpo WHERE phone_com_9 IS NOT NULL)\n      )\n    )\n  LIMIT 1\n),\nlead_atualizado AS (\n  UPDATE leads\n  SET atendimento_tipo = 'humano'\n  WHERE id = (SELECT id FROM lead_resolvido)\n    AND atendimento_tipo <> 'humano'\n  RETURNING \n    id,\n    atendimento_tipo AS atendimento_tipo_atual\n)\n\nSELECT\n  lr.id AS lead_id,\n  lr.atendimento_tipo AS atendimento_tipo_anterior,\n  COALESCE(la.atendimento_tipo_atual, lr.atendimento_tipo) AS atendimento_tipo_atual,\n\n  CASE\n    WHEN lr.id IS NULL\n      THEN 'nenhum_lead_encontrado'\n    WHEN la.id IS NULL\n      THEN 'lead_ja_estava_humano'\n    ELSE 'lead_atualizado_para_humano'\n  END AS log_evento,\n\n  (la.id IS NOT NULL) AS updated\nFROM lead_resolvido lr\nLEFT JOIN lead_atualizado la ON true;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2272,
+        32
+      ],
+      "id": "16f9d598-846d-4fb6-9d9d-a47dbaab8034",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot.url }}/api/v1/accounts/{{ $json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/assignments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assignee_id\": {{ $('Evento Limpo').item.json.agente.senderId }}\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        960,
+        -96
+      ],
+      "id": "cc0a6954-361d-4ec7-b3bc-65da7478f8e1",
+      "name": "Mudar Agente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"**🖐🏻 Agente Pausado**\\nVocê foi Atribuido como o responsável para esta conversa 💚🤖\",\n  \"private\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1632,
+        -96
+      ],
+      "id": "11fb744e-4feb-4493-9530-018b976a6d31",
+      "name": "Enviar Mensagem Privada",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2496,
+        -112
+      ],
+      "id": "5b2b4d35-8b54-4512-bab7-b18ecb92170a",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"*Houve um erro ao atualizar o banco de dados, por favor avisar Responsável pelo Agente*\",\n  \"private\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2496,
+        48
+      ],
+      "id": "f8663a23-0b1c-44f0-a74c-c0a0d4dc23de",
+      "name": "Enviar Mensagem Privada1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "350ebd47-0765-4602-a42d-885af9b2ce53",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1e64ddd8-4399-4f83-9cbc-29f572280a08",
+              "leftValue": "={{ $json.body.account.id }}",
+              "rightValue": "=1",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "def4548c-0de9-4a3d-94da-23193d806ced",
+              "leftValue": "={{ $json.body.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        -96
+      ],
+      "id": "1a60a580-209b-447e-9834-aa8686224df2",
+      "name": "Conta Aplic e MessaCreated"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ceb20657-373b-4a72-921a-4fa11db5e5e3",
+              "leftValue": "={{ $json.body.private }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ac623888-07f1-46cf-9d73-daa041eb0d6f",
+              "leftValue": "={{ $json.body.conversation.labels }}",
+              "rightValue": "5-atendimento-ia",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "7a894a23-e0c6-4cf7-b1a7-6f53be3ada22",
+              "leftValue": "={{ $json.body.conversation.messages[0].sender.id }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        -96
+      ],
+      "id": "034cb077-5aa5-421f-af50-1febfcec41fc",
+      "name": "Mensagem NaoPrivada e tag:Agente IA"
+    },
+    {
+      "parameters": {
+        "content": "## Recebimento e filtros\nFiltros Aplicados: É da conta #1 APLIC?; É mensagem criada?; É mensagem enviada?; É mensagem não privada?; Tem tag do agente de ia?",
+        "height": 96,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -240
+      ],
+      "id": "75a04be8-b30b-4f4c-8d3f-f65c339ea168",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Config",
+        "height": 96,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -240
+      ],
+      "id": "95a2a30e-febe-4f0c-9e17-3704493a3fb0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Alterações Chatwoot\nRetira Tag ia, adiciona Tag Humano, atribui a agente que enviou mensagem",
+        "height": 96,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -240
+      ],
+      "id": "82b49ce1-c08f-43f9-a326-daba31705c31",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Atualização Banco de Dados\nHumano em atendimento",
+        "height": 96,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        -240
+      ],
+      "id": "de2efa66-dc3e-40e6-8dce-4b98c2876eb4",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Nota Privad\nAgente Pausado",
+        "height": 96
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -240
+      ],
+      "id": "e2709b8c-cd48-4efb-9fc3-be1d609e321e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Disclaimer\n\nEste fluxo é ativado quando alguém envia mensagem pelo chatwoot, é responsável por atribuir atendimento humano no banco de dados, e mostrar visualmente isso no chatwoot\n\nQuando alguém envia mensagem e o agente de ia está em contato, automaticamente, atribui-se a si mesmo e também envia uma nota informando a alteração na conversa",
+        "height": 192,
+        "width": 624,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -464
+      ],
+      "id": "9b7a92fc-6ffe-4b24-a81f-44580fc3ec0c",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.private }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    },
+                    "id": "385847a5-d164-4373-8b8b-9bec8ae0d412"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ba6afff1-306e-479f-96ba-26e09a124d16",
+                    "leftValue": "={{ $json.body.private }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        80,
+        -96
+      ],
+      "id": "50206d45-55d7-48f0-87c9-7978f50a6b1b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e89c86f9-3a71-455e-9312-2c9b6cbdf233",
+              "leftValue": "={{ $json.body.content }}",
+              "rightValue": "agente",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "0331ec48-27ac-41b1-bc17-57b50ad9b556",
+              "leftValue": "={{ $json.body.content }}",
+              "rightValue": "Agente",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "690f955b-046a-4768-96a6-6fa1cb5bb559",
+              "leftValue": "={{ $json.body.content }}",
+              "rightValue": "pausar",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        192
+      ],
+      "id": "db7b976b-afb5-408f-8684-d4dd32b3d299",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8b6e74e2-b88d-4168-8b85-4c41c8259c4d",
+              "leftValue": "={{ $json.body.content }}",
+              "rightValue": "🤖 Agente reatribuído 💚",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              }
+            },
+            {
+              "id": "f3a15ca8-f425-4853-85f8-cadb9761ecf9",
+              "leftValue": "={{ $json.body.content }}",
+              "rightValue": "=**🖐🏻 Agente Pausado**\nVocê foi Atribuido como o responsável para esta conversa 💚🤖",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        320
+      ],
+      "id": "4ed2b4a3-f2e1-410a-b7b0-b20d859819ca",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "amount": 0.85
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        64
+      ],
+      "id": "fa25ce66-b469-408a-b3d1-5af4386d5670",
+      "name": "Wait",
+      "webhookId": "d41deb4f-c689-4492-bb8e-33806b13d15a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3b5fb78b-23d7-48ef-ac99-84fc7998e558",
+              "leftValue": "={{ $('Webhook').item.json.body.content }}",
+              "rightValue": "Houve um erro ao atualizar o banco de dados, por favor avisar Responsável pelo Agente",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        496
+      ],
+      "id": "5ce78978-5554-443c-be8c-1cb7ae9cd44c",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads\nSET \n  atendimento_tipo = 'humano',\n  updated_at = NOW()\nWHERE \n  whatsapp_identificador_ativo = '{{ $json._whatsapp.identificador_ativo }}'\n  OR whatsapp_jid = '{{ $json._whatsapp.jid }}'\n  OR whatsapp_lid = '{{ $json._whatsapp.lid }}'\nRETURNING \n  id,\n  atendimento_tipo,\n  full_name,\n  phone_number;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1248,
+        384
+      ],
+      "id": "039d46db-d6de-4347-b703-05c2f419a64a",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH telefone_limpo AS (\n  SELECT \n    regexp_replace(\n      COALESCE(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '0'  -- fallback impossível, só pra não dar erro\n      ),\n      '[^0-9]',\n      '',\n      'g'\n    ) as phone_clean,\n    -- Variação sem 9 (para DDD >= 28)\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 13  -- 55 + DDD(2) + 9(1) + número(8)\n      AND substring(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      ), 5, 1) = '9'\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4) ||\n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 6)\n      ELSE NULL\n    END as phone_sem_9,\n    -- Variação com 9 (caso o banco tenha sem)\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 12  -- 55 + DDD(2) + número(8) SEM 9\n      AND substring(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      ), 3, 2)::int >= 28\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4) || '9' ||\n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 5)\n      ELSE NULL\n    END as phone_com_9\n),\nlead_existente AS (\n  SELECT \n    *,\n    (chatwoot_contact_id IS NOT NULL) as cadastrado\n  FROM leads\n  WHERE \n    -- 1. BUSCA EXATA por identificadores WhatsApp (prioridade máxima)\n    whatsapp_jid = NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.jid }}', '')\n    OR whatsapp_lid = NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.lid }}', '')\n    OR whatsapp_identificador_ativo = '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.identificador_ativo }}'\n    \n    -- 2. BUSCA FLEXÍVEL por telefone (tenta múltiplas variações)\n    OR (\n      phone_number IS NOT NULL \n      AND (\n        -- Exato\n        regexp_replace(phone_number, '[^0-9]', '', 'g') = (SELECT phone_clean FROM telefone_limpo)\n        -- OU sem 9 (ex: 5534999887766 encontra 553499887766)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') = (SELECT phone_sem_9 FROM telefone_limpo WHERE phone_sem_9 IS NOT NULL)\n        -- OU com 9 (ex: 553499887766 encontra 5534999887766)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') = (SELECT phone_com_9 FROM telefone_limpo WHERE phone_com_9 IS NOT NULL)\n      )\n    )\n  LIMIT 1\n),\nlead_atualizado AS (\n  UPDATE leads\n  SET\n    -- ATUALIZA identificadores WhatsApp (sempre seguro)\n    whatsapp_jid = COALESCE(\n      NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.jid }}', ''), \n      whatsapp_jid\n    ),\n    whatsapp_lid = COALESCE(\n      NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.lid }}', ''), \n      whatsapp_lid\n    ),\n    whatsapp_identificador_ativo = '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.identificador_ativo }}',\n    \n    -- ATUALIZA phone_number SOMENTE se:\n    -- 1. Estava NULL (não tinha)\n    -- 2. E agora veio validado do WhatsApp\n    phone_number = CASE\n      WHEN phone_number IS NULL \n        AND NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', '') IS NOT NULL\n      THEN '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}'\n      ELSE phone_number  -- ← MANTÉM o que tinha (conservador)\n    END,\n    \n    -- Atualiza nome se estava vazio\n    full_name = COALESCE(\n      NULLIF(full_name, ''),\n      '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.nome_contato }}'\n    ),\n    \n    updated_at = NOW()\n  WHERE id = (SELECT id FROM lead_existente)\n  RETURNING \n    *,\n    (chatwoot_contact_id IS NOT NULL) as cadastrado\n),\nlead_criado AS (\n  INSERT INTO leads (\n    phone_number,\n    full_name,\n    source,\n    status,\n    lead_score,\n    atendimento_tipo,\n    whatsapp_phone,\n    whatsapp_jid,\n    whatsapp_lid,\n    whatsapp_identificador_ativo\n  )\n  SELECT \n    -- Só insere telefone se veio validado\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n    '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.nome_contato }}',\n    'whatsapp_direto',\n    'NOVO',\n    0,\n    'ia',\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.jid }}', ''),\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.lid }}', ''),\n    '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.identificador_ativo }}'\n  WHERE NOT EXISTS (SELECT 1 FROM lead_existente)\n  RETURNING \n    *,\n    false as cadastrado\n)\nSELECT * FROM lead_atualizado\nUNION ALL\nSELECT * FROM lead_existente WHERE NOT EXISTS (SELECT 1 FROM lead_atualizado)\nUNION ALL\nSELECT * FROM lead_criado\nLIMIT 1;",
+        "options": {}
+      },
+      "id": "3ea2025f-3076-4505-b698-b2496628e47f",
+      "name": "INSERT | Buscar Lead por Telefone",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1088,
+        384
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "de513178-c9e8-4952-90f6-f09f582e516e",
+              "leftValue": "={{ $json.updated }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "599bfce9-4057-4ef6-96ae-ceb61bb95f2e",
+              "leftValue": "={{ $json.lead_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "4e655c0b-0455-4920-84c4-5203b5c73ebc",
+              "leftValue": "={{ $json.log_evento }}",
+              "rightValue": "fallback_sem_lead_id",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2064,
+        -96
+      ],
+      "id": "091ddb56-42a7-43a7-9f8b-d32f35de24d4",
+      "name": "If"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Conta Aplic e MessaCreated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Limpo": {
+      "main": [
+        [
+          {
+            "node": "config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config": {
+      "main": [
+        [
+          {
+            "node": "Mudar Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tags": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensagem Privada1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mudar Agente": {
+      "main": [
+        [
+          {
+            "node": "Get Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Tags": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem Privada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem Privada": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conta Aplic e MessaCreated": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem NaoPrivada e tag:Agente IA": {
+      "main": [
+        [
+          {
+            "node": "Evento Limpo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Mensagem NaoPrivada e tag:Agente IA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Evento Limpo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "rest-client/2.1.0 (linux-musl x86_64) ruby/3.4.4p34",
+            "content-length": "4360",
+            "accept": "application/json",
+            "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "account": {
+              "id": 1,
+              "name": "Aplic&Go"
+            },
+            "additional_attributes": {},
+            "content_attributes": {},
+            "content_type": "text",
+            "content": "PAUSAR",
+            "conversation": {
+              "additional_attributes": {
+                "mail_subject": "undefined"
+              },
+              "can_reply": true,
+              "channel": "Channel::Api",
+              "contact_inbox": {
+                "id": 13060,
+                "contact_id": 8093,
+                "inbox_id": 7,
+                "source_id": "4ea32d0e-cc82-4d6f-a4ed-2c5c17e69462",
+                "created_at": "2026-02-05T16:44:41.162Z",
+                "updated_at": "2026-02-05T16:44:41.162Z",
+                "hmac_verified": false,
+                "pubsub_token": "MXfneRx6MfjreEynnLdbUf7C"
+              },
+              "id": 8253,
+              "inbox_id": 7,
+              "messages": [
+                {
+                  "id": 150065,
+                  "content": "Qual seu nome pra eu te chamar certinho?",
+                  "account_id": 1,
+                  "inbox_id": 7,
+                  "conversation_id": 8253,
+                  "message_type": 1,
+                  "created_at": 1770311763,
+                  "updated_at": "2026-02-05T17:16:03.916Z",
+                  "private": false,
+                  "status": "sent",
+                  "source_id": "WAID:3EB0896118F5290469A814",
+                  "content_type": "text",
+                  "content_attributes": {},
+                  "sender_type": "User",
+                  "sender_id": 1,
+                  "external_source_ids": {},
+                  "additional_attributes": {},
+                  "processed_message_content": "Qual seu nome pra eu te chamar certinho?",
+                  "sentiment": {},
+                  "conversation": {
+                    "assignee_id": 1,
+                    "unread_count": 0,
+                    "last_activity_at": 1770312270,
+                    "contact_inbox": {
+                      "source_id": "4ea32d0e-cc82-4d6f-a4ed-2c5c17e69462"
+                    }
+                  },
+                  "sender": {
+                    "id": 1,
+                    "name": "Aplic&Go",
+                    "available_name": "Agente Aplic",
+                    "avatar_url": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg",
+                    "type": "user",
+                    "availability_status": "online",
+                    "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg"
+                  }
+                }
+              ],
+              "labels": [
+                "5-atendimento-humano"
+              ],
+              "meta": {
+                "sender": {
+                  "additional_attributes": {
+                    "city": "",
+                    "country": "",
+                    "description": "",
+                    "company_name": "",
+                    "country_code": "",
+                    "social_profiles": {
+                      "github": "",
+                      "tiktok": "",
+                      "twitter": "",
+                      "facebook": "",
+                      "linkedin": "",
+                      "instagram": ""
+                    }
+                  },
+                  "custom_attributes": {},
+                  "email": null,
+                  "id": 8093,
+                  "identifier": "553491962627@s.whatsapp.net",
+                  "name": "Beatriz",
+                  "phone_number": "+5534991962627",
+                  "thumbnail": "",
+                  "blocked": false,
+                  "type": "contact"
+                },
+                "assignee": {
+                  "id": 1,
+                  "name": "Aplic&Go",
+                  "available_name": "Agente Aplic",
+                  "avatar_url": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg",
+                  "type": "user",
+                  "availability_status": "online",
+                  "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg"
+                },
+                "assignee_type": "User",
+                "team": {
+                  "id": 1,
+                  "name": "comercial"
+                },
+                "hmac_verified": false
+              },
+              "status": "open",
+              "custom_attributes": {},
+              "snoozed_until": null,
+              "unread_count": 0,
+              "first_reply_created_at": "2026-02-05T16:44:41.239Z",
+              "priority": null,
+              "waiting_since": 0,
+              "agent_last_seen_at": 1770312270,
+              "contact_last_seen_at": 0,
+              "last_activity_at": 1770312270,
+              "timestamp": 1770312270,
+              "created_at": 1770309881,
+              "updated_at": 1770312270.4305549
+            },
+            "created_at": "2026-02-05T17:24:30.409Z",
+            "id": 150075,
+            "inbox": {
+              "id": 7,
+              "name": "Aplic"
+            },
+            "message_type": "outgoing",
+            "private": true,
+            "sender": {
+              "id": 9,
+              "name": "Bruna Luísa",
+              "email": "bruna.luisa@aplicandgo.com.br",
+              "type": "user"
+            },
+            "source_id": null,
+            "event": "message_created"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/2a4d3140-ea3e-4a09-9501-33581f7d8121-cw-mensagem",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "2e725954-6f5e-4a64-b48e-e22c72b8bbb3",
+  "activeVersionId": "2e725954-6f5e-4a64-b48e-e22c72b8bbb3",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-17T12:37:40.038Z",
+      "createdAt": "2025-11-17T12:37:40.038Z",
+      "role": "workflow:owner",
+      "workflowId": "VYgz9WW7rRSrxikf",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-05T17:46:08.020Z",
+    "createdAt": "2026-02-05T17:45:48.966Z",
+    "versionId": "2e725954-6f5e-4a64-b48e-e22c72b8bbb3",
+    "workflowId": "VYgz9WW7rRSrxikf",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "2a4d3140-ea3e-4a09-9501-33581f7d8121-cw-mensagem",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -288,
+          -96
+        ],
+        "id": "e2970d96-70f6-441d-b2f7-fa8c66a3edfb",
+        "name": "Webhook",
+        "webhookId": "2a4d3140-ea3e-4a09-9501-33581f7d8121"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3e9061ab-c955-43dc-9cd4-0ae87bf1ff81",
+                "name": "conta.nome",
+                "value": "={{ $('Webhook').item.json.body.account.name }}",
+                "type": "string"
+              },
+              {
+                "id": "972126f5-e668-41a9-ae9e-b71699f8c6d4",
+                "name": "conta.id",
+                "value": "={{ $('Webhook').item.json.body.account.id }}",
+                "type": "string"
+              },
+              {
+                "id": "392552ec-5313-4087-8ce4-7ce84e024ae0",
+                "name": "mensagem.tipo",
+                "value": "={{ $('Webhook').item.json.body.content_type }}",
+                "type": "string"
+              },
+              {
+                "id": "1e4ff58e-5e90-440a-bb38-dbd61605fd4c",
+                "name": "mensagem.conteudo",
+                "value": "={{ $('Webhook').item.json.body.content }}",
+                "type": "string"
+              },
+              {
+                "id": "dce467d1-1d35-45c9-886a-7512008e0af5",
+                "name": "mensagem.canal",
+                "value": "={{ $('Webhook').item.json.body.conversation.channel }}",
+                "type": "string"
+              },
+              {
+                "id": "2ba608cb-7926-4eba-8d87-be22a3182d5d",
+                "name": "contato.id",
+                "value": "={{ $('Webhook').item.json.body.conversation.contact_inbox.contact_id }}",
+                "type": "string"
+              },
+              {
+                "id": "a97ddf3e-b570-4db1-b616-1e259659cb05",
+                "name": "contato.inboxId",
+                "value": "={{ $('Webhook').item.json.body.conversation.contact_inbox.inbox_id }}",
+                "type": "string"
+              },
+              {
+                "id": "6b8f5e06-f9df-4766-8e10-2aa2b5aadbf2",
+                "name": "mensagem.conversationId",
+                "value": "={{ $('Webhook').item.json.body.conversation.id }}",
+                "type": "string"
+              },
+              {
+                "id": "0bcd2dda-70e7-4bdc-adbc-5f16412e361a",
+                "name": "mensagem.tipo",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].message_type }}",
+                "type": "string"
+              },
+              {
+                "id": "c52c7dbf-f427-40f2-96aa-e3b5f0233e0f",
+                "name": "mensagem.status",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].status }}",
+                "type": "string"
+              },
+              {
+                "id": "b4d7b6c5-a07c-4064-a068-876bd3c11069",
+                "name": "agente.senderId",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender_id }}",
+                "type": "string"
+              },
+              {
+                "id": "433d885c-8f78-41fc-b141-c46ecaaf482a",
+                "name": "agente.senderType",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender_type }}",
+                "type": "string"
+              },
+              {
+                "id": "710eeac5-24bf-4606-ad57-cc9fa72e2de4",
+                "name": "agente.agenteAtribuido",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].conversation.assignee_id }}",
+                "type": "string"
+              },
+              {
+                "id": "a1bca2d6-a705-492c-838d-8f817a5b82f9",
+                "name": "agente.nome",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.name }}",
+                "type": "string"
+              },
+              {
+                "id": "b92a2362-27bd-41a9-b835-f9776665d65b",
+                "name": "agente.vulgo",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.available_name }}",
+                "type": "string"
+              },
+              {
+                "id": "c08167b0-b124-48bc-9dc2-1d23e5212d72",
+                "name": "agente.tipo",
+                "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.type }}",
+                "type": "string"
+              },
+              {
+                "id": "c3222ee8-6c94-45ee-b0d6-2b037e0775d2",
+                "name": "contato.etiquetas",
+                "value": "={{ $('Webhook').item.json.body.conversation.labels }}",
+                "type": "string"
+              },
+              {
+                "id": "01a50ed4-4bef-4d3e-8720-c1b0bfab01fc",
+                "name": "contato.numero",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.phone_number }}",
+                "type": "string"
+              },
+              {
+                "id": "8ac84114-211b-426d-bd30-43a0b6519947",
+                "name": "contato.email",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.email }}",
+                "type": "string"
+              },
+              {
+                "id": "a812c851-ae83-4216-b26a-15d7628b3ab3",
+                "name": "contato.nomeCompleto",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.name }}",
+                "type": "string"
+              },
+              {
+                "id": "b2165dfa-5173-476a-8cfb-6778bbeedc34",
+                "name": "contato.leadId",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.custom_attributes.lead_id }}",
+                "type": "string"
+              },
+              {
+                "id": "dfa0748d-b016-4cda-9a55-4ea3e3f4dbce",
+                "name": "contato.id",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.id }}",
+                "type": "string"
+              },
+              {
+                "id": "46e57cb9-ccef-4ed9-96a9-d3221935193a",
+                "name": "agente.timeAtribuido",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.team.id }}",
+                "type": "string"
+              },
+              {
+                "id": "e3ebfa43-693b-4ce9-bb86-a2e567f5efc9",
+                "name": "agente.nomeTime",
+                "value": "={{ $('Webhook').item.json.body.conversation.meta.team.name }}",
+                "type": "string"
+              },
+              {
+                "id": "41baa5ee-ec76-411c-995d-cd458d50c740",
+                "name": "mensagem.statusConversa",
+                "value": "={{ $('Webhook').item.json.body.conversation.status }}",
+                "type": "string"
+              },
+              {
+                "id": "ca644940-a568-4436-9c6e-13c63a2ba290",
+                "name": "mensagem.tipo",
+                "value": "={{ $('Webhook').item.json.body.message_type }}",
+                "type": "string"
+              },
+              {
+                "id": "6b6c4aef-3ab7-46e5-9399-9976b0d92486",
+                "name": "mensagem.privada",
+                "value": "={{ $('Webhook').item.json.body.private }}",
+                "type": "string"
+              },
+              {
+                "id": "8a54cecf-4a31-44ba-a412-acd1fc165c17",
+                "name": "mensagem.evento",
+                "value": "={{ $('Webhook').item.json.body.event }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          512,
+          -96
+        ],
+        "id": "c4f5d56c-718a-47ea-a4e2-5552406a6c1c",
+        "name": "Evento Limpo"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+                "name": "chatwoot.url",
+                "value": "https://chat.aplicgo.com",
+                "type": "string"
+              },
+              {
+                "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+                "name": "dina.url",
+                "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+                "type": "string"
+              },
+              {
+                "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+                "name": "dina.instancia",
+                "value": "Aplic_Comercial",
+                "type": "string"
+              },
+              {
+                "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+                "name": "dina.apikey",
+                "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+                "type": "string"
+              },
+              {
+                "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+                "name": "rabbit.fila.mensagens",
+                "value": "fila_processar_resposta",
+                "type": "string"
+              },
+              {
+                "id": "f701268c-e852-4806-a657-67848639ac46",
+                "name": "chatwoot.apikey",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+                "type": "string"
+              },
+              {
+                "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+                "name": "chatwoot.inboxid",
+                "value": "7",
+                "type": "string"
+              },
+              {
+                "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+                "name": "chatwoot.account",
+                "value": "1",
+                "type": "string"
+              },
+              {
+                "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+                "name": "testes.chatwootcontact",
+                "value": "4019",
+                "type": "string"
+              },
+              {
+                "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+                "name": "testes.chatwootconversation",
+                "value": "4063",
+                "type": "string"
+              },
+              {
+                "id": "f78f3c43-9a54-49ca-b2e0-848a30d797a1",
+                "name": "agente.idMaria",
+                "value": "10",
+                "type": "string"
+              },
+              {
+                "id": "b9b42c44-8bbe-412a-8a97-58f90b055777",
+                "name": "agente.idCamilla",
+                "value": "6",
+                "type": "string"
+              },
+              {
+                "id": "028964c3-9386-482a-9488-95b624cefa97",
+                "name": "agente.idOtavio",
+                "value": "7",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          672,
+          -96
+        ],
+        "id": "2e8fe1fc-93ab-4ae0-8e83-2feea9d5aff1",
+        "name": "config"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH input AS (\n  SELECT\n    NULLIF(\n      NULLIF('{{ $('Evento Limpo').item.json.contato.leadId }}', 'null'),\n      ''\n    ) AS lead_id_text\n),\ntentativa AS (\n  UPDATE leads\n  SET atendimento_tipo = 'humano'\n  WHERE id::text = (SELECT lead_id_text FROM input)\n    AND atendimento_tipo <> 'humano'\n  RETURNING id\n)\nSELECT\n  (SELECT lead_id_text FROM input) AS lead_id,\n\n  CASE\n    WHEN (SELECT lead_id_text FROM input) IS NULL\n      THEN 'fallback_sem_lead_id'\n    WHEN EXISTS (SELECT 1 FROM tentativa)\n      THEN 'lead_atualizado_por_fallback'\n    ELSE 'lead_nao_atualizado_fallback'\n  END AS log_evento,\n\n  EXISTS (SELECT 1 FROM tentativa) AS updated;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1856,
+          -96
+        ],
+        "id": "b766da84-b5b5-4c62-9278-d779d920fac1",
+        "name": "Execute a SQL query",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1104,
+          -96
+        ],
+        "id": "b17990c6-c62b-4136-95e7-79a6e7d5328e",
+        "name": "Get Tags",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Tags que você deseja adicionar (se não existirem)\nconst tagsParaAdicionar = \"5-atendimento-humano\";\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"5-atendimento-ia\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1232,
+          -96
+        ],
+        "id": "3df755d8-6874-4b66-b849-dd08b1351ef6",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"labels\": [{{ $json.tagsAtualizadas }}]\n} ",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1360,
+          -96
+        ],
+        "id": "c62ddede-00bb-40fd-91c1-24d3cea5fbba",
+        "name": "Atualizar Tags",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH telefone_limpo AS (\n  SELECT \n    regexp_replace(\n      COALESCE(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '0'\n      ),\n      '[^0-9]',\n      '',\n      'g'\n    ) AS phone_clean,\n\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 13\n      AND substring(regexp_replace(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '[^0-9]', '', 'g'\n      ), 5, 1) = '9'\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4)\n        || substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 6)\n      ELSE NULL\n    END AS phone_sem_9,\n\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 12\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4)\n        || '9'\n        || substring(regexp_replace(\n          NULLIF('{{ $('Evento Limpo').item.json.contato.numero }}', ''),\n          '[^0-9]', '', 'g'\n        ), 5)\n      ELSE NULL\n    END AS phone_com_9\n),\nlead_resolvido AS (\n  SELECT id, atendimento_tipo\n  FROM leads\n  WHERE\n    email = NULLIF('{{ $('Evento Limpo').item.json.contato.email }}', '')\n    OR (\n      phone_number IS NOT NULL\n      AND (\n        regexp_replace(phone_number, '[^0-9]', '', 'g') =\n          (SELECT phone_clean FROM telefone_limpo)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') =\n          (SELECT phone_sem_9 FROM telefone_limpo WHERE phone_sem_9 IS NOT NULL)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') =\n          (SELECT phone_com_9 FROM telefone_limpo WHERE phone_com_9 IS NOT NULL)\n      )\n    )\n  LIMIT 1\n),\nlead_atualizado AS (\n  UPDATE leads\n  SET atendimento_tipo = 'humano'\n  WHERE id = (SELECT id FROM lead_resolvido)\n    AND atendimento_tipo <> 'humano'\n  RETURNING \n    id,\n    atendimento_tipo AS atendimento_tipo_atual\n)\n\nSELECT\n  lr.id AS lead_id,\n  lr.atendimento_tipo AS atendimento_tipo_anterior,\n  COALESCE(la.atendimento_tipo_atual, lr.atendimento_tipo) AS atendimento_tipo_atual,\n\n  CASE\n    WHEN lr.id IS NULL\n      THEN 'nenhum_lead_encontrado'\n    WHEN la.id IS NULL\n      THEN 'lead_ja_estava_humano'\n    ELSE 'lead_atualizado_para_humano'\n  END AS log_evento,\n\n  (la.id IS NOT NULL) AS updated\nFROM lead_resolvido lr\nLEFT JOIN lead_atualizado la ON true;\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2272,
+          32
+        ],
+        "id": "16f9d598-846d-4fb6-9d9d-a47dbaab8034",
+        "name": "Execute a SQL query1",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $json.chatwoot.url }}/api/v1/accounts/{{ $json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/assignments",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"assignee_id\": {{ $('Evento Limpo').item.json.agente.senderId }}\n} ",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          960,
+          -96
+        ],
+        "id": "cc0a6954-361d-4ec7-b3bc-65da7478f8e1",
+        "name": "Mudar Agente",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"content\": \"**🖐🏻 Agente Pausado**\\nVocê foi Atribuido como o responsável para esta conversa 💚🤖\",\n  \"private\": true\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1632,
+          -96
+        ],
+        "id": "11fb744e-4feb-4493-9530-018b976a6d31",
+        "name": "Enviar Mensagem Privada",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          2496,
+          -112
+        ],
+        "id": "5b2b4d35-8b54-4512-bab7-b18ecb92170a",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.mensagem.conversationId }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"content\": \"*Houve um erro ao atualizar o banco de dados, por favor avisar Responsável pelo Agente*\",\n  \"private\": true\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2496,
+          48
+        ],
+        "id": "f8663a23-0b1c-44f0-a74c-c0a0d4dc23de",
+        "name": "Enviar Mensagem Privada1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "350ebd47-0765-4602-a42d-885af9b2ce53",
+                "leftValue": "={{ $json.body.event }}",
+                "rightValue": "message_created",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              },
+              {
+                "id": "1e64ddd8-4399-4f83-9cbc-29f572280a08",
+                "leftValue": "={{ $json.body.account.id }}",
+                "rightValue": "=1",
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "def4548c-0de9-4a3d-94da-23193d806ced",
+                "leftValue": "={{ $json.body.message_type }}",
+                "rightValue": "incoming",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          -96,
+          -96
+        ],
+        "id": "1a60a580-209b-447e-9834-aa8686224df2",
+        "name": "Conta Aplic e MessaCreated"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "ceb20657-373b-4a72-921a-4fa11db5e5e3",
+                "leftValue": "={{ $json.body.private }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "false",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "ac623888-07f1-46cf-9d73-daa041eb0d6f",
+                "leftValue": "={{ $json.body.conversation.labels }}",
+                "rightValue": "5-atendimento-ia",
+                "operator": {
+                  "type": "array",
+                  "operation": "contains",
+                  "rightType": "any"
+                }
+              },
+              {
+                "id": "7a894a23-e0c6-4cf7-b1a7-6f53be3ada22",
+                "leftValue": "={{ $json.body.conversation.messages[0].sender.id }}",
+                "rightValue": 1,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          304,
+          -96
+        ],
+        "id": "034cb077-5aa5-421f-af50-1febfcec41fc",
+        "name": "Mensagem NaoPrivada e tag:Agente IA"
+      },
+      {
+        "parameters": {
+          "content": "## Recebimento e filtros\nFiltros Aplicados: É da conta #1 APLIC?; É mensagem criada?; É mensagem enviada?; É mensagem não privada?; Tem tag do agente de ia?",
+          "height": 96,
+          "width": 624
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          -240
+        ],
+        "id": "75a04be8-b30b-4f4c-8d3f-f65c339ea168",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Config",
+          "height": 96,
+          "width": 416
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          448,
+          -240
+        ],
+        "id": "95a2a30e-febe-4f0c-9e17-3704493a3fb0",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Alterações Chatwoot\nRetira Tag ia, adiciona Tag Humano, atribui a agente que enviou mensagem",
+          "height": 96,
+          "width": 624
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          896,
+          -240
+        ],
+        "id": "82b49ce1-c08f-43f9-a326-daba31705c31",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Atualização Banco de Dados\nHumano em atendimento",
+          "height": 96,
+          "width": 624
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1824,
+          -240
+        ],
+        "id": "de2efa66-dc3e-40e6-8dce-4b98c2876eb4",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Nota Privad\nAgente Pausado",
+          "height": 96
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1552,
+          -240
+        ],
+        "id": "e2709b8c-cd48-4efb-9fc3-be1d609e321e",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "content": "## Disclaimer\n\nEste fluxo é ativado quando alguém envia mensagem pelo chatwoot, é responsável por atribuir atendimento humano no banco de dados, e mostrar visualmente isso no chatwoot\n\nQuando alguém envia mensagem e o agente de ia está em contato, automaticamente, atribui-se a si mesmo e também envia uma nota informando a alteração na conversa",
+          "height": 192,
+          "width": 624,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          -464
+        ],
+        "id": "9b7a92fc-6ffe-4b24-a81f-44580fc3ec0c",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.private }}",
+                      "rightValue": false,
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "false",
+                        "singleValue": true
+                      },
+                      "id": "385847a5-d164-4373-8b8b-9bec8ae0d412"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "ba6afff1-306e-479f-96ba-26e09a124d16",
+                      "leftValue": "={{ $json.body.private }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "true",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          80,
+          -96
+        ],
+        "id": "50206d45-55d7-48f0-87c9-7978f50a6b1b",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "e89c86f9-3a71-455e-9312-2c9b6cbdf233",
+                "leftValue": "={{ $json.body.content }}",
+                "rightValue": "agente",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "0331ec48-27ac-41b1-bc17-57b50ad9b556",
+                "leftValue": "={{ $json.body.content }}",
+                "rightValue": "Agente",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "690f955b-046a-4768-96a6-6fa1cb5bb559",
+                "leftValue": "={{ $json.body.content }}",
+                "rightValue": "pausar",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "looseTypeValidation": true,
+          "options": {
+            "ignoreCase": true
+          }
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          304,
+          192
+        ],
+        "id": "db7b976b-afb5-408f-8684-d4dd32b3d299",
+        "name": "Filter"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "8b6e74e2-b88d-4168-8b85-4c41c8259c4d",
+                "leftValue": "={{ $json.body.content }}",
+                "rightValue": "🤖 Agente reatribuído 💚",
+                "operator": {
+                  "type": "string",
+                  "operation": "notRegex"
+                }
+              },
+              {
+                "id": "f3a15ca8-f425-4853-85f8-cadb9761ecf9",
+                "leftValue": "={{ $json.body.content }}",
+                "rightValue": "=**🖐🏻 Agente Pausado**\nVocê foi Atribuido como o responsável para esta conversa 💚🤖",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          304,
+          320
+        ],
+        "id": "4ed2b4a3-f2e1-410a-b7b0-b20d859819ca",
+        "name": "Filter1"
+      },
+      {
+        "parameters": {
+          "amount": 0.85
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          304,
+          64
+        ],
+        "id": "fa25ce66-b469-408a-b3d1-5af4386d5670",
+        "name": "Wait",
+        "webhookId": "d41deb4f-c689-4492-bb8e-33806b13d15a"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "3b5fb78b-23d7-48ef-ac99-84fc7998e558",
+                "leftValue": "={{ $('Webhook').item.json.body.content }}",
+                "rightValue": "Houve um erro ao atualizar o banco de dados, por favor avisar Responsável pelo Agente",
+                "operator": {
+                  "type": "string",
+                  "operation": "notRegex"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          304,
+          496
+        ],
+        "id": "5ce78978-5554-443c-be8c-1cb7ae9cd44c",
+        "name": "Filter2"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE leads\nSET \n  atendimento_tipo = 'humano',\n  updated_at = NOW()\nWHERE \n  whatsapp_identificador_ativo = '{{ $json._whatsapp.identificador_ativo }}'\n  OR whatsapp_jid = '{{ $json._whatsapp.jid }}'\n  OR whatsapp_lid = '{{ $json._whatsapp.lid }}'\nRETURNING \n  id,\n  atendimento_tipo,\n  full_name,\n  phone_number;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1248,
+          384
+        ],
+        "id": "039d46db-d6de-4347-b703-05c2f419a64a",
+        "name": "Execute a SQL query2",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH telefone_limpo AS (\n  SELECT \n    regexp_replace(\n      COALESCE(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '0'  -- fallback impossível, só pra não dar erro\n      ),\n      '[^0-9]',\n      '',\n      'g'\n    ) as phone_clean,\n    -- Variação sem 9 (para DDD >= 28)\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 13  -- 55 + DDD(2) + 9(1) + número(8)\n      AND substring(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      ), 5, 1) = '9'\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4) ||\n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 6)\n      ELSE NULL\n    END as phone_sem_9,\n    -- Variação com 9 (caso o banco tenha sem)\n    CASE\n      WHEN length(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      )) = 12  -- 55 + DDD(2) + número(8) SEM 9\n      AND substring(regexp_replace(\n        NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n        '[^0-9]', '', 'g'\n      ), 3, 2)::int >= 28\n      THEN \n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 1, 4) || '9' ||\n        substring(regexp_replace(\n          NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n          '[^0-9]', '', 'g'\n        ), 5)\n      ELSE NULL\n    END as phone_com_9\n),\nlead_existente AS (\n  SELECT \n    *,\n    (chatwoot_contact_id IS NOT NULL) as cadastrado\n  FROM leads\n  WHERE \n    -- 1. BUSCA EXATA por identificadores WhatsApp (prioridade máxima)\n    whatsapp_jid = NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.jid }}', '')\n    OR whatsapp_lid = NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.lid }}', '')\n    OR whatsapp_identificador_ativo = '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.identificador_ativo }}'\n    \n    -- 2. BUSCA FLEXÍVEL por telefone (tenta múltiplas variações)\n    OR (\n      phone_number IS NOT NULL \n      AND (\n        -- Exato\n        regexp_replace(phone_number, '[^0-9]', '', 'g') = (SELECT phone_clean FROM telefone_limpo)\n        -- OU sem 9 (ex: 5534999887766 encontra 553499887766)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') = (SELECT phone_sem_9 FROM telefone_limpo WHERE phone_sem_9 IS NOT NULL)\n        -- OU com 9 (ex: 553499887766 encontra 5534999887766)\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g') = (SELECT phone_com_9 FROM telefone_limpo WHERE phone_com_9 IS NOT NULL)\n      )\n    )\n  LIMIT 1\n),\nlead_atualizado AS (\n  UPDATE leads\n  SET\n    -- ATUALIZA identificadores WhatsApp (sempre seguro)\n    whatsapp_jid = COALESCE(\n      NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.jid }}', ''), \n      whatsapp_jid\n    ),\n    whatsapp_lid = COALESCE(\n      NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.lid }}', ''), \n      whatsapp_lid\n    ),\n    whatsapp_identificador_ativo = '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.identificador_ativo }}',\n    \n    -- ATUALIZA phone_number SOMENTE se:\n    -- 1. Estava NULL (não tinha)\n    -- 2. E agora veio validado do WhatsApp\n    phone_number = CASE\n      WHEN phone_number IS NULL \n        AND NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', '') IS NOT NULL\n      THEN '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}'\n      ELSE phone_number  -- ← MANTÉM o que tinha (conservador)\n    END,\n    \n    -- Atualiza nome se estava vazio\n    full_name = COALESCE(\n      NULLIF(full_name, ''),\n      '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.nome_contato }}'\n    ),\n    \n    updated_at = NOW()\n  WHERE id = (SELECT id FROM lead_existente)\n  RETURNING \n    *,\n    (chatwoot_contact_id IS NOT NULL) as cadastrado\n),\nlead_criado AS (\n  INSERT INTO leads (\n    phone_number,\n    full_name,\n    source,\n    status,\n    lead_score,\n    atendimento_tipo,\n    whatsapp_phone,\n    whatsapp_jid,\n    whatsapp_lid,\n    whatsapp_identificador_ativo\n  )\n  SELECT \n    -- Só insere telefone se veio validado\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n    '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.nome_contato }}',\n    'whatsapp_direto',\n    'NOVO',\n    0,\n    'ia',\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.telefone }}', ''),\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.jid }}', ''),\n    NULLIF('{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.lid }}', ''),\n    '{{ $(\"Resolve Lid e Jid\").item.json._whatsapp.identificador_ativo }}'\n  WHERE NOT EXISTS (SELECT 1 FROM lead_existente)\n  RETURNING \n    *,\n    false as cadastrado\n)\nSELECT * FROM lead_atualizado\nUNION ALL\nSELECT * FROM lead_existente WHERE NOT EXISTS (SELECT 1 FROM lead_atualizado)\nUNION ALL\nSELECT * FROM lead_criado\nLIMIT 1;",
+          "options": {}
+        },
+        "id": "3ea2025f-3076-4505-b698-b2496628e47f",
+        "name": "INSERT | Buscar Lead por Telefone",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1088,
+          384
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "de513178-c9e8-4952-90f6-f09f582e516e",
+                "leftValue": "={{ $json.updated }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "599bfce9-4057-4ef6-96ae-ceb61bb95f2e",
+                "leftValue": "={{ $json.lead_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "4e655c0b-0455-4920-84c4-5203b5c73ebc",
+                "leftValue": "={{ $json.log_evento }}",
+                "rightValue": "fallback_sem_lead_id",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2064,
+          -96
+        ],
+        "id": "091ddb56-42a7-43a7-9f8b-d32f35de24d4",
+        "name": "If"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Conta Aplic e MessaCreated",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evento Limpo": {
+        "main": [
+          [
+            {
+              "node": "config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "config": {
+        "main": [
+          [
+            {
+              "node": "Mudar Agente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execute a SQL query1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Tags": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Atualizar Tags",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query1": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar Mensagem Privada1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mudar Agente": {
+        "main": [
+          [
+            {
+              "node": "Get Tags",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Atualizar Tags": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem Privada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem Privada": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Conta Aplic e MessaCreated": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mensagem NaoPrivada e tag:Agente IA": {
+        "main": [
+          [
+            {
+              "node": "Evento Limpo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Mensagem NaoPrivada e tag:Agente IA",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter": {
+        "main": [
+          [
+            {
+              "node": "Filter1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter1": {
+        "main": [
+          [
+            {
+              "node": "Filter2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter2": {
+        "main": [
+          [
+            {
+              "node": "Evento Limpo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execute a SQL query1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 2e725954",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
