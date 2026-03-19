@@ -1,0 +1,1250 @@
+{
+  "updatedAt": "2026-01-04T15:28:37.158Z",
+  "createdAt": "2025-11-06T00:01:57.959Z",
+  "id": "CRkpeln0iXiwLsiY",
+  "name": "Agente SDR - CRM1",
+  "active": true,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "numero"
+            },
+            {
+              "name": "nome"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "dados",
+              "type": "object"
+            },
+            {
+              "name": "ig_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        592
+      ],
+      "id": "d559e11f-435f-44c9-9a69-95f1c8c12f36",
+      "name": "input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "df9ca9c2-c959-4823-8648-f8debc846ae0",
+              "name": "return",
+              "value": "lead qualificado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        608
+      ],
+      "id": "eb0f148b-bd2a-4b34-bcfa-50ccb0b27329",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Criar tabelas - Postgress\n",
+        "height": 320,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4be68861-9832-49b7-a96c-412500db1108",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DROP TABLE IF EXISTS public.sdr_clientes;\n\nCREATE TABLE public.sdr_clientes (\n  id character varying NOT NULL,\n  nome character varying NULL,\n  email character varying NULL,\n  crm_id character varying NULL,\n  dados jsonb NULL,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  CONSTRAINT sdr_clientes_pkey PRIMARY KEY (id)\n) TABLESPACE pg_default;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        144,
+        128
+      ],
+      "id": "d2047a23-fa2b-4655-b50c-620009da1ee7",
+      "name": "sdr_clientes"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7a83ce97-6016-4c39-ba17-6f6d807d369f",
+              "leftValue": "={{ $json.crm_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        592
+      ],
+      "id": "b258c8ee-95c1-4d63-830c-4eaef5e2c4d3",
+      "name": "crm_vazio"
+    },
+    {
+      "parameters": {
+        "team": "9012646112",
+        "space": "90124223369",
+        "folderless": true,
+        "list": "901210600200",
+        "name": "={{ $json.nome }} | {{ $json.id.split('@')[0] }}",
+        "additionalFields": {
+          "content": "=Email: {{ $json.email }}\nSegmento: {{ $json.dados.segmento }}\nTrabalha com IA: {{ $json.dados.trabalha_com_ia }}"
+        }
+      },
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        848,
+        448
+      ],
+      "id": "465a11f6-1743-4852-9582-3fa97360feb9",
+      "name": "novo_lead"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sdr_clientes",
+          "mode": "list",
+          "cachedResultName": "sdr_clientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=55{{ $json.numero }}",
+            "nome": "={{ $json.nome }}",
+            "email": "={{ $json.email }}",
+            "dados": "={{ $json.dados }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "crm_id",
+              "displayName": "crm_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "ig_id",
+              "displayName": "ig_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "dados",
+              "displayName": "dados",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        384,
+        592
+      ],
+      "id": "b076e4e5-2040-43f4-94c5-18b286dfc4bc",
+      "name": "Insert or update rows in a table"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3ec794d3-7a0e-4260-91cb-791833739f4a",
+              "leftValue": "={{ $('input').item.json.ig_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        848
+      ],
+      "id": "c9a67f3f-fb3d-4cde-8a7c-49a2b5f06c7a",
+      "name": "filtro"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sdr_clientes",
+          "mode": "list",
+          "cachedResultName": "sdr_clientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ig_id": "={{ $('input').item.json.ig_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "crm_id",
+              "displayName": "crm_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ig_id",
+              "displayName": "ig_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dados",
+              "displayName": "dados",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        848,
+        752
+      ],
+      "id": "029575c6-1ed7-4451-9f8b-5261e535f152",
+      "name": "atualizar_ig_id"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sdr_clientes",
+          "mode": "list",
+          "cachedResultName": "sdr_clientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Insert or update rows in a table').item.json.id }}",
+            "crm_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "crm_id",
+              "displayName": "crm_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ig_id",
+              "displayName": "ig_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dados",
+              "displayName": "dados",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1072,
+        448
+      ],
+      "id": "cb0f895e-9e30-4c1b-b8b8-3caea0ed36cb",
+      "name": "atualizar_crm_id"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.sdr_chats\nSET session_id = '{{ $json.id }}'\nWHERE session_id = '{{ $('input').item.json.ig_id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        848,
+        960
+      ],
+      "id": "2cf5a755-22fc-48a8-9b73-f20f86a62e94",
+      "name": "atualizar_chats"
+    }
+  ],
+  "connections": {
+    "input": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crm_vazio": {
+      "main": [
+        [
+          {
+            "node": "novo_lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "novo_lead": {
+      "main": [
+        [
+          {
+            "node": "atualizar_crm_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "crm_vazio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "filtro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filtro": {
+      "main": [
+        [
+          {
+            "node": "atualizar_ig_id",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "atualizar_chats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualizar_crm_id": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "input": [
+      {
+        "json": {
+          "numero": "43991821990",
+          "nome": "Guilherme Reis",
+          "email": "comercial@dinastia.uk",
+          "dados": {
+            "trabalha_com_ia": "não",
+            "segmento": "agencia de trafego pago"
+          },
+          "ig_id": "1764286627754785"
+        }
+      }
+    ]
+  },
+  "versionId": "2e6fe485-c2d2-4bb1-9619-7a7dd8425d2d",
+  "activeVersionId": "2e6fe485-c2d2-4bb1-9619-7a7dd8425d2d",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-06T00:01:57.959Z",
+      "createdAt": "2025-11-06T00:01:57.959Z",
+      "role": "workflow:owner",
+      "workflowId": "CRkpeln0iXiwLsiY",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-11-27T13:17:45.927Z",
+    "createdAt": "2025-11-27T13:17:45.927Z",
+    "versionId": "2e6fe485-c2d2-4bb1-9619-7a7dd8425d2d",
+    "workflowId": "CRkpeln0iXiwLsiY",
+    "nodes": [
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "numero"
+              },
+              {
+                "name": "nome"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "dados",
+                "type": "object"
+              },
+              {
+                "name": "ig_id"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          592
+        ],
+        "id": "d559e11f-435f-44c9-9a69-95f1c8c12f36",
+        "name": "input"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "df9ca9c2-c959-4823-8648-f8debc846ae0",
+                "name": "return",
+                "value": "lead qualificado",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1328,
+          608
+        ],
+        "id": "eb0f148b-bd2a-4b34-bcfa-50ccb0b27329",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "content": "## Criar tabelas - Postgress\n",
+          "height": 320,
+          "width": 400
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "4be68861-9832-49b7-a96c-412500db1108",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "DROP TABLE IF EXISTS public.sdr_clientes;\n\nCREATE TABLE public.sdr_clientes (\n  id character varying NOT NULL,\n  nome character varying NULL,\n  email character varying NULL,\n  crm_id character varying NULL,\n  dados jsonb NULL,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  CONSTRAINT sdr_clientes_pkey PRIMARY KEY (id)\n) TABLESPACE pg_default;\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          144,
+          128
+        ],
+        "id": "d2047a23-fa2b-4655-b50c-620009da1ee7",
+        "name": "sdr_clientes"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "7a83ce97-6016-4c39-ba17-6f6d807d369f",
+                "leftValue": "={{ $json.crm_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notExists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          608,
+          592
+        ],
+        "id": "b258c8ee-95c1-4d63-830c-4eaef5e2c4d3",
+        "name": "crm_vazio"
+      },
+      {
+        "parameters": {
+          "team": "9012646112",
+          "space": "90124223369",
+          "folderless": true,
+          "list": "901210600200",
+          "name": "={{ $json.nome }} | {{ $json.id.split('@')[0] }}",
+          "additionalFields": {
+            "content": "=Email: {{ $json.email }}\nSegmento: {{ $json.dados.segmento }}\nTrabalha com IA: {{ $json.dados.trabalha_com_ia }}"
+          }
+        },
+        "type": "n8n-nodes-base.clickUp",
+        "typeVersion": 1,
+        "position": [
+          848,
+          448
+        ],
+        "id": "465a11f6-1743-4852-9582-3fa97360feb9",
+        "name": "novo_lead"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "sdr_clientes",
+            "mode": "list",
+            "cachedResultName": "sdr_clientes"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "id": "=55{{ $json.numero }}",
+              "nome": "={{ $json.nome }}",
+              "email": "={{ $json.email }}",
+              "dados": "={{ $json.dados }}"
+            },
+            "matchingColumns": [
+              "id"
+            ],
+            "schema": [
+              {
+                "id": "id",
+                "displayName": "id",
+                "required": true,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "nome",
+                "displayName": "nome",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": false
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": false
+              },
+              {
+                "id": "crm_id",
+                "displayName": "crm_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": false,
+                "removed": true
+              },
+              {
+                "id": "ig_id",
+                "displayName": "ig_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": false,
+                "removed": true
+              },
+              {
+                "id": "dados",
+                "displayName": "dados",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "object",
+                "canBeUsedToMatch": false
+              },
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": false,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          384,
+          592
+        ],
+        "id": "b076e4e5-2040-43f4-94c5-18b286dfc4bc",
+        "name": "Insert or update rows in a table"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "3ec794d3-7a0e-4260-91cb-791833739f4a",
+                "leftValue": "={{ $('input').item.json.ig_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          640,
+          848
+        ],
+        "id": "c9a67f3f-fb3d-4cde-8a7c-49a2b5f06c7a",
+        "name": "filtro"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "sdr_clientes",
+            "mode": "list",
+            "cachedResultName": "sdr_clientes"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "id": "={{ $json.id }}",
+              "ig_id": "={{ $('input').item.json.ig_id }}"
+            },
+            "matchingColumns": [
+              "id"
+            ],
+            "schema": [
+              {
+                "id": "id",
+                "displayName": "id",
+                "required": true,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "nome",
+                "displayName": "nome",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "crm_id",
+                "displayName": "crm_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "ig_id",
+                "displayName": "ig_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "dados",
+                "displayName": "dados",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "object",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          848,
+          752
+        ],
+        "id": "029575c6-1ed7-4451-9f8b-5261e535f152",
+        "name": "atualizar_ig_id"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "sdr_clientes",
+            "mode": "list",
+            "cachedResultName": "sdr_clientes"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "id": "={{ $('Insert or update rows in a table').item.json.id }}",
+              "crm_id": "={{ $json.id }}"
+            },
+            "matchingColumns": [
+              "id"
+            ],
+            "schema": [
+              {
+                "id": "id",
+                "displayName": "id",
+                "required": true,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "nome",
+                "displayName": "nome",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "crm_id",
+                "displayName": "crm_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "ig_id",
+                "displayName": "ig_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "dados",
+                "displayName": "dados",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "object",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1072,
+          448
+        ],
+        "id": "cb0f895e-9e30-4c1b-b8b8-3caea0ed36cb",
+        "name": "atualizar_crm_id"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE public.sdr_chats\nSET session_id = '{{ $json.id }}'\nWHERE session_id = '{{ $('input').item.json.ig_id }}';",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          848,
+          960
+        ],
+        "id": "2cf5a755-22fc-48a8-9b73-f20f86a62e94",
+        "name": "atualizar_chats"
+      }
+    ],
+    "connections": {
+      "input": {
+        "main": [
+          [
+            {
+              "node": "Insert or update rows in a table",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "crm_vazio": {
+        "main": [
+          [
+            {
+              "node": "novo_lead",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "novo_lead": {
+        "main": [
+          [
+            {
+              "node": "atualizar_crm_id",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert or update rows in a table": {
+        "main": [
+          [
+            {
+              "node": "crm_vazio",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "filtro",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "filtro": {
+        "main": [
+          [
+            {
+              "node": "atualizar_ig_id",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "atualizar_chats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "atualizar_crm_id": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "system migration",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
