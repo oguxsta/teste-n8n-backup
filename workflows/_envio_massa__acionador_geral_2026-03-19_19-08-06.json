@@ -1,0 +1,645 @@
+{
+  "updatedAt": "2026-01-15T18:56:29.070Z",
+  "createdAt": "2026-01-15T17:18:53.424Z",
+  "id": "URDBvo4sykKxxKD6O-w8j",
+  "name": "[Envio-Massa] Acionador Geral",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "execute-pending-leads-15bed87f-c6d5-4ca6-be9a-42368d360ca5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4cc75661-f8d8-41d5-8893-0e2b4f875183",
+      "name": "Webhook",
+      "webhookId": "15bed87f-c6d5-4ca6-be9a-42368d360ca5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        464,
+        0
+      ],
+      "id": "b0e40e56-43bc-4f2a-afba-b0b8c2293d3a",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/process-next-lead-2a8acc88-debe-484a-8004-1691eea6acbd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        -128
+      ],
+      "id": "714f41d3-ae18-45a8-ae89-53e19d674ae9",
+      "name": "Chamar Mensageiro"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "5556e05d-a09a-4d2b-9441-e81005d305b3",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO campaign_runs (\n    campaign_id,\n    status,\n    trigger_source,\n    trigger_ref,\n    started_at\n) VALUES (\n    $1,\n    'running',\n    'generico',\n    'webhook',\n    NOW()\n)\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ $json.campaign_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        16
+      ],
+      "id": "7ff7fbaa-5206-4759-9773-6f66ae3768a7",
+      "name": "Campaign_Runs",
+      "credentials": {
+        "postgres": {
+          "id": "mXJt3ouMM8ODCrgl",
+          "name": "[Utilitario] - EnvioMensagens"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT cl.campaign_id, c.send_interval_seconds\nFROM campaign_leads cl\nJOIN campaigns c ON c.id = cl.campaign_id\nWHERE cl.status IN ('draft', 'ready');",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "52783fb7-f122-4ca3-b616-d67d35923242",
+      "name": "Select_Campaigns",
+      "credentials": {
+        "postgres": {
+          "id": "mXJt3ouMM8ODCrgl",
+          "name": "[Utilitario] - EnvioMensagens"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.aplicgo.com//api/v1/accounts/1/conversations/{{ $('Webhook').item.json.body.id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "Sucesso 🚀|Execução iniciada para campanhas com leads pendentes"
+            },
+            {
+              "name": "private",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        848,
+        -128
+      ],
+      "id": "b2ed9309-09f5-48f0-9b0e-c50177092acc",
+      "name": "Responder com Nota1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Select_Campaigns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Campaign_Runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamar Mensageiro": {
+      "main": [
+        []
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Responder com Nota1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Campaign_Runs": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select_Campaigns": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder com Nota1": {
+      "main": [
+        [
+          {
+            "node": "Chamar Mensageiro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "rest-client/2.1.0 (linux-musl x86_64) ruby/3.4.4p34",
+            "content-length": "4918",
+            "accept": "application/json",
+            "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "additional_attributes": {},
+            "can_reply": true,
+            "channel": "Channel::Api",
+            "contact_inbox": {
+              "id": 8361,
+              "contact_id": 4014,
+              "inbox_id": 10,
+              "source_id": "dfd75dc5-da98-4a16-a82b-c0825a1e727f",
+              "created_at": "2025-12-04T13:28:43.215Z",
+              "updated_at": "2025-12-04T13:28:43.215Z",
+              "hmac_verified": false,
+              "pubsub_token": "78fRm9AMKwxqA8wfCMdhaLyM"
+            },
+            "id": 5742,
+            "inbox_id": 10,
+            "messages": [
+              {
+                "id": 132294,
+                "content": "Show, uma pergunta. Eu estou te treinando e gostaria de saber exatamente em que ponto e como você conseguiu estas informações do club aplic",
+                "account_id": 1,
+                "inbox_id": 10,
+                "conversation_id": 5742,
+                "message_type": 0,
+                "created_at": 1768407526,
+                "updated_at": "2026-01-14T16:18:46.838Z",
+                "private": false,
+                "status": "sent",
+                "source_id": "WAID:3EB02E90C2787842DDDD75",
+                "content_type": "text",
+                "content_attributes": {},
+                "sender_type": "Contact",
+                "sender_id": 4014,
+                "external_source_ids": {},
+                "additional_attributes": {},
+                "processed_message_content": "Show, uma pergunta. Eu estou te treinando e gostaria de saber exatamente em que ponto e como você conseguiu estas informações do club aplic",
+                "sentiment": {},
+                "conversation": {
+                  "assignee_id": 1,
+                  "unread_count": 0,
+                  "last_activity_at": 1768407526,
+                  "contact_inbox": {
+                    "source_id": "dfd75dc5-da98-4a16-a82b-c0825a1e727f"
+                  }
+                },
+                "sender": {
+                  "additional_attributes": {
+                    "city": "",
+                    "country": "",
+                    "description": "",
+                    "company_name": "",
+                    "country_code": "",
+                    "avatar_url_hash": "225eafe5313a8227e4fe1dae733ecc22e6a66f5d9bd64b15c6c08c9f801dda66",
+                    "social_profiles": {
+                      "github": "",
+                      "twitter": "",
+                      "facebook": "",
+                      "linkedin": "",
+                      "instagram": ""
+                    },
+                    "last_avatar_sync_at": "2025-11-07T18:46:49Z"
+                  },
+                  "custom_attributes": {
+                    "lead_id": "1d7152bf-3695-4101-85a2-6ee9438eb227",
+                    "data_de_follow_up": "2025-01-10T03:00:00.000Z"
+                  },
+                  "email": "jesreeldavidhobusteste@gmail.com",
+                  "id": 4014,
+                  "identifier": "554599083422@s.whatsapp.net",
+                  "name": "Jesreel David Hobus",
+                  "phone_number": "+554599083422",
+                  "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc0FFIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--4233fce95856888e0b27e8dfca225ad4ef9ef2ff/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lKYW5CbFp3WTZCa1ZVT2hOeVpYTnBlbVZmZEc5ZlptbHNiRnNIYVFINk1BPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--2f70e2580cf4150f8212e56cd3c53e9ec1e34e73/190474811a1f080ebdbee1457580cee9.jpeg",
+                  "blocked": false,
+                  "type": "contact"
+                }
+              }
+            ],
+            "labels": [
+              "1-lead-novo",
+              "5-atendimento-humano"
+            ],
+            "meta": {
+              "sender": {
+                "additional_attributes": {
+                  "city": "",
+                  "country": "",
+                  "description": "",
+                  "company_name": "",
+                  "country_code": "",
+                  "avatar_url_hash": "225eafe5313a8227e4fe1dae733ecc22e6a66f5d9bd64b15c6c08c9f801dda66",
+                  "social_profiles": {
+                    "github": "",
+                    "twitter": "",
+                    "facebook": "",
+                    "linkedin": "",
+                    "instagram": ""
+                  },
+                  "last_avatar_sync_at": "2025-11-07T18:46:49Z"
+                },
+                "custom_attributes": {
+                  "lead_id": "1d7152bf-3695-4101-85a2-6ee9438eb227",
+                  "data_de_follow_up": "2025-01-10T03:00:00.000Z"
+                },
+                "email": "jesreeldavidhobusteste@gmail.com",
+                "id": 4014,
+                "identifier": "554599083422@s.whatsapp.net",
+                "name": "Jesreel David Hobus",
+                "phone_number": "+554599083422",
+                "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc0FFIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--4233fce95856888e0b27e8dfca225ad4ef9ef2ff/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lKYW5CbFp3WTZCa1ZVT2hOeVpYTnBlbVZmZEc5ZlptbHNiRnNIYVFINk1BPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--2f70e2580cf4150f8212e56cd3c53e9ec1e34e73/190474811a1f080ebdbee1457580cee9.jpeg",
+                "blocked": false,
+                "type": "contact"
+              },
+              "assignee": {
+                "id": 1,
+                "name": "Aplic&Go",
+                "available_name": "Agente Aplic",
+                "avatar_url": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg",
+                "type": "user",
+                "availability_status": null,
+                "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg"
+              },
+              "assignee_type": "User",
+              "team": {
+                "id": 1,
+                "name": "comercial"
+              },
+              "hmac_verified": false
+            },
+            "status": "open",
+            "custom_attributes": {},
+            "snoozed_until": null,
+            "unread_count": 0,
+            "first_reply_created_at": "2025-12-04T19:46:47.511Z",
+            "priority": null,
+            "waiting_since": 1768311112,
+            "agent_last_seen_at": 1768501436,
+            "contact_last_seen_at": 0,
+            "last_activity_at": 1768407526,
+            "timestamp": 1768407526,
+            "created_at": 1764854923,
+            "updated_at": 1768407526.842326,
+            "event": "macro.executed"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/execute-pending-leads-15bed87f-c6d5-4ca6-be9a-42368d360ca5",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "95aff2ab-039c-47cf-a602-69f895ab9b45",
+  "activeVersionId": "95aff2ab-039c-47cf-a602-69f895ab9b45",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-15T17:18:53.424Z",
+      "createdAt": "2026-01-15T17:18:53.424Z",
+      "role": "workflow:owner",
+      "workflowId": "URDBvo4sykKxxKD6O-w8j",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-15T18:56:30.397Z",
+    "createdAt": "2026-01-15T18:56:29.072Z",
+    "versionId": "95aff2ab-039c-47cf-a602-69f895ab9b45",
+    "workflowId": "URDBvo4sykKxxKD6O-w8j",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "execute-pending-leads-15bed87f-c6d5-4ca6-be9a-42368d360ca5",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "4cc75661-f8d8-41d5-8893-0e2b4f875183",
+        "name": "Webhook",
+        "webhookId": "15bed87f-c6d5-4ca6-be9a-42368d360ca5"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          464,
+          0
+        ],
+        "id": "b0e40e56-43bc-4f2a-afba-b0b8c2293d3a",
+        "name": "Loop Over Items"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/process-next-lead-2a8acc88-debe-484a-8004-1691eea6acbd",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1024,
+          -128
+        ],
+        "id": "714f41d3-ae18-45a8-ae89-53e19d674ae9",
+        "name": "Chamar Mensageiro"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          672,
+          -128
+        ],
+        "id": "5556e05d-a09a-4d2b-9441-e81005d305b3",
+        "name": "Limit"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO campaign_runs (\n    campaign_id,\n    status,\n    trigger_source,\n    trigger_ref,\n    started_at\n) VALUES (\n    $1,\n    'running',\n    'generico',\n    'webhook',\n    NOW()\n)\nRETURNING id;",
+          "options": {
+            "queryReplacement": "={{ $json.campaign_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          672,
+          16
+        ],
+        "id": "7ff7fbaa-5206-4759-9773-6f66ae3768a7",
+        "name": "Campaign_Runs",
+        "credentials": {
+          "postgres": {
+            "id": "mXJt3ouMM8ODCrgl",
+            "name": "[Utilitario] - EnvioMensagens"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT DISTINCT cl.campaign_id, c.send_interval_seconds\nFROM campaign_leads cl\nJOIN campaigns c ON c.id = cl.campaign_id\nWHERE cl.status IN ('draft', 'ready');",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          208,
+          0
+        ],
+        "id": "52783fb7-f122-4ca3-b616-d67d35923242",
+        "name": "Select_Campaigns",
+        "credentials": {
+          "postgres": {
+            "id": "mXJt3ouMM8ODCrgl",
+            "name": "[Utilitario] - EnvioMensagens"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://chat.aplicgo.com//api/v1/accounts/1/conversations/{{ $('Webhook').item.json.body.id }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "content",
+                "value": "Sucesso 🚀|Execução iniciada para campanhas com leads pendentes"
+              },
+              {
+                "name": "private",
+                "value": "true"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          848,
+          -128
+        ],
+        "id": "b2ed9309-09f5-48f0-9b0e-c50177092acc",
+        "name": "Responder com Nota1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Select_Campaigns",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Campaign_Runs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chamar Mensageiro": {
+        "main": [
+          []
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "Responder com Nota1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Campaign_Runs": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Select_Campaigns": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Responder com Nota1": {
+        "main": [
+          [
+            {
+              "node": "Chamar Mensageiro",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 95aff2ab",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
