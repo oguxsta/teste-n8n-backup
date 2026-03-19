@@ -1,0 +1,272 @@
+{
+  "updatedAt": "2026-03-03T18:46:56.502Z",
+  "createdAt": "2026-03-02T21:50:38.398Z",
+  "id": "ITCrX53zkZo9MvI0",
+  "name": "HandOff Setores",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "c538847b-ab8d-4419-81d9-0c435546d52c",
+      "name": "Webhook",
+      "webhookId": "20142f7f-6b89-4f23-83a7-8089cd73cedd"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.leads\nSET agente_responsavel_id = ac.id\nFROM public.agentes_config ac\nWHERE ac.nome = '{{ $('Webhook').item.json.body.target_agent }}'  -- ex: \"secretária\"\n  AND public.leads.id = '{{$('Webhook').item.json.body.lead.id }}'\nRETURNING \n  public.leads.id          AS lead_id,\n  public.leads.full_name   AS lead_nome,\n  ac.id                    AS agente_id,\n  ac.nome                  AS agente_nome,\n  ac.tipo                  AS agente_tipo,\n  ac.numero_whatsapp,\n  ac.prompt_sistema,\n  ac.modelo_ia,\n  ac.temperatura,\n  ac.max_tokens;",
+        "options": {}
+      },
+      "id": "6a2f4a92-f633-4286-af2f-dac5a14b308f",
+      "name": "SQL - Atualizar Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/agente-secretaria-95551d82-80df-4b3e-a30f-c69b91ab0e5c",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Webhook').item.json.body }}",
+        "options": {}
+      },
+      "id": "b5f326bf-b565-42f0-9284-f486bfe7edf4",
+      "name": "HTTP - Acionar Agente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "SQL - Atualizar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL - Atualizar Lead": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Acionar Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.5",
+            "content-length": "913",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "target_agent": "secretaria",
+            "nome_completo_cliente": "David",
+            "preferencia_horario": "Final da tarde (depois das 17h)",
+            "cidade_lead": "Uberlândia",
+            "resumo_contexto": "Lead David quer agendar consultoria em Uberlândia. Já está ciente da faixa de preço (5k-18k) e da natureza da consultoria. Prefere horários após as 17h.",
+            "motivo": "Agendamento de consultoria presencial.",
+            "mensagem_inicial": "Com certeza, David! Deixa eu verificar aqui os horários de final de tarde que temos disponíveis para você em Uberlândia. Só um minutinho.",
+            "lead": {
+              "id": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+              "phone": "+554599083422",
+              "nome": "Jesreel David"
+            },
+            "mensagem": {
+              "texto": "\"Tem mais próximo ao final da tarde\\nDepois das 17?\"",
+              "tipo": "text",
+              "timestamp": "2026-03-03T15:45:39-03:00"
+            },
+            "auth": {
+              "dinastia-token": "llDoaLv2P9lYOyuIgwPoWboyavOGfALs",
+              "instancia-nome": "Instancia David-Jesreel",
+              "inbox-id": "Instancia David-Jesreel"
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "9fa503d0-d181-4a5b-b0a8-f91444147f0f",
+  "activeVersionId": "9fa503d0-d181-4a5b-b0a8-f91444147f0f",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-02T21:50:38.398Z",
+      "createdAt": "2026-03-02T21:50:38.398Z",
+      "role": "workflow:owner",
+      "workflowId": "ITCrX53zkZo9MvI0",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-03T18:46:47.379Z",
+    "createdAt": "2026-03-03T18:31:29.180Z",
+    "versionId": "9fa503d0-d181-4a5b-b0a8-f91444147f0f",
+    "workflowId": "ITCrX53zkZo9MvI0",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          32,
+          0
+        ],
+        "id": "c538847b-ab8d-4419-81d9-0c435546d52c",
+        "name": "Webhook",
+        "webhookId": "20142f7f-6b89-4f23-83a7-8089cd73cedd"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE public.leads\nSET agente_responsavel_id = ac.id\nFROM public.agentes_config ac\nWHERE ac.nome = '{{ $('Webhook').item.json.body.target_agent }}'  -- ex: \"secretária\"\n  AND public.leads.id = '{{$('Webhook').item.json.body.lead.id }}'\nRETURNING \n  public.leads.id          AS lead_id,\n  public.leads.full_name   AS lead_nome,\n  ac.id                    AS agente_id,\n  ac.nome                  AS agente_nome,\n  ac.tipo                  AS agente_tipo,\n  ac.numero_whatsapp,\n  ac.prompt_sistema,\n  ac.modelo_ia,\n  ac.temperatura,\n  ac.max_tokens;",
+          "options": {}
+        },
+        "id": "6a2f4a92-f633-4286-af2f-dac5a14b308f",
+        "name": "SQL - Atualizar Lead",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          0
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/agente-secretaria-95551d82-80df-4b3e-a30f-c69b91ab0e5c",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $('Webhook').item.json.body }}",
+          "options": {}
+        },
+        "id": "b5f326bf-b565-42f0-9284-f486bfe7edf4",
+        "name": "HTTP - Acionar Agente",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          416,
+          0
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "SQL - Atualizar Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SQL - Atualizar Lead": {
+        "main": [
+          [
+            {
+              "node": "HTTP - Acionar Agente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 9fa503d0",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
