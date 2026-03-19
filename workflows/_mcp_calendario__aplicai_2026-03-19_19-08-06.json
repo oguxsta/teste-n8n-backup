@@ -1,0 +1,3375 @@
+{
+  "updatedAt": "2026-02-25T01:14:25.824Z",
+  "createdAt": "2025-11-06T00:14:02.547Z",
+  "id": "C0XRSPIoyaEyMXTE",
+  "name": "[MCP-Calendario] AplicAI",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        960,
+        480
+      ],
+      "id": "3517adf2-10c6-4bea-b91b-4fa0090c7737",
+      "name": "respond"
+    },
+    {
+      "parameters": {
+        "content": "## GET /clinicai/calendario",
+        "height": 640,
+        "width": 1392
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        416
+      ],
+      "id": "c3d8e404-ed40-4849-b633-371fee231230",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## POST /clinicai/calendario",
+        "height": 512,
+        "width": 1632
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1072
+      ],
+      "id": "6955582e-aa35-4532-903d-d53773e5f699",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarioId }}",
+          "mode": "id"
+        },
+        "start": "={{ $json.body.dataHora.toDateTime().format('yyyy-MM-dd TT') }}",
+        "end": "={{ $json.body.dataHora.toDateTime().plus(60, 'minutes').format('yyyy-MM-dd TT') }}",
+        "additionalFields": {
+          "attendees": [],
+          "summary": "=Consultoria Gratuita <> {{ $json.body.nome }} ({{ $json.body.telefone.split('@')[0] }})"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        1216
+      ],
+      "id": "d721d1ef-a5bb-4818-b2d5-87d2a31d672d",
+      "name": "novo_evento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"eventId\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1184,
+        1120
+      ],
+      "id": "6874fa0d-6c0b-419f-a42a-ef690f7b6d0e",
+      "name": "respond1"
+    },
+    {
+      "parameters": {
+        "content": "## PATCH /clinicai/calendario",
+        "height": 496,
+        "width": 1600
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1600
+      ],
+      "id": "5e6b8adf-2dfa-466a-a16b-f15eff4bb2f1",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"eventId\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1232,
+        1664
+      ],
+      "id": "a0b0bd3a-4b46-40c2-b7be-a1975359d4a6",
+      "name": "respond2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('calendario2').item.json.calendarioId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $json.id }}",
+        "updateFields": {
+          "end": "={{ $('PATCH /clinicai/calendario').item.json.body.dataHora.toDateTime().plus(60, 'minutes').format('yyyy-MM-dd TT') }}",
+          "start": "={{ $('PATCH /clinicai/calendario').item.json.body.dataHora.toDateTime().format('yyyy-MM-dd TT') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        1744
+      ],
+      "id": "502afd9c-d7cd-44ba-9e53-82ae0265e790",
+      "name": "atualizar_evento",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## DELETE /clinicai/calendario?eventId={eventId}",
+        "height": 512,
+        "width": 1600
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        2112
+      ],
+      "id": "9e3a222d-88c0-47a5-92e9-bad9fbdb9eba",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": {{ $json.success }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1360,
+        2176
+      ],
+      "id": "dcf31371-24f2-4115-9b7a-932f16ad9b5d",
+      "name": "respond3"
+    },
+    {
+      "parameters": {
+        "content": "## MCP SERVER - Agendamentos",
+        "height": 400,
+        "width": 1392,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1e06f1fd-e5b3-499d-85d0-669aa62cc47e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "path": "=clinicai/calendario/mcp"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        64,
+        112
+      ],
+      "id": "b021a90e-8b7b-4cbf-8f50-f988ba7d88aa",
+      "name": "MCP_AGENDAMENTOS",
+      "webhookId": "1a91d909-7572-4dbf-8f37-fff87c42cb92"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "=Novo evento agendado para {{ $('POST /clinicai/calendario').item.json.body.dataHora }}. EventId: {{ $json.id }} CalendarioId: {{ $('POST /clinicai/calendario').item.json.body.calendarioId }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        1024,
+        1296
+      ],
+      "id": "a8775cbd-7a1d-4713-9780-73eb741af564",
+      "name": "chat"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('POST /clinicai/calendario').item.json.body.leadId }}",
+        "tableName": "chats_calendario",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        1456
+      ],
+      "id": "439ad293-0198-4535-9355-5c111e5366f3",
+      "name": "memoria",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Use essa ferramenta para deletar um evento pasando o EventId",
+        "method": "DELETE",
+        "url": "=https://n8n-aplictech-editor.aplicgo.com/mcp/clinicai/calendario?eventId={{ $fromAI('eventId') }}&calendarioId={{ $fromAI('calendarioId', ``, 'string') }}&leadId={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        240
+      ],
+      "id": "cf53c15d-73ca-40c4-a046-99e51ad430cb",
+      "name": "deletar_evento",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "leadId",
+              "value": "={{ $('POST /clinicai/calendario').item.json.body.leadId }}"
+            },
+            {
+              "name": "dataHora",
+              "value": "={{ $('POST /clinicai/calendario').item.json.body.dataHora }}"
+            },
+            {
+              "name": "eventId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "method",
+              "value": "post"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1376,
+        1120
+      ],
+      "id": "3426d540-d784-4c01-a03a-52b35a133232",
+      "name": "callback",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "=Reunião remarcada para {{ $('PATCH /clinicai/calendario').item.json.body.dataHora }}. EventId: {{ $json.id }} CalendarioId: {{ $('PATCH /clinicai/calendario').item.json.body.calendarioId }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        1840
+      ],
+      "id": "88b38a3b-1fd6-41e4-9d5f-68dab740a09e",
+      "name": "chat1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('PATCH /clinicai/calendario').item.json.body.leadId }}",
+        "tableName": "chats_calendario",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        1984
+      ],
+      "id": "382dff6f-8041-4920-af6e-f1686a26e25a",
+      "name": "memoria1",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "=Reunião de eventId: {{ $('DELETE /clinicai/calendario').first().json.query.eventId }} e CalendarioId: {{ $('DELETE /clinicai/calendario').item.json.query.calendarioId }} foi cancelada."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        2352
+      ],
+      "id": "553b433a-3a52-4383-b5ef-f3fd23b3e5e1",
+      "name": "chat2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('DELETE /clinicai/calendario').item.json.query.leadId }}",
+        "tableName": "chats_calendario",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        2512
+      ],
+      "id": "8f9ce837-4c72-4af7-88b3-5107805ca4d8",
+      "name": "memoria2",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "clinicai/calendarioget",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        32,
+        688
+      ],
+      "id": "b9cbabe0-4e4c-48a4-8d1a-a442c2130646",
+      "name": "GET /clinicai/calendario",
+      "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clinicai/calendario",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        1216
+      ],
+      "id": "9d86818c-5fa6-4c93-acf3-da94942dc833",
+      "name": "POST /clinicai/calendario",
+      "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "clinicai/calendario",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        96,
+        2256
+      ],
+      "id": "cb1b77ef-a173-4ff1-a0dd-22475aa8c609",
+      "name": "DELETE /clinicai/calendario",
+      "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "clinicai/calendario",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        1744
+      ],
+      "id": "c99fbc4f-032b-4c93-86d8-78e66a174f89",
+      "name": "PATCH /clinicai/calendario",
+      "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://aula_n8n_webhook:5678/webhook/clinicai/calendario/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "leadId",
+              "value": "={{ $('PATCH /clinicai/calendario').item.json.body.leadId }}"
+            },
+            {
+              "name": "eventId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "method",
+              "value": "patch"
+            },
+            {
+              "name": "dataHora",
+              "value": "={{ $('PATCH /clinicai/calendario').item.json.body.dataHora }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1424,
+        1664
+      ],
+      "id": "300a4a78-667f-4bfc-8ef9-92f249a2208f",
+      "name": "callback1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3OR56oonNljjF873",
+          "name": "Yampi-Checkout"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://aula_n8n_webhook:5678/webhook/clinicai/calendario/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "leadId",
+              "value": "={{ $('DELETE /clinicai/calendario').item.json.body.leadId }}"
+            },
+            {
+              "name": "eventId",
+              "value": "={{ $('DELETE /clinicai/calendario').item.json.query.eventId }}"
+            },
+            {
+              "name": "method",
+              "value": "delete"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        2160
+      ],
+      "id": "8d8d48d8-e0fe-45d2-8a09-3963456a5186",
+      "name": "callback2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "timeMax": "={{ $now.plus({ week: 2 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        704
+      ],
+      "id": "65302941-0e74-4a0f-8bdb-ce4c95379d80",
+      "name": "eventos2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "eventos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        960,
+        704
+      ],
+      "id": "4f62427c-6954-461e-8668-eedb15e1c170",
+      "name": "eventos3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const MEETING_MIN = 50;\nconst PRE_BUF_MIN = 10;\nconst MIN = 60 * 1000;\nconst MEETING_MS = MEETING_MIN * MIN;\nconst PRE_BUF_MS = PRE_BUF_MIN * MIN;\n\nconst EVENT_TZ = 'America/Sao_Paulo';\nconst CLIENT_TZ = 'America/Sao_Paulo';\n\n// --- Cached formatters (avoid recreating in loops) ---\nconst fmtDateClient = new Intl.DateTimeFormat('en-CA', { timeZone: CLIENT_TZ, year: 'numeric', month: '2-digit', day: '2-digit' });\nconst fmtTimeClient = new Intl.DateTimeFormat('en-GB', { timeZone: CLIENT_TZ, hour: '2-digit', minute: '2-digit', hour12: false });\nconst fmtWeekdayClient = new Intl.DateTimeFormat('en-GB', { timeZone: CLIENT_TZ, weekday: 'short' });\n\nconst fmtDateByTz = {\n  [CLIENT_TZ]: fmtDateClient,\n};\nconst fmtTimeByTz = {\n  [CLIENT_TZ]: fmtTimeClient,\n};\nconst fmtWeekdayByTz = {\n  [CLIENT_TZ]: fmtWeekdayClient,\n};\n\n// Helpers use cached formatters\nfunction datePartsInTz(ts, tz) {\n  const [y, m, d] = (fmtDateByTz[tz] || new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }))\n    .format(new Date(ts)).split('-').map(Number);\n  return { y, m, d };\n}\n\nfunction atTimeInTz(ts, h, m, tz) {\n  const { y, m: mo, d } = datePartsInTz(ts, tz);\n  const approx = Date.UTC(y, mo - 1, d, h, m, 0, 0);\n  const shownHM = (fmtTimeByTz[tz] || new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }))\n    .format(new Date(approx)).split(':').map(Number);\n  const diffMin = (shownHM[0] - h) * 60 + (shownHM[1] - m);\n  return approx - diffMin * MIN;\n}\n\nfunction isWeekendInTz(ts, tz) {\n  const wd = (fmtWeekdayByTz[tz] || new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short' }))\n    .format(new Date(ts));\n  return wd === 'Sun'; // Apenas domingo é considerado final de semana\n}\n\nfunction isSaturdayInTz(ts, tz) {\n  const wd = (fmtWeekdayByTz[tz] || new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short' }))\n    .format(new Date(ts));\n  return wd === 'Sat';\n}\n\nfunction mergeIntervals(a) {\n  if (!a.length) return [];\n  a.sort((x, y) => x.start - y.start);\n  const m = [a[0]];\n  for (let i = 1; i < a.length; i++) {\n    const p = m[m.length - 1], c = a[i];\n    if (c.start <= p.end) p.end = Math.max(p.end, c.end);\n    else m.push({ ...c });\n  }\n  return m;\n}\n\nfunction invertBusy(start, end, blocks) {\n  const out = [];\n  let cur = start;\n  for (const b of blocks) {\n    const s = Math.max(b.start, start), e = Math.min(b.end, end);\n    if (e <= start || s >= end) continue;\n    if (s > cur) out.push({ start: cur, end: s });\n    cur = Math.max(cur, e);\n  }\n  if (cur < end) out.push({ start: cur, end: end });\n  return out;\n}\n\n// Safe next-day in client TZ (strictly increases)\nfunction nextClientDay00(ts) {\n  const { y, m, d } = datePartsInTz(ts, CLIENT_TZ);\n  // Construct \"next day 00:00\" in CLIENT_TZ\n  const nextApproxUTC = Date.UTC(y, m - 1, d + 1, 0, 0, 0, 0);\n  // Snap to exactly 00:00 CLIENT_TZ via correction\n  const nextDay = atTimeInTz(nextApproxUTC, 0, 0, CLIENT_TZ);\n  \n  // Safety check: ensure we're actually moving forward\n  if (nextDay <= ts) {\n    // Fallback: add 25 hours to guarantee progression\n    return ts + 25 * 3600 * 1000;\n  }\n  \n  return nextDay;\n}\n\n// --- Collect and clamp inputs ---\nconst eventos = items.flatMap(i => Array.isArray(i.json?.eventos) ? i.json.eventos : []);\nconst now = Date.now();\nconst endWin = now + 14 * 24 * 3600 * 1000;\n\n// Busy = [eventStart - 10m, eventEnd] (pre-buffer only)\nconst busyRaw = [];\nfor (const e of eventos) {\n  const s = Date.parse(e?.start?.dateTime || e?.start?.date);\n  const t = Date.parse(e?.end?.dateTime || e?.end?.date);\n  if (!isNaN(s) && !isNaN(t)) {\n    const b = { start: s - PRE_BUF_MS, end: t };\n    if (b.end > now && b.start < endWin) busyRaw.push(b);\n  }\n}\nconst busy = mergeIntervals(busyRaw);\n\n// --- Build weekday working windows in Brasília (08:00–18:00, sábado 08:00-12:00) ---\nconst days = [];\nlet cursor = now;\nlet guard = 0;\nconst MAX_ITERATIONS = 14; // 7 dias * 2 de margem de segurança\n\nwhile (cursor < endWin && guard++ < MAX_ITERATIONS) {\n  const isSaturday = isSaturdayInTz(cursor, CLIENT_TZ);\n  const dayStart = atTimeInTz(cursor, 7, 0, CLIENT_TZ);\n  const dayEnd = isSaturday \n    ? atTimeInTz(cursor, 12, 0, CLIENT_TZ)  // Sábado até 12h\n    : atTimeInTz(cursor, 20, 0, CLIENT_TZ); // Dias de semana até 20h\n\n  if (!isWeekendInTz(dayStart, CLIENT_TZ)) { // Agora exclui apenas domingo\n    let start = dayStart;\n    let end = dayEnd;\n\n    // If this is \"today\" in CLIENT_TZ, earliest start is now + 10m\n    const sameClientDate = fmtDateClient.format(new Date(dayStart)) === fmtDateClient.format(new Date(now));\n    if (sameClientDate) start = Math.max(start, now + PRE_BUF_MS);\n\n    // clamp to global window\n    start = Math.max(start, now);\n    end = Math.min(end, endWin);\n\n    if (end > start) days.push({ start, end });\n  }\n\n  const next = nextClientDay00(cursor);\n  \n  // Hard safety check: ensure progression\n  if (next <= cursor) {\n    console.error('Loop detection: nextClientDay00 did not advance. Breaking.');\n    cursor += 26 * 3600 * 1000; // Force advance by 26 hours\n  } else {\n    cursor = next;\n  }\n}\n\n// Safety warning if we hit the guard\nif (guard >= MAX_ITERATIONS) {\n  console.warn(`Hit iteration limit (${MAX_ITERATIONS}). Processed ${days.length} days.`);\n}\n\n// --- Compute availability (start-time windows) per day ---\nconst availability = [];\nfor (const d of days) {\n  const dayBusy = mergeIntervals(\n    busy\n      .filter(b => b.end > d.start && b.start < d.end)\n      .map(b => ({ start: Math.max(b.start, d.start), end: Math.min(b.end, d.end) }))\n  );\n\n  const free = invertBusy(d.start, d.end, dayBusy);\n\n  // Convert free-time to valid START windows (must fit a 50-min call)\n  const startWindows = [];\n  for (const g of free) {\n    const s = g.start;\n    const e = g.end - MEETING_MS;\n    if (e > s) startWindows.push({ start: s, end: e });\n  }\n\n  if (startWindows.length) {\n    availability.push({\n      date: fmtDateClient.format(new Date(d.start)),\n      available: startWindows.map(w => ({\n        start: fmtTimeClient.format(new Date(w.start)),\n        end: fmtTimeClient.format(new Date(w.end)),\n      })),\n    });\n  }\n}\n\n// --- Single aggregated item for n8n ---\nreturn [{ json: { availability, calendarioId: $('calendario').first().json.nome } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        704
+      ],
+      "id": "886bf569-a6b9-4983-bbc8-a7ab75da5e54",
+      "name": "disponibilidade2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+              "name": "calendarios",
+              "value": "=[\n  {\n   \"nome\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n },\n{\n\"nome\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n}\n]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        688
+      ],
+      "id": "91cac9de-b890-4f79-81ae-54518782559a",
+      "name": "calendarios"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "calendarios",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        384,
+        688
+      ],
+      "id": "5c5e9fa2-01cb-493e-adce-7dcd454193a9",
+      "name": "calendarios1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        560,
+        688
+      ],
+      "id": "96b71038-8511-47ce-ad90-8fbcdcef8110",
+      "name": "calendario"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "calendarios",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        800,
+        480
+      ],
+      "id": "eedccee6-e3f3-4e30-91f2-e120fd12ca6d",
+      "name": "calendarios2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+              "name": "calendarioId",
+              "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.body.calendarioId).id\n\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        1216
+      ],
+      "id": "1afdc141-b076-4fa4-8cbd-42a0b5bf0e5b",
+      "name": "calendario1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+              "name": "calendarioId",
+              "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.body.calendarioId).id\n\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        1744
+      ],
+      "id": "9b3ced73-b027-4ccb-9be1-0ea7856dd9fd",
+      "name": "calendario2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+              "name": "calendarioId",
+              "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.query.calendarioId).id\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        2256
+      ],
+      "id": "58575be6-a127-44e1-9cad-cd49aa67f183",
+      "name": "calendario3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Mapeamento de telefones\nconst telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\nconst webhookData = $('POST /clinicai/calendario').first().json.body;\nconst nomeAgenda = webhookData.calendarioId.toLowerCase().trim();\n\n// 2. Formatação de Data e Hora do Agendamento\nconst dataAgendamento = new Date(webhookData.dataHora);\nconst dataFormatada = dataAgendamento.toLocaleDateString('pt-BR');\nconst horaFormatada = dataAgendamento.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\n// 3. Hora Atual (Momento do Alerta)\nconst agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\nconst responsavelFone = telefones[nomeAgenda] || \"554599746605\";\nconst nomeFormatado = nomeAgenda.charAt(0).toUpperCase() + nomeAgenda.slice(1);\n\nreturn items.map(item => {\n  return {\n    json: {\n      ...item.json,\n      notificar: {\n        whatsapp: responsavelFone,\n        atendente: nomeFormatado,\n        paciente: webhookData.nome,\n        dataAgendamento: dataFormatada,\n        horaAgendamento: horaFormatada,\n        horaAlerta: agora,\n        agenda: nomeFormatado\n      }\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1120
+      ],
+      "id": "004fcfec-f83b-4420-b3dd-084d03671503",
+      "name": "Telefones/Atendente"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO CONFIRMADO* ✅\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nUm paciente acabou de agendar um horário com você.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n📅 *Data:* {{ $json.notificar.dataAgendamento }}\\n⏰ *Horário:* {{ $json.notificar.horaAgendamento }}\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        912,
+        1120
+      ],
+      "id": "01b4162a-fbf6-4452-8a27-3f8a7bffb646",
+      "name": "Enviar Mensagem",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Mapeamento de telefones\nconst telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\n// 2. Captura de dados das fontes (Caminhos Absolutos)\n// Pegamos o que o paciente quer AGORA direto do Webhook\nconst dadosWebhook = $('PATCH /clinicai/calendario').first().json.body;\n\n// Pegamos como a agenda estava ANTES direto do nó de busca\nconst eventoAntigo = $('Busca_Evento').first().json; \n\n// 3. Identificação da Agenda e Atendente\nconst agendaRaw = (dadosWebhook.calendarioId || \"Bruna\").toLowerCase().trim();\nconst responsavelFone = telefones[agendaRaw] || \"554599746605\";\nconst nomeAtendente = agendaRaw.charAt(0).toUpperCase() + agendaRaw.slice(1);\n\n// 4. Função simplificada: Apenas extrai o texto sem converter fuso\nconst formatarBH = (dataISO) => {\n  if (!dataISO) return { data: \"--/--\", hora: \"--:--\" };\n  \n  // Dividimos a string para pegar a data e a hora puras (Ex: 2026-02-07T09:00:00)\n  const partes = dataISO.split('T');\n  const dataBruta = partes[0]; // 2026-02-07\n  const horaBruta = partes[1] ? partes[1].substring(0, 5) : \"--:--\"; // 09:00\n  \n  // Formata a data de YYYY-MM-DD para DD/MM/YYYY\n  const [ano, mes, dia] = dataBruta.split('-');\n  const dataFinal = `${dia}/${mes}/${ano}`;\n\n  return {\n    data: dataFinal,\n    hora: horaBruta\n  };\n};\n\n// 5. Processamento (Mantém o valor original que chegou)\nconst antigo = formatarBH(eventoAntigo.start.dateTime);\nconst novo = formatarBH(dadosWebhook.dataHora);\n// 6. Tratamento do Nome do Paciente (Puxando do histórico da agenda)\nconst summary = eventoAntigo.summary || \"\";\nconst paciente = summary.includes(\"<>\") ? \n    summary.split(\"<>\")[1].split(\"(\")[0].trim() : \n    (summary || \"Paciente (ver no sistema)\");\n\n// 7. Retorno dos dados formatados para o WhatsApp\nreturn [{\n  json: {\n    notificar: {\n      whatsapp: responsavelFone,\n      atendente: nomeAtendente,\n      paciente: paciente,\n      dataAntiga: antigo.data,\n      horaAntiga: antigo.hora,\n      dataNova: novo.data,\n      horaNova: novo.hora,\n      agenda: nomeAtendente\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        1664
+      ],
+      "id": "48df58bc-90a7-435b-bbc0-859d22f7a0cd",
+      "name": "Telefones/Atendente1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO REAGENDADO* ⚠️\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nO paciente abaixo alterou o horário da consulta.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n--- \\n🗓️ *DE:* {{ $json.notificar.dataAntiga }} às {{ $json.notificar.horaAntiga }}\\n✅ *PARA:* {{ $json.notificar.dataNova }} às {{ $json.notificar.horaNova }}\\n---\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\\n\\n_O Google Calendar já foi atualizado automaticamente._\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1040,
+        1664
+      ],
+      "id": "2c0a1197-dec6-44d4-af70-2a6edcdaaabc",
+      "name": "Enviar Mensagem1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO CANCELADO* ❌\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nO atendimento abaixo foi removido do sistema.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n📅 *Data:* {{ $json.notificar.dataAgendamento }}\\n⏰ *Horário:* {{ $json.notificar.horaAgendamento }}\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\\n\\n_Este horário agora está disponível para novos agendamentos._\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1184,
+        2176
+      ],
+      "id": "8c71eafa-9aa7-4130-8e2b-65ac66cb6c90",
+      "name": "Enviar Mensagem2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('calendario3').item.json.calendarioId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        2256
+      ],
+      "id": "adbd2adc-8f28-4871-8776-945c85962e92",
+      "name": "Apagar Evento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarioId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $json.query.eventId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        2256
+      ],
+      "id": "bd06abc9-8fa1-4c02-a7d0-06ad7f52efbc",
+      "name": "Busca Evento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\n// 1. Pega os dados da QUERY do Webhook inicial\nconst query = $('DELETE /clinicai/calendario').first().json.query || {};\n\n// 2. Tenta pegar o evento do nó de GET (A variável precisa ser declarada FORA do try)\nlet dadosEvento = {}; \n\ntry {\n  // ATENÇÃO: Verifique se o nome do nó no seu fluxo é exatamente \"Busca Evento\"\n  dadosEvento = $('Busca Evento').first().json; \n} catch (e) {\n  console.log(\"Aviso: Não foi possível obter dados do nó Busca Evento\");\n}\n\n// 3. Extrai o nome do paciente do summary\nconst summary = dadosEvento.summary || \"\";\nlet pacienteFinal = \"Paciente (ver no sistema)\";\n\nif (summary) {\n  if (summary.includes(\"<>\")) {\n    const partes = summary.split(\"<>\");\n    if (partes.length > 1) {\n      pacienteFinal = partes[1].split(\"(\")[0].trim();\n    }\n  } else {\n    pacienteFinal = summary.trim();\n  }\n}\n\n// 4. Identifica quem vai receber o WhatsApp\nconst agendaRaw = (query.calendarioId || \"Bruna\").toLowerCase().trim();\nconst responsavelFone = telefones[agendaRaw] || \"554599746605\";\nconst nomeAtendente = agendaRaw.charAt(0).toUpperCase() + agendaRaw.slice(1);\n\n// 5. CORREÇÃO DO HORÁRIO (Timezone)\n// Se o GET falhar, usamos a data atual como fallback\nconst dataBruta = (dadosEvento.start && dadosEvento.start.dateTime) ? dadosEvento.start.dateTime : new Date();\nconst d = new Date(dataBruta);\n\n// Forçamos o fuso horário de Brasília\nconst dataFormatada = d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });\nconst horaFormatada = d.toLocaleTimeString('pt-BR', { \n  timeZone: 'America/Sao_Paulo', \n  hour: '2-digit', \n  minute: '2-digit', \n  hour12: false \n});\n\nreturn [{\n  json: {\n    notificar: {\n      whatsapp: responsavelFone,\n      atendente: nomeAtendente,\n      paciente: pacienteFinal,\n      dataAgendamento: dataFormatada,\n      horaAgendamento: horaFormatada,\n      agenda: nomeAtendente\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        2176
+      ],
+      "id": "f958b738-5cdb-455a-8dad-dd62d8ae0d09",
+      "name": "Telefones/Atendente2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarioId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $('PATCH /clinicai/calendario').first().json.body.eventId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        1744
+      ],
+      "id": "89db2b5d-9b05-442f-8774-64c62ebb6ec9",
+      "name": "Busca_Evento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Apenas use essa ferramenta para atualizar a data e hora de um evento usando o EventId criado.",
+        "method": "PATCH",
+        "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "eventId",
+              "value": "={{ $fromAI('eventId', ``, 'string') }}"
+            },
+            {
+              "name": "dataHora",
+              "value": "={{ $fromAI('dataHora', `formato: 2025-08-12T14:45:00`, 'string') }}"
+            },
+            {
+              "name": "leadId",
+              "value": "={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}"
+            },
+            {
+              "name": "calendarioId",
+              "value": "={{ $fromAI('calendarioId', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        64
+      ],
+      "id": "efd9a0d7-823d-4bcb-86e5-f6f457af961f",
+      "name": "atualizar_evento1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Use essa ferramenta sempre antes de criar um novo evento/agendamento para checar as datas disponíveis no calendário. Indique os horarios mais próximos dentro da disponibilidade. Apenas agende datas disponíveis. Apenas podemos ver disponibilidade para os próximos14 dias. Não realizamos agendamentos após o sábado ao meio dia, apenas dias de semana das 7h as 20h e até as 12h de sábado.",
+        "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        128
+      ],
+      "id": "0d216ec7-bb48-464e-ae2a-a797853e7ef0",
+      "name": "disponibilidade"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Use essa ferramenta DEPOIS de ter checado e usado a ferramenta \"disponibilidade\", então preencha os dados para criar um novo evento/agendamento",
+        "method": "POST",
+        "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "nome",
+              "value": "={{ $fromAI('parameters0_Value', `Nome do Lead`, 'string') }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $fromAI('email', ``, 'string') }}"
+            },
+            {
+              "name": "telefone",
+              "value": "={{ $fromAI('telefone', ``, 'string') }}"
+            },
+            {
+              "name": "dataHora",
+              "value": "={{ $fromAI('dataHora', `formato: 2025-08-12T14:45:00`, 'string') }}"
+            },
+            {
+              "name": "leadId",
+              "value": "={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}"
+            },
+            {
+              "name": "calendarioId",
+              "value": "={{ $fromAI('calendarioId', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        272
+      ],
+      "id": "18b10446-48ea-4b00-9611-56dda8c6b9b3",
+      "name": "novo_evento1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use essa ferramenta sempre antes de criar um novo evento/agendamento para checar as datas disponíveis no calendário. Indique os horarios mais próximos dentro da disponibilidade. Apenas agende datas disponíveis. Apenas podemos ver disponibilidade para os próximos14 dias. Não realizamos agendamentos após o sábado ao meio dia, apenas dias de semana das 7h as 20h e até as 12h de sábado.",
+        "workflowId": {
+          "__rl": true,
+          "value": "RbCjJvu1jk5gRThA",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/RbCjJvu1jk5gRThA",
+          "cachedResultName": "Get Clinicai"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        64
+      ],
+      "id": "26c66bc4-ed28-46a7-9731-07c31b3c77f8",
+      "name": "disponibilidadee"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sCkkAzerKGqiGUbl",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/sCkkAzerKGqiGUbl",
+          "cachedResultName": "[AGENDAR] POST /clinicai/calendario"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "dataHora": "={{ $fromAI('dataHora', `formato: 2025-08-12T14:45:00`, 'string') }}",
+            "telefone": "={{ $fromAI('telefone', ``, 'string') }}",
+            "nome": "={{ $fromAI('parameters0_Value', `Nome do Lead`, 'string') }}",
+            "calendarioId": "={{ $fromAI('calendarioId', ``, 'string') }}",
+            "leadId": "={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "dataHora",
+              "displayName": "dataHora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "leadId",
+              "displayName": "leadId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "calendarioId",
+              "displayName": "calendarioId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        256
+      ],
+      "id": "878bb229-d2ab-4af0-a42b-b4e66f360532",
+      "name": "novo_evento2"
+    }
+  ],
+  "connections": {
+    "novo_evento": {
+      "main": [
+        [
+          {
+            "node": "chat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefones/Atendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "respond1": {
+      "main": [
+        [
+          {
+            "node": "callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "respond2": {
+      "main": [
+        [
+          {
+            "node": "callback1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualizar_evento": {
+      "main": [
+        [
+          {
+            "node": "chat1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefones/Atendente1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "respond3": {
+      "main": [
+        [
+          {
+            "node": "callback2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memoria": {
+      "ai_memory": [
+        [
+          {
+            "node": "chat",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "deletar_evento": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP_AGENDAMENTOS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memoria1": {
+      "ai_memory": [
+        [
+          {
+            "node": "chat1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memoria2": {
+      "ai_memory": [
+        [
+          {
+            "node": "chat2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /clinicai/calendario": {
+      "main": [
+        [
+          {
+            "node": "calendarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /clinicai/calendario": {
+      "main": [
+        [
+          {
+            "node": "calendario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE /clinicai/calendario": {
+      "main": [
+        [
+          {
+            "node": "calendario3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH /clinicai/calendario": {
+      "main": [
+        [
+          {
+            "node": "calendario2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "eventos2": {
+      "main": [
+        [
+          {
+            "node": "eventos3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "eventos3": {
+      "main": [
+        [
+          {
+            "node": "disponibilidade2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "disponibilidade2": {
+      "main": [
+        [
+          {
+            "node": "calendario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendarios": {
+      "main": [
+        [
+          {
+            "node": "calendarios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendarios1": {
+      "main": [
+        [
+          {
+            "node": "calendario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendario": {
+      "main": [
+        [
+          {
+            "node": "calendarios2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "eventos2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendarios2": {
+      "main": [
+        [
+          {
+            "node": "respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendario1": {
+      "main": [
+        [
+          {
+            "node": "novo_evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendario2": {
+      "main": [
+        [
+          {
+            "node": "Busca_Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendario3": {
+      "main": [
+        [
+          {
+            "node": "Busca Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefones/Atendente": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "respond1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefones/Atendente1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem1": {
+      "main": [
+        [
+          {
+            "node": "respond2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem2": {
+      "main": [
+        [
+          {
+            "node": "respond3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apagar Evento": {
+      "main": [
+        [
+          {
+            "node": "chat2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefones/Atendente2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Evento": {
+      "main": [
+        [
+          {
+            "node": "Apagar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefones/Atendente2": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca_Evento": {
+      "main": [
+        [
+          {
+            "node": "atualizar_evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualizar_evento1": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP_AGENDAMENTOS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "disponibilidade": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "novo_evento1": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "disponibilidadee": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP_AGENDAMENTOS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "novo_evento2": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP_AGENDAMENTOS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "PATCH /clinicai/calendario": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "user-agent": "axios/1.12.0",
+            "content-length": "144",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "aplic_tech_n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "eventId": "vlie2kgccaok3vuqkeg9pjmpkc",
+            "dataHora": "2026-02-07T09:00:00",
+            "leadId": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+            "calendarioId": "Bruna"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/clinicai/calendario",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "DELETE /clinicai/calendario": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.12.0",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {
+            "eventId": "vlie2kgccaok3vuqkeg9pjmpkc",
+            "calendarioId": "Bruna",
+            "leadId": "18c542f1-b2fc-47ad-9dca-b03d70a203db"
+          },
+          "body": {},
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/clinicai/calendario",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "POST /clinicai/calendario": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "user-agent": "axios/1.12.0",
+            "content-length": "181",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "aplic_tech_n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "nome": "Jesreel David Hobus e esposa",
+            "email": "",
+            "telefone": "+554599083422",
+            "dataHora": "2026-02-07T10:30:00",
+            "leadId": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+            "calendarioId": "Bruna"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/clinicai/calendario",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "GET /clinicai/calendario": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "user-agent": "axios/1.12.0",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "aplic_tech_n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/clinicai/calendario",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "78a12aa2-4010-4893-aa1e-ec41722bc999",
+  "activeVersionId": "78a12aa2-4010-4893-aa1e-ec41722bc999",
+  "triggerCount": 5,
+  "shared": [
+    {
+      "updatedAt": "2025-11-06T00:14:02.547Z",
+      "createdAt": "2025-11-06T00:14:02.547Z",
+      "role": "workflow:owner",
+      "workflowId": "C0XRSPIoyaEyMXTE",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-25T01:18:28.516Z",
+    "createdAt": "2026-02-25T01:14:25.827Z",
+    "versionId": "78a12aa2-4010-4893-aa1e-ec41722bc999",
+    "workflowId": "C0XRSPIoyaEyMXTE",
+    "nodes": [
+      {
+        "parameters": {
+          "respondWith": "allIncomingItems",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          960,
+          480
+        ],
+        "id": "3517adf2-10c6-4bea-b91b-4fa0090c7737",
+        "name": "respond"
+      },
+      {
+        "parameters": {
+          "content": "## GET /clinicai/calendario",
+          "height": 640,
+          "width": 1392
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          416
+        ],
+        "id": "c3d8e404-ed40-4849-b633-371fee231230",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## POST /clinicai/calendario",
+          "height": 512,
+          "width": 1632
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          1072
+        ],
+        "id": "6955582e-aa35-4532-903d-d53773e5f699",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $json.calendarioId }}",
+            "mode": "id"
+          },
+          "start": "={{ $json.body.dataHora.toDateTime().format('yyyy-MM-dd TT') }}",
+          "end": "={{ $json.body.dataHora.toDateTime().plus(60, 'minutes').format('yyyy-MM-dd TT') }}",
+          "additionalFields": {
+            "attendees": [],
+            "summary": "=Consultoria Gratuita <> {{ $json.body.nome }} ({{ $json.body.telefone.split('@')[0] }})"
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          512,
+          1216
+        ],
+        "id": "d721d1ef-a5bb-4818-b2d5-87d2a31d672d",
+        "name": "novo_evento",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"eventId\": \"{{ $json.id }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          1184,
+          1120
+        ],
+        "id": "6874fa0d-6c0b-419f-a42a-ef690f7b6d0e",
+        "name": "respond1"
+      },
+      {
+        "parameters": {
+          "content": "## PATCH /clinicai/calendario",
+          "height": 496,
+          "width": 1600
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          1600
+        ],
+        "id": "5e6b8adf-2dfa-466a-a16b-f15eff4bb2f1",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"eventId\": \"{{ $json.id }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          1232,
+          1664
+        ],
+        "id": "a0b0bd3a-4b46-40c2-b7be-a1975359d4a6",
+        "name": "respond2"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $('calendario2').item.json.calendarioId }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $json.id }}",
+          "updateFields": {
+            "end": "={{ $('PATCH /clinicai/calendario').item.json.body.dataHora.toDateTime().plus(60, 'minutes').format('yyyy-MM-dd TT') }}",
+            "start": "={{ $('PATCH /clinicai/calendario').item.json.body.dataHora.toDateTime().format('yyyy-MM-dd TT') }}"
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          672,
+          1744
+        ],
+        "id": "502afd9c-d7cd-44ba-9e53-82ae0265e790",
+        "name": "atualizar_evento",
+        "alwaysOutputData": false,
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## DELETE /clinicai/calendario?eventId={eventId}",
+          "height": 512,
+          "width": 1600
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          16,
+          2112
+        ],
+        "id": "9e3a222d-88c0-47a5-92e9-bad9fbdb9eba",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"success\": {{ $json.success }}\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          1360,
+          2176
+        ],
+        "id": "dcf31371-24f2-4115-9b7a-932f16ad9b5d",
+        "name": "respond3"
+      },
+      {
+        "parameters": {
+          "content": "## MCP SERVER - Agendamentos",
+          "height": 400,
+          "width": 1392,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "1e06f1fd-e5b3-499d-85d0-669aa62cc47e",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "path": "=clinicai/calendario/mcp"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          64,
+          112
+        ],
+        "id": "b021a90e-8b7b-4cbf-8f50-f988ba7d88aa",
+        "name": "MCP_AGENDAMENTOS",
+        "webhookId": "1a91d909-7572-4dbf-8f37-fff87c42cb92"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "messages": {
+            "messageValues": [
+              {
+                "type": "ai",
+                "message": "=Novo evento agendado para {{ $('POST /clinicai/calendario').item.json.body.dataHora }}. EventId: {{ $json.id }} CalendarioId: {{ $('POST /clinicai/calendario').item.json.body.calendarioId }}"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryManager",
+        "typeVersion": 1.1,
+        "position": [
+          1024,
+          1296
+        ],
+        "id": "a8775cbd-7a1d-4713-9780-73eb741af564",
+        "name": "chat"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('POST /clinicai/calendario').item.json.body.leadId }}",
+          "tableName": "chats_calendario",
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          784,
+          1456
+        ],
+        "id": "439ad293-0198-4535-9355-5c111e5366f3",
+        "name": "memoria",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "=Use essa ferramenta para deletar um evento pasando o EventId",
+          "method": "DELETE",
+          "url": "=https://n8n-aplictech-editor.aplicgo.com/mcp/clinicai/calendario?eventId={{ $fromAI('eventId') }}&calendarioId={{ $fromAI('calendarioId', ``, 'string') }}&leadId={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          720,
+          240
+        ],
+        "id": "cf53c15d-73ca-40c4-a046-99e51ad430cb",
+        "name": "deletar_evento",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario/status",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "leadId",
+                "value": "={{ $('POST /clinicai/calendario').item.json.body.leadId }}"
+              },
+              {
+                "name": "dataHora",
+                "value": "={{ $('POST /clinicai/calendario').item.json.body.dataHora }}"
+              },
+              {
+                "name": "eventId",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "method",
+                "value": "post"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1376,
+          1120
+        ],
+        "id": "3426d540-d784-4c01-a03a-52b35a133232",
+        "name": "callback",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "messages": {
+            "messageValues": [
+              {
+                "type": "ai",
+                "message": "=Reunião remarcada para {{ $('PATCH /clinicai/calendario').item.json.body.dataHora }}. EventId: {{ $json.id }} CalendarioId: {{ $('PATCH /clinicai/calendario').item.json.body.calendarioId }}"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryManager",
+        "typeVersion": 1.1,
+        "position": [
+          912,
+          1840
+        ],
+        "id": "88b38a3b-1fd6-41e4-9d5f-68dab740a09e",
+        "name": "chat1"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('PATCH /clinicai/calendario').item.json.body.leadId }}",
+          "tableName": "chats_calendario",
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          944,
+          1984
+        ],
+        "id": "382dff6f-8041-4920-af6e-f1686a26e25a",
+        "name": "memoria1",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "messages": {
+            "messageValues": [
+              {
+                "type": "ai",
+                "message": "=Reunião de eventId: {{ $('DELETE /clinicai/calendario').first().json.query.eventId }} e CalendarioId: {{ $('DELETE /clinicai/calendario').item.json.query.calendarioId }} foi cancelada."
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryManager",
+        "typeVersion": 1.1,
+        "position": [
+          1072,
+          2352
+        ],
+        "id": "553b433a-3a52-4383-b5ef-f3fd23b3e5e1",
+        "name": "chat2"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('DELETE /clinicai/calendario').item.json.query.leadId }}",
+          "tableName": "chats_calendario",
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          1024,
+          2512
+        ],
+        "id": "8f9ce837-4c72-4af7-88b3-5107805ca4d8",
+        "name": "memoria2",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "path": "clinicai/calendarioget",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          32,
+          688
+        ],
+        "id": "b9cbabe0-4e4c-48a4-8d1a-a442c2130646",
+        "name": "GET /clinicai/calendario",
+        "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "clinicai/calendario",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          80,
+          1216
+        ],
+        "id": "9d86818c-5fa6-4c93-acf3-da94942dc833",
+        "name": "POST /clinicai/calendario",
+        "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "DELETE",
+          "path": "clinicai/calendario",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          96,
+          2256
+        ],
+        "id": "cb1b77ef-a173-4ff1-a0dd-22475aa8c609",
+        "name": "DELETE /clinicai/calendario",
+        "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "PATCH",
+          "path": "clinicai/calendario",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          80,
+          1744
+        ],
+        "id": "c99fbc4f-032b-4c93-86d8-78e66a174f89",
+        "name": "PATCH /clinicai/calendario",
+        "webhookId": "f751fe14-4fb5-46c7-969b-910aa8ffbcd1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://aula_n8n_webhook:5678/webhook/clinicai/calendario/status",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "leadId",
+                "value": "={{ $('PATCH /clinicai/calendario').item.json.body.leadId }}"
+              },
+              {
+                "name": "eventId",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "method",
+                "value": "patch"
+              },
+              {
+                "name": "dataHora",
+                "value": "={{ $('PATCH /clinicai/calendario').item.json.body.dataHora }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1424,
+          1664
+        ],
+        "id": "300a4a78-667f-4bfc-8ef9-92f249a2208f",
+        "name": "callback1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "3OR56oonNljjF873",
+            "name": "Yampi-Checkout"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://aula_n8n_webhook:5678/webhook/clinicai/calendario/status",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "leadId",
+                "value": "={{ $('DELETE /clinicai/calendario').item.json.body.leadId }}"
+              },
+              {
+                "name": "eventId",
+                "value": "={{ $('DELETE /clinicai/calendario').item.json.query.eventId }}"
+              },
+              {
+                "name": "method",
+                "value": "delete"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1504,
+          2160
+        ],
+        "id": "8d8d48d8-e0fe-45d2-8a09-3963456a5186",
+        "name": "callback2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "returnAll": true,
+          "timeMax": "={{ $now.plus({ week: 2 }) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          800,
+          704
+        ],
+        "id": "65302941-0e74-4a0f-8bdb-ce4c95379d80",
+        "name": "eventos2",
+        "alwaysOutputData": true,
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "destinationFieldName": "eventos",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          960,
+          704
+        ],
+        "id": "4f62427c-6954-461e-8668-eedb15e1c170",
+        "name": "eventos3"
+      },
+      {
+        "parameters": {
+          "jsCode": "const MEETING_MIN = 50;\nconst PRE_BUF_MIN = 10;\nconst MIN = 60 * 1000;\nconst MEETING_MS = MEETING_MIN * MIN;\nconst PRE_BUF_MS = PRE_BUF_MIN * MIN;\n\nconst EVENT_TZ = 'America/Sao_Paulo';\nconst CLIENT_TZ = 'America/Sao_Paulo';\n\n// --- Cached formatters (avoid recreating in loops) ---\nconst fmtDateClient = new Intl.DateTimeFormat('en-CA', { timeZone: CLIENT_TZ, year: 'numeric', month: '2-digit', day: '2-digit' });\nconst fmtTimeClient = new Intl.DateTimeFormat('en-GB', { timeZone: CLIENT_TZ, hour: '2-digit', minute: '2-digit', hour12: false });\nconst fmtWeekdayClient = new Intl.DateTimeFormat('en-GB', { timeZone: CLIENT_TZ, weekday: 'short' });\n\nconst fmtDateByTz = {\n  [CLIENT_TZ]: fmtDateClient,\n};\nconst fmtTimeByTz = {\n  [CLIENT_TZ]: fmtTimeClient,\n};\nconst fmtWeekdayByTz = {\n  [CLIENT_TZ]: fmtWeekdayClient,\n};\n\n// Helpers use cached formatters\nfunction datePartsInTz(ts, tz) {\n  const [y, m, d] = (fmtDateByTz[tz] || new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }))\n    .format(new Date(ts)).split('-').map(Number);\n  return { y, m, d };\n}\n\nfunction atTimeInTz(ts, h, m, tz) {\n  const { y, m: mo, d } = datePartsInTz(ts, tz);\n  const approx = Date.UTC(y, mo - 1, d, h, m, 0, 0);\n  const shownHM = (fmtTimeByTz[tz] || new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }))\n    .format(new Date(approx)).split(':').map(Number);\n  const diffMin = (shownHM[0] - h) * 60 + (shownHM[1] - m);\n  return approx - diffMin * MIN;\n}\n\nfunction isWeekendInTz(ts, tz) {\n  const wd = (fmtWeekdayByTz[tz] || new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short' }))\n    .format(new Date(ts));\n  return wd === 'Sun'; // Apenas domingo é considerado final de semana\n}\n\nfunction isSaturdayInTz(ts, tz) {\n  const wd = (fmtWeekdayByTz[tz] || new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short' }))\n    .format(new Date(ts));\n  return wd === 'Sat';\n}\n\nfunction mergeIntervals(a) {\n  if (!a.length) return [];\n  a.sort((x, y) => x.start - y.start);\n  const m = [a[0]];\n  for (let i = 1; i < a.length; i++) {\n    const p = m[m.length - 1], c = a[i];\n    if (c.start <= p.end) p.end = Math.max(p.end, c.end);\n    else m.push({ ...c });\n  }\n  return m;\n}\n\nfunction invertBusy(start, end, blocks) {\n  const out = [];\n  let cur = start;\n  for (const b of blocks) {\n    const s = Math.max(b.start, start), e = Math.min(b.end, end);\n    if (e <= start || s >= end) continue;\n    if (s > cur) out.push({ start: cur, end: s });\n    cur = Math.max(cur, e);\n  }\n  if (cur < end) out.push({ start: cur, end: end });\n  return out;\n}\n\n// Safe next-day in client TZ (strictly increases)\nfunction nextClientDay00(ts) {\n  const { y, m, d } = datePartsInTz(ts, CLIENT_TZ);\n  // Construct \"next day 00:00\" in CLIENT_TZ\n  const nextApproxUTC = Date.UTC(y, m - 1, d + 1, 0, 0, 0, 0);\n  // Snap to exactly 00:00 CLIENT_TZ via correction\n  const nextDay = atTimeInTz(nextApproxUTC, 0, 0, CLIENT_TZ);\n  \n  // Safety check: ensure we're actually moving forward\n  if (nextDay <= ts) {\n    // Fallback: add 25 hours to guarantee progression\n    return ts + 25 * 3600 * 1000;\n  }\n  \n  return nextDay;\n}\n\n// --- Collect and clamp inputs ---\nconst eventos = items.flatMap(i => Array.isArray(i.json?.eventos) ? i.json.eventos : []);\nconst now = Date.now();\nconst endWin = now + 14 * 24 * 3600 * 1000;\n\n// Busy = [eventStart - 10m, eventEnd] (pre-buffer only)\nconst busyRaw = [];\nfor (const e of eventos) {\n  const s = Date.parse(e?.start?.dateTime || e?.start?.date);\n  const t = Date.parse(e?.end?.dateTime || e?.end?.date);\n  if (!isNaN(s) && !isNaN(t)) {\n    const b = { start: s - PRE_BUF_MS, end: t };\n    if (b.end > now && b.start < endWin) busyRaw.push(b);\n  }\n}\nconst busy = mergeIntervals(busyRaw);\n\n// --- Build weekday working windows in Brasília (08:00–18:00, sábado 08:00-12:00) ---\nconst days = [];\nlet cursor = now;\nlet guard = 0;\nconst MAX_ITERATIONS = 14; // 7 dias * 2 de margem de segurança\n\nwhile (cursor < endWin && guard++ < MAX_ITERATIONS) {\n  const isSaturday = isSaturdayInTz(cursor, CLIENT_TZ);\n  const dayStart = atTimeInTz(cursor, 7, 0, CLIENT_TZ);\n  const dayEnd = isSaturday \n    ? atTimeInTz(cursor, 12, 0, CLIENT_TZ)  // Sábado até 12h\n    : atTimeInTz(cursor, 20, 0, CLIENT_TZ); // Dias de semana até 20h\n\n  if (!isWeekendInTz(dayStart, CLIENT_TZ)) { // Agora exclui apenas domingo\n    let start = dayStart;\n    let end = dayEnd;\n\n    // If this is \"today\" in CLIENT_TZ, earliest start is now + 10m\n    const sameClientDate = fmtDateClient.format(new Date(dayStart)) === fmtDateClient.format(new Date(now));\n    if (sameClientDate) start = Math.max(start, now + PRE_BUF_MS);\n\n    // clamp to global window\n    start = Math.max(start, now);\n    end = Math.min(end, endWin);\n\n    if (end > start) days.push({ start, end });\n  }\n\n  const next = nextClientDay00(cursor);\n  \n  // Hard safety check: ensure progression\n  if (next <= cursor) {\n    console.error('Loop detection: nextClientDay00 did not advance. Breaking.');\n    cursor += 26 * 3600 * 1000; // Force advance by 26 hours\n  } else {\n    cursor = next;\n  }\n}\n\n// Safety warning if we hit the guard\nif (guard >= MAX_ITERATIONS) {\n  console.warn(`Hit iteration limit (${MAX_ITERATIONS}). Processed ${days.length} days.`);\n}\n\n// --- Compute availability (start-time windows) per day ---\nconst availability = [];\nfor (const d of days) {\n  const dayBusy = mergeIntervals(\n    busy\n      .filter(b => b.end > d.start && b.start < d.end)\n      .map(b => ({ start: Math.max(b.start, d.start), end: Math.min(b.end, d.end) }))\n  );\n\n  const free = invertBusy(d.start, d.end, dayBusy);\n\n  // Convert free-time to valid START windows (must fit a 50-min call)\n  const startWindows = [];\n  for (const g of free) {\n    const s = g.start;\n    const e = g.end - MEETING_MS;\n    if (e > s) startWindows.push({ start: s, end: e });\n  }\n\n  if (startWindows.length) {\n    availability.push({\n      date: fmtDateClient.format(new Date(d.start)),\n      available: startWindows.map(w => ({\n        start: fmtTimeClient.format(new Date(w.start)),\n        end: fmtTimeClient.format(new Date(w.end)),\n      })),\n    });\n  }\n}\n\n// --- Single aggregated item for n8n ---\nreturn [{ json: { availability, calendarioId: $('calendario').first().json.nome } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1136,
+          704
+        ],
+        "id": "886bf569-a6b9-4983-bbc8-a7ab75da5e54",
+        "name": "disponibilidade2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+                "name": "calendarios",
+                "value": "=[\n  {\n   \"nome\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n },\n{\n\"nome\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n}\n]",
+                "type": "array"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          208,
+          688
+        ],
+        "id": "91cac9de-b890-4f79-81ae-54518782559a",
+        "name": "calendarios"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "calendarios",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          384,
+          688
+        ],
+        "id": "5c5e9fa2-01cb-493e-adce-7dcd454193a9",
+        "name": "calendarios1"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          560,
+          688
+        ],
+        "id": "96b71038-8511-47ce-ad90-8fbcdcef8110",
+        "name": "calendario"
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "destinationFieldName": "calendarios",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          800,
+          480
+        ],
+        "id": "eedccee6-e3f3-4e30-91f2-e120fd12ca6d",
+        "name": "calendarios2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+                "name": "calendarioId",
+                "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.body.calendarioId).id\n\n}}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          304,
+          1216
+        ],
+        "id": "1afdc141-b076-4fa4-8cbd-42a0b5bf0e5b",
+        "name": "calendario1"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+                "name": "calendarioId",
+                "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.body.calendarioId).id\n\n}}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          288,
+          1744
+        ],
+        "id": "9b3ced73-b027-4ccb-9be1-0ea7856dd9fd",
+        "name": "calendario2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+                "name": "calendarioId",
+                "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.query.calendarioId).id\n}}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          304,
+          2256
+        ],
+        "id": "58575be6-a127-44e1-9cad-cd49aa67f183",
+        "name": "calendario3"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Mapeamento de telefones\nconst telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\nconst webhookData = $('POST /clinicai/calendario').first().json.body;\nconst nomeAgenda = webhookData.calendarioId.toLowerCase().trim();\n\n// 2. Formatação de Data e Hora do Agendamento\nconst dataAgendamento = new Date(webhookData.dataHora);\nconst dataFormatada = dataAgendamento.toLocaleDateString('pt-BR');\nconst horaFormatada = dataAgendamento.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\n// 3. Hora Atual (Momento do Alerta)\nconst agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\nconst responsavelFone = telefones[nomeAgenda] || \"554599746605\";\nconst nomeFormatado = nomeAgenda.charAt(0).toUpperCase() + nomeAgenda.slice(1);\n\nreturn items.map(item => {\n  return {\n    json: {\n      ...item.json,\n      notificar: {\n        whatsapp: responsavelFone,\n        atendente: nomeFormatado,\n        paciente: webhookData.nome,\n        dataAgendamento: dataFormatada,\n        horaAgendamento: horaFormatada,\n        horaAlerta: agora,\n        agenda: nomeFormatado\n      }\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          1120
+        ],
+        "id": "004fcfec-f83b-4420-b3dd-084d03671503",
+        "name": "Telefones/Atendente"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO CONFIRMADO* ✅\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nUm paciente acabou de agendar um horário com você.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n📅 *Data:* {{ $json.notificar.dataAgendamento }}\\n⏰ *Horário:* {{ $json.notificar.horaAgendamento }}\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          912,
+          1120
+        ],
+        "id": "01b4162a-fbf6-4452-8a27-3f8a7bffb646",
+        "name": "Enviar Mensagem",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Mapeamento de telefones\nconst telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\n// 2. Captura de dados das fontes (Caminhos Absolutos)\n// Pegamos o que o paciente quer AGORA direto do Webhook\nconst dadosWebhook = $('PATCH /clinicai/calendario').first().json.body;\n\n// Pegamos como a agenda estava ANTES direto do nó de busca\nconst eventoAntigo = $('Busca_Evento').first().json; \n\n// 3. Identificação da Agenda e Atendente\nconst agendaRaw = (dadosWebhook.calendarioId || \"Bruna\").toLowerCase().trim();\nconst responsavelFone = telefones[agendaRaw] || \"554599746605\";\nconst nomeAtendente = agendaRaw.charAt(0).toUpperCase() + agendaRaw.slice(1);\n\n// 4. Função simplificada: Apenas extrai o texto sem converter fuso\nconst formatarBH = (dataISO) => {\n  if (!dataISO) return { data: \"--/--\", hora: \"--:--\" };\n  \n  // Dividimos a string para pegar a data e a hora puras (Ex: 2026-02-07T09:00:00)\n  const partes = dataISO.split('T');\n  const dataBruta = partes[0]; // 2026-02-07\n  const horaBruta = partes[1] ? partes[1].substring(0, 5) : \"--:--\"; // 09:00\n  \n  // Formata a data de YYYY-MM-DD para DD/MM/YYYY\n  const [ano, mes, dia] = dataBruta.split('-');\n  const dataFinal = `${dia}/${mes}/${ano}`;\n\n  return {\n    data: dataFinal,\n    hora: horaBruta\n  };\n};\n\n// 5. Processamento (Mantém o valor original que chegou)\nconst antigo = formatarBH(eventoAntigo.start.dateTime);\nconst novo = formatarBH(dadosWebhook.dataHora);\n// 6. Tratamento do Nome do Paciente (Puxando do histórico da agenda)\nconst summary = eventoAntigo.summary || \"\";\nconst paciente = summary.includes(\"<>\") ? \n    summary.split(\"<>\")[1].split(\"(\")[0].trim() : \n    (summary || \"Paciente (ver no sistema)\");\n\n// 7. Retorno dos dados formatados para o WhatsApp\nreturn [{\n  json: {\n    notificar: {\n      whatsapp: responsavelFone,\n      atendente: nomeAtendente,\n      paciente: paciente,\n      dataAntiga: antigo.data,\n      horaAntiga: antigo.hora,\n      dataNova: novo.data,\n      horaNova: novo.hora,\n      agenda: nomeAtendente\n    }\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          864,
+          1664
+        ],
+        "id": "48df58bc-90a7-435b-bbc0-859d22f7a0cd",
+        "name": "Telefones/Atendente1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO REAGENDADO* ⚠️\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nO paciente abaixo alterou o horário da consulta.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n--- \\n🗓️ *DE:* {{ $json.notificar.dataAntiga }} às {{ $json.notificar.horaAntiga }}\\n✅ *PARA:* {{ $json.notificar.dataNova }} às {{ $json.notificar.horaNova }}\\n---\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\\n\\n_O Google Calendar já foi atualizado automaticamente._\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1040,
+          1664
+        ],
+        "id": "2c0a1197-dec6-44d4-af70-2a6edcdaaabc",
+        "name": "Enviar Mensagem1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO CANCELADO* ❌\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nO atendimento abaixo foi removido do sistema.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n📅 *Data:* {{ $json.notificar.dataAgendamento }}\\n⏰ *Horário:* {{ $json.notificar.horaAgendamento }}\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\\n\\n_Este horário agora está disponível para novos agendamentos._\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1184,
+          2176
+        ],
+        "id": "8c71eafa-9aa7-4130-8e2b-65ac66cb6c90",
+        "name": "Enviar Mensagem2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $('calendario3').item.json.calendarioId }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $json.id }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          720,
+          2256
+        ],
+        "id": "adbd2adc-8f28-4871-8776-945c85962e92",
+        "name": "Apagar Evento",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $json.calendarioId }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $json.query.eventId }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          528,
+          2256
+        ],
+        "id": "bd06abc9-8fa1-4c02-a7d0-06ad7f52efbc",
+        "name": "Busca Evento",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\n// 1. Pega os dados da QUERY do Webhook inicial\nconst query = $('DELETE /clinicai/calendario').first().json.query || {};\n\n// 2. Tenta pegar o evento do nó de GET (A variável precisa ser declarada FORA do try)\nlet dadosEvento = {}; \n\ntry {\n  // ATENÇÃO: Verifique se o nome do nó no seu fluxo é exatamente \"Busca Evento\"\n  dadosEvento = $('Busca Evento').first().json; \n} catch (e) {\n  console.log(\"Aviso: Não foi possível obter dados do nó Busca Evento\");\n}\n\n// 3. Extrai o nome do paciente do summary\nconst summary = dadosEvento.summary || \"\";\nlet pacienteFinal = \"Paciente (ver no sistema)\";\n\nif (summary) {\n  if (summary.includes(\"<>\")) {\n    const partes = summary.split(\"<>\");\n    if (partes.length > 1) {\n      pacienteFinal = partes[1].split(\"(\")[0].trim();\n    }\n  } else {\n    pacienteFinal = summary.trim();\n  }\n}\n\n// 4. Identifica quem vai receber o WhatsApp\nconst agendaRaw = (query.calendarioId || \"Bruna\").toLowerCase().trim();\nconst responsavelFone = telefones[agendaRaw] || \"554599746605\";\nconst nomeAtendente = agendaRaw.charAt(0).toUpperCase() + agendaRaw.slice(1);\n\n// 5. CORREÇÃO DO HORÁRIO (Timezone)\n// Se o GET falhar, usamos a data atual como fallback\nconst dataBruta = (dadosEvento.start && dadosEvento.start.dateTime) ? dadosEvento.start.dateTime : new Date();\nconst d = new Date(dataBruta);\n\n// Forçamos o fuso horário de Brasília\nconst dataFormatada = d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });\nconst horaFormatada = d.toLocaleTimeString('pt-BR', { \n  timeZone: 'America/Sao_Paulo', \n  hour: '2-digit', \n  minute: '2-digit', \n  hour12: false \n});\n\nreturn [{\n  json: {\n    notificar: {\n      whatsapp: responsavelFone,\n      atendente: nomeAtendente,\n      paciente: pacienteFinal,\n      dataAgendamento: dataFormatada,\n      horaAgendamento: horaFormatada,\n      agenda: nomeAtendente\n    }\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          992,
+          2176
+        ],
+        "id": "f958b738-5cdb-455a-8dad-dd62d8ae0d09",
+        "name": "Telefones/Atendente2"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $json.calendarioId }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $('PATCH /clinicai/calendario').first().json.body.eventId }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          480,
+          1744
+        ],
+        "id": "89db2b5d-9b05-442f-8774-64c62ebb6ec9",
+        "name": "Busca_Evento",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "=Apenas use essa ferramenta para atualizar a data e hora de um evento usando o EventId criado.",
+          "method": "PATCH",
+          "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "eventId",
+                "value": "={{ $fromAI('eventId', ``, 'string') }}"
+              },
+              {
+                "name": "dataHora",
+                "value": "={{ $fromAI('dataHora', `formato: 2025-08-12T14:45:00`, 'string') }}"
+              },
+              {
+                "name": "leadId",
+                "value": "={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}"
+              },
+              {
+                "name": "calendarioId",
+                "value": "={{ $fromAI('calendarioId', ``, 'string') }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          720,
+          64
+        ],
+        "id": "efd9a0d7-823d-4bcb-86e5-f6f457af961f",
+        "name": "atualizar_evento1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "=Use essa ferramenta sempre antes de criar um novo evento/agendamento para checar as datas disponíveis no calendário. Indique os horarios mais próximos dentro da disponibilidade. Apenas agende datas disponíveis. Apenas podemos ver disponibilidade para os próximos14 dias. Não realizamos agendamentos após o sábado ao meio dia, apenas dias de semana das 7h as 20h e até as 12h de sábado.",
+          "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          -272,
+          128
+        ],
+        "id": "0d216ec7-bb48-464e-ae2a-a797853e7ef0",
+        "name": "disponibilidade"
+      },
+      {
+        "parameters": {
+          "toolDescription": "=Use essa ferramenta DEPOIS de ter checado e usado a ferramenta \"disponibilidade\", então preencha os dados para criar um novo evento/agendamento",
+          "method": "POST",
+          "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "nome",
+                "value": "={{ $fromAI('parameters0_Value', `Nome do Lead`, 'string') }}"
+              },
+              {
+                "name": "email",
+                "value": "={{ $fromAI('email', ``, 'string') }}"
+              },
+              {
+                "name": "telefone",
+                "value": "={{ $fromAI('telefone', ``, 'string') }}"
+              },
+              {
+                "name": "dataHora",
+                "value": "={{ $fromAI('dataHora', `formato: 2025-08-12T14:45:00`, 'string') }}"
+              },
+              {
+                "name": "leadId",
+                "value": "={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}"
+              },
+              {
+                "name": "calendarioId",
+                "value": "={{ $fromAI('calendarioId', ``, 'string') }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          -272,
+          272
+        ],
+        "id": "18b10446-48ea-4b00-9611-56dda8c6b9b3",
+        "name": "novo_evento1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "description": "Use essa ferramenta sempre antes de criar um novo evento/agendamento para checar as datas disponíveis no calendário. Indique os horarios mais próximos dentro da disponibilidade. Apenas agende datas disponíveis. Apenas podemos ver disponibilidade para os próximos14 dias. Não realizamos agendamentos após o sábado ao meio dia, apenas dias de semana das 7h as 20h e até as 12h de sábado.",
+          "workflowId": {
+            "__rl": true,
+            "value": "RbCjJvu1jk5gRThA",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/RbCjJvu1jk5gRThA",
+            "cachedResultName": "Get Clinicai"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          432,
+          64
+        ],
+        "id": "26c66bc4-ed28-46a7-9731-07c31b3c77f8",
+        "name": "disponibilidadee"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "sCkkAzerKGqiGUbl",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/sCkkAzerKGqiGUbl",
+            "cachedResultName": "[AGENDAR] POST /clinicai/calendario"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "dataHora": "={{ $fromAI('dataHora', `formato: 2025-08-12T14:45:00`, 'string') }}",
+              "telefone": "={{ $fromAI('telefone', ``, 'string') }}",
+              "nome": "={{ $fromAI('parameters0_Value', `Nome do Lead`, 'string') }}",
+              "calendarioId": "={{ $fromAI('calendarioId', ``, 'string') }}",
+              "leadId": "={{ $fromAI('leadId', `exemplo: 18c542f1-b2fc-47ad-9dca-b03d70a203db`, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "nome",
+                "displayName": "nome",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "telefone",
+                "displayName": "telefone",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "dataHora",
+                "displayName": "dataHora",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "leadId",
+                "displayName": "leadId",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "calendarioId",
+                "displayName": "calendarioId",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          336,
+          256
+        ],
+        "id": "878bb229-d2ab-4af0-a42b-b4e66f360532",
+        "name": "novo_evento2"
+      }
+    ],
+    "connections": {
+      "novo_evento": {
+        "main": [
+          [
+            {
+              "node": "chat",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefones/Atendente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "respond1": {
+        "main": [
+          [
+            {
+              "node": "callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "respond2": {
+        "main": [
+          [
+            {
+              "node": "callback1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "atualizar_evento": {
+        "main": [
+          [
+            {
+              "node": "chat1",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefones/Atendente1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "respond3": {
+        "main": [
+          [
+            {
+              "node": "callback2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "memoria": {
+        "ai_memory": [
+          [
+            {
+              "node": "chat",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "deletar_evento": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP_AGENDAMENTOS",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "memoria1": {
+        "ai_memory": [
+          [
+            {
+              "node": "chat1",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "memoria2": {
+        "ai_memory": [
+          [
+            {
+              "node": "chat2",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET /clinicai/calendario": {
+        "main": [
+          [
+            {
+              "node": "calendarios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "POST /clinicai/calendario": {
+        "main": [
+          [
+            {
+              "node": "calendario1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DELETE /clinicai/calendario": {
+        "main": [
+          [
+            {
+              "node": "calendario3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PATCH /clinicai/calendario": {
+        "main": [
+          [
+            {
+              "node": "calendario2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "eventos2": {
+        "main": [
+          [
+            {
+              "node": "eventos3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "eventos3": {
+        "main": [
+          [
+            {
+              "node": "disponibilidade2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "disponibilidade2": {
+        "main": [
+          [
+            {
+              "node": "calendario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendarios": {
+        "main": [
+          [
+            {
+              "node": "calendarios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendarios1": {
+        "main": [
+          [
+            {
+              "node": "calendario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendario": {
+        "main": [
+          [
+            {
+              "node": "calendarios2",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "eventos2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendarios2": {
+        "main": [
+          [
+            {
+              "node": "respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendario1": {
+        "main": [
+          [
+            {
+              "node": "novo_evento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendario2": {
+        "main": [
+          [
+            {
+              "node": "Busca_Evento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendario3": {
+        "main": [
+          [
+            {
+              "node": "Busca Evento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefones/Atendente": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem": {
+        "main": [
+          [
+            {
+              "node": "respond1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefones/Atendente1": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem1": {
+        "main": [
+          [
+            {
+              "node": "respond2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem2": {
+        "main": [
+          [
+            {
+              "node": "respond3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Apagar Evento": {
+        "main": [
+          [
+            {
+              "node": "chat2",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefones/Atendente2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca Evento": {
+        "main": [
+          [
+            {
+              "node": "Apagar Evento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefones/Atendente2": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca_Evento": {
+        "main": [
+          [
+            {
+              "node": "atualizar_evento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "atualizar_evento1": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP_AGENDAMENTOS",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "disponibilidade": {
+        "ai_tool": [
+          []
+        ]
+      },
+      "novo_evento1": {
+        "ai_tool": [
+          []
+        ]
+      },
+      "disponibilidadee": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP_AGENDAMENTOS",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "novo_evento2": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP_AGENDAMENTOS",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 78a12aa2",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
