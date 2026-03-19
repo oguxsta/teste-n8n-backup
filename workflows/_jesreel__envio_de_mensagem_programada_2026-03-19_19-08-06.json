@@ -1,0 +1,178 @@
+{
+  "updatedAt": "2026-01-17T03:26:08.266Z",
+  "createdAt": "2026-01-17T02:08:03.370Z",
+  "id": "bislqh10fFM0IeB9zU9p2",
+  "name": "[Jesreel] Envio de Mensagem Programada",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fb9352a8-5147-4c09-9f90-543e013c08ea",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "664ebab9-f3e5-4687-b940-a5a70c8055fe",
+      "name": "Webhook",
+      "webhookId": "fb9352a8-5147-4c09-9f90-543e013c08ea"
+    },
+    {
+      "parameters": {
+        "phoneNumber": "={{ $json.body.data.Destinatario }}",
+        "message": "={{ $json.body.data.Mensagem }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiAi",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "70b0ac25-9c0b-4720-8ff2-91ccdf926719",
+      "name": "DinastiAPI AI",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "mpzRW4szBH16U9tn",
+          "name": "Dinastia David"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "DinastiAPI AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "python-requests/2.31.0",
+            "content-length": "1394",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "data": {
+              "Mensagem": "Bom dia Irmão! Programei esta mensagem ontem a noite, cheguei tarde da academia.\n\nAcredito que possa realmente ter acontecido algum erro no envio, e tenho minhas suspeitas.\nMas antes de reenviar, veja se faz sentido estas perguntas:\n\n* Alguém respondeu a este envio de hoje a tarde no número novo?\n* Pra todos apareceu só um risquinho?\n* Alguém da lista é um conhecido ou que trabalha ai e pode confirmar que recebeu?\n\nSe ninguém respondeu, apareceu só um risquinho e não tem ninguém que confirme o recebimento, é muito provável que os leads não tenham recebido nada.\nO motivo, caso tenha acontecido isso de fato, é o \"9\" adicional. A API aceitou com o 9, tanto que deu sucesso no envio mas ao chegar no WhatsApp mesmo, aí não enviou.\n\nEu fiz alguns testes e realmente pra mim não chegou quando inseri um \"9\" a mais.\n\nSe você achar devemos reenviar, apenas acione a macro \"Acionar Disparo em Massa\" uma vez quando quiser iniciar. Vou deixar todos os leads que tinham um 9 a mais, desta lista de hoje prontos para enviar novamente assim que acionar a macro.\n\nAgora, caso veja que teve pessoas que receberam e não foi isso que aconteceu, aí só me avisa que eu coloco os leads da lista para \"enviado\" de volta.",
+              "Destinatario": "554599083422"
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/fb9352a8-5147-4c09-9f90-543e013c08ea",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "befe6657-06aa-4181-b98c-ca450a881080",
+  "activeVersionId": "befe6657-06aa-4181-b98c-ca450a881080",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-17T02:08:03.370Z",
+      "createdAt": "2026-01-17T02:08:03.370Z",
+      "role": "workflow:owner",
+      "workflowId": "bislqh10fFM0IeB9zU9p2",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-17T03:26:09.232Z",
+    "createdAt": "2026-01-17T03:26:08.269Z",
+    "versionId": "befe6657-06aa-4181-b98c-ca450a881080",
+    "workflowId": "bislqh10fFM0IeB9zU9p2",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "fb9352a8-5147-4c09-9f90-543e013c08ea",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "664ebab9-f3e5-4687-b940-a5a70c8055fe",
+        "name": "Webhook",
+        "webhookId": "fb9352a8-5147-4c09-9f90-543e013c08ea"
+      },
+      {
+        "parameters": {
+          "phoneNumber": "={{ $json.body.data.Destinatario }}",
+          "message": "={{ $json.body.data.Mensagem }}",
+          "additionalOptions": {}
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiAi",
+        "typeVersion": 1,
+        "position": [
+          240,
+          0
+        ],
+        "id": "70b0ac25-9c0b-4720-8ff2-91ccdf926719",
+        "name": "DinastiAPI AI",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "mpzRW4szBH16U9tn",
+            "name": "Dinastia David"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "DinastiAPI AI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version befe6657",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
