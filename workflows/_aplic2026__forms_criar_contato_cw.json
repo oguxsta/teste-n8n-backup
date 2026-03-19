@@ -1,0 +1,2512 @@
+{
+  "updatedAt": "2026-01-26T20:06:17.407Z",
+  "createdAt": "2025-12-17T00:10:41.161Z",
+  "id": "YJu5up0bR3QR8tXh",
+  "name": "[Aplic2026] Forms Criar contato CW",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "52fad761-5e11-46fa-8e3e-0b610a16a04f",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1584,
+        832
+      ],
+      "id": "130eb822-311a-461a-9df5-35d919bcd52e",
+      "name": "Webhook",
+      "webhookId": "52fad761-5e11-46fa-8e3e-0b610a16a04f",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qnQydVUu2BO8c8rM",
+          "name": "Landingi - Aplic2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6c5325c-df65-40b4-905c-a3b9b270939c",
+              "name": "nome",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "6aabf343-20fa-4c77-82c5-d537d140e548",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "cb02c97f-cade-4a01-902e-42313eeecc0d",
+              "name": "telefone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "9a29d23d-66cc-42bd-9441-49f2d683015b",
+              "name": "pretenção",
+              "value": "={{ $json.body.radio }}",
+              "type": "string"
+            },
+            {
+              "id": "4d50ba0c-659a-4685-9c1f-4b58b0bf8f96",
+              "name": "cidade",
+              "value": "={{ $json.body.radio1 }}",
+              "type": "string"
+            },
+            {
+              "id": "21475827-72bd-4d06-9a62-9744ae0f146e",
+              "name": "responsável",
+              "value": "={{ /ituiutaba/i.test($json.body.radio1.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')) ? 10 : /uberlandia/i.test($json.body.radio1.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')) ? [6,9][Math.floor(Math.random()*2)] : /online/i.test($json.body.radio1.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')) ? [6,9,10][Math.floor(Math.random()*3)] : 0 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1744,
+        832
+      ],
+      "id": "60693f3a-bb4d-4ceb-b71d-93e33764a09d",
+      "name": "Set Padrão"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbox_id\": 7,\n  \"contact_id\": {{ $('Set Contact id').item.json.id_contact }},\n  \"status\": \"open\",\n  \"assignee_id\": {{ $('Set Padrão').item.json['responsável'] }},\n  \"team_id\": 1\n}",
+        "options": {}
+      },
+      "id": "a3f881cb-2e7b-429e-bb82-ea96db748b35",
+      "name": "Criar Conversa Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3552,
+        1072
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nó: \"Buscar Contato Chatwoot - Apenas Telefone\"\n\n// ========================================\n// 1. CONFIGURAÇÃO\n// ========================================\nconst CHATWOOT_CONFIG = {\n  url: 'https://chat.aplicgo.com',\n  accountId: '1',\n  apiKey: 'fmURrfLvWrJbtkAu6RUtQLYn',\n  retryDelay: 600 // ms entre tentativas\n};\n\n// ========================================\n// 2. RECUPERAÇÃO DE DADOS (NOVA LÓGICA)\n// ========================================\nlet phoneInput = null;\n\ntry {\n  // Busca direta conforme solicitado\n  phoneInput = $('Set Padrão').first().json.telefone;\n} catch (error) {\n  phoneInput = null;\n}\n\nif (!phoneInput) {\n  throw new Error('❌ Não foi possível recuperar o número de telefone no nó \"Buscar Lead por Telefone\"');\n}\n\nconsole.log('✅ Telefone recuperado para busca:', phoneInput);\n\n// ========================================\n// 3. FUNÇÃO DE BUSCA (MANTIDA)\n// ========================================\nasync function buscarContato(query, tipo) {\n  if (!query) return null;\n    \n  try {\n    console.log('🔍 Buscando por ' + tipo + ': \"' + query + '\"');\n      \n    const options = {\n      method: 'GET',\n      url: `${CHATWOOT_CONFIG.url}/api/v1/accounts/${CHATWOOT_CONFIG.accountId}/contacts/search`,\n      qs: { q: query },\n      headers: {\n        'api_access_token': CHATWOOT_CONFIG.apiKey,\n        'Content-Type': 'application/json'\n      },\n      json: true\n    };\n      \n    const response = await this.helpers.httpRequest(options);\n      \n    const contato = (response.payload && response.payload.length > 0) ? response.payload[0] : null;\n      \n    if (contato) {\n      console.log('✅ Encontrado por ' + tipo + '!');\n    }\n      \n    return contato;\n      \n  } catch (error) {\n    if (error.statusCode === 422) {\n      return null;\n    }\n    console.log('❌ Erro na busca por ' + tipo + ':', error.message);\n    return null;\n  }\n}\n\n// ========================================\n// 4. PREPARAÇÃO DAS VARIAÇÕES DE TELEFONE\n// ========================================\nconst telefoneRaw = phoneInput || '';\n// Remove tudo que não for número para gerar variações limpas\nconst telefone = telefoneRaw.toString().replace(/\\D/g, '');\n\n// Gera todas as variações de telefone\nconst variacoesTelefone = [];\n\nif (telefone) {\n  // 1. Telefone completo (ex: 5541988887777)\n  variacoesTelefone.push({ query: telefone, tipo: 'telefone_completo' });\n    \n  // 2. Sem código do país - 55 (ex: 41999887766)\n  if (telefone.startsWith('55') && telefone.length > 11) {\n    variacoesTelefone.push({ \n      query: telefone.slice(2), \n      tipo: 'telefone_sem_codigo_pais' \n    });\n  }\n\n  // 2.5. Formato Antigo: Remove 55 E remove o 9 verificador\n  if (telefone.startsWith('55') && telefone.length === 13 && telefone[4] === '9') {\n      const ddd = telefone.substring(2, 4); \n      const numeroSem9 = telefone.substring(5); \n      \n      variacoesTelefone.push({\n          query: ddd + numeroSem9,\n          tipo: 'telefone_legacy_sem_9'\n      });\n  }\n    \n  // 3. Últimos 8 dígitos (ex: 88887766)\n  if (telefone.length >= 8) {\n    variacoesTelefone.push({ \n      query: telefone.slice(-8), \n      tipo: 'telefone_reduzido' \n    });\n  }\n    \n  // 4. Formato original (caso tenha caracteres especiais como + ou - salvos)\n  if (telefoneRaw !== telefone && telefoneRaw.length > 0) {\n    variacoesTelefone.push({ \n      query: telefoneRaw, \n      tipo: 'telefone_original' \n    });\n  }\n}\n\nconsole.log('📞 ' + variacoesTelefone.length + ' variações de telefone geradas para busca');\n\n// ========================================\n// 5. BUSCA SEQUENCIAL (APENAS TELEFONE)\n// ========================================\nlet contato = null;\nlet encontradoPor = null;\n\n// Busca por todas as variações de telefone\nfor (let i = 0; i < variacoesTelefone.length; i++) {\n  const variacao = variacoesTelefone[i];\n    \n  contato = await buscarContato.call(this, variacao.query, variacao.tipo);\n    \n  if (contato) {\n    encontradoPor = variacao.tipo;\n    break;\n  }\n    \n  // Delay entre tentativas\n  if (i < variacoesTelefone.length - 1) {\n    await new Promise(resolve => setTimeout(resolve, CHATWOOT_CONFIG.retryDelay));\n  }\n}\n\n// ========================================\n// 6. RETORNO SIMPLIFICADO\n// ========================================\nif (!contato) {\n  console.log('❌ Contato não encontrado após todas as tentativas');\n    \n  return [{\n    json: {\n      encontrado: false,\n      tentativas: variacoesTelefone.length,\n      input_phone: phoneInput\n    }\n  }];\n}\n\nconsole.log('🎉 Contato encontrado!');\n\nreturn [{\n  json: {\n    // Dados do contato encontrado no Chatwoot\n    id: contato.id,\n    name: contato.name,\n    email: contato.email, // E-mail que está no Chatwoot (se houver)\n    phone_number: contato.phone_number,\n    identifier: contato.identifier,\n\n    // Payload Completo\n    payload_completo: contato,\n      \n    // Metadados da busca\n    encontrado: true,\n    encontrado_por: encontradoPor,\n      \n    // Dados originais de entrada\n    input_phone: phoneInput,\n      \n    // Flags úteis\n    tem_identifier: !!contato.identifier,\n    identifier_valido: contato.identifier?.includes('@s.whatsapp.net') || false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        832
+      ],
+      "id": "43729c88-1e6a-4d6f-be2a-c89eff60b09e",
+      "name": "Busca por Contato Chatwoot"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.idconversation }}/assignments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assignee_id\": {{ $('Set Padrão').item.json['responsável'] }}\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4288,
+        864
+      ],
+      "id": "1af54512-f00c-45a0-8b78-35fce4bce004",
+      "name": "Mudar Agente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"**Lead participante do Aplic 2026**\\n\\nNome: {{ $('Set Padrão').item.json.nome }}\\nClínica Interesse: {{ $('Set Padrão').item.json.cidade }}\\nPretenção de início: {{ $('Set Padrão').item.json['pretenção'] }}\",\n  \"private\": \"true\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4480,
+        800
+      ],
+      "id": "064db4b1-7c37-491f-9ee8-20dcf54ef434",
+      "name": "Adicionar Nota",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"labels\": [{{ $json.tagsAtualizadas }}]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5152,
+        800
+      ],
+      "id": "59bd49b5-251b-4ed6-b710-7fec3b6cb05e",
+      "name": "Atualizar Tags1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4704,
+        800
+      ],
+      "id": "06a3ad47-b7af-4e4b-ae9f-afb2b59658a4",
+      "name": "Get Tags1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Função para normalizar texto (remove acentos e deixa minúsculo)\nfunction normalizarTexto(texto) {\n  return texto\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '');\n}\n\n// 1. Pega a cidade do nó anterior\nconst cidadeOriginal = $('Set Padrão').first().json.cidade;\nconst cidadeNormalizada = normalizarTexto(cidadeOriginal);\n\n// 1.2. Define a tag baseada na cidade\nlet tagCidade = '';\n\nif (cidadeNormalizada.includes('ituiutaba')) {\n  tagCidade = 'aplic26-itba';\n} else if (cidadeNormalizada.includes('uberlandia')) {\n  tagCidade = 'aplic26-udia';\n} else if (cidadeNormalizada.includes('online')) {\n  tagCidade = 'aplic26-online';\n}\n\n// 1.3. Tags finais (fixas + dinâmica da cidade)\nconst tagsParaAdicionar = tagCidade \n  ? `${tagCidade}`\n  : ``;\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags1').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4848,
+        800
+      ],
+      "id": "74146308-1d2f-4512-9434-932ce97eb01b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+              "name": "chatwoot.url",
+              "value": "https://chat.aplicgo.com/",
+              "type": "string"
+            },
+            {
+              "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+              "name": "dina.url",
+              "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+              "type": "string"
+            },
+            {
+              "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+              "name": "dina.instancia",
+              "value": "Aplic_Comercial",
+              "type": "string"
+            },
+            {
+              "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+              "name": "dina.apikey",
+              "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+              "type": "string"
+            },
+            {
+              "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+              "name": "rabbit.fila.mensagens",
+              "value": "fila_processar_resposta",
+              "type": "string"
+            },
+            {
+              "id": "f701268c-e852-4806-a657-67848639ac46",
+              "name": "chatwoot.apikey",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+              "type": "string"
+            },
+            {
+              "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+              "name": "chatwoot.inboxid",
+              "value": "7",
+              "type": "string"
+            },
+            {
+              "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+              "name": "chatwoot.account",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+              "name": "testes.chatwootcontact",
+              "value": "4019",
+              "type": "string"
+            },
+            {
+              "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+              "name": "testes.chatwootconversation",
+              "value": "4063",
+              "type": "string"
+            },
+            {
+              "id": "f78f3c43-9a54-49ca-b2e0-848a30d797a1",
+              "name": "agente.id_responsavel",
+              "value": "={{ $json.body.responsavel_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1888,
+        832
+      ],
+      "id": "ab4102b5-070b-4d39-926e-60f1b598bc50",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.encontrado }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "07e84a58-c910-4ff1-bf7e-6fc888477568"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "true"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dcb14695-6654-4a31-9f1a-397caa07bbb8",
+                    "leftValue": "={{ $json.encontrado }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        2192,
+        832
+      ],
+      "id": "d47cf03a-a341-4a42-8928-3f7634f8a637",
+      "name": "Encontrado"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inbox_id",
+              "value": "=7"
+            },
+            {
+              "name": "name",
+              "value": "={{ $('Set Padrão').item.json.nome }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $('Set Padrão').item.json.email }}"
+            },
+            {
+              "name": "phone_number",
+              "value": "=+{{ ((t) => '55' + t.substring(t.startsWith('55') ? 2 : 0).replace(/^(\\d{2})(\\d{8})$/, '$19$2'))($('Set Padrão').item.json.telefone.toString().replace(/\\D/g, '')) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db983cfb-76f3-4e4e-9f16-1eaeb282d908",
+      "name": "Criar Contato Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2416,
+        1072
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fdee51e1-ffc8-49ab-95f2-217aab00208f",
+              "leftValue": "={{ $json.error.status }}",
+              "rightValue": 422,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2592,
+        1072
+      ],
+      "id": "2702a631-6048-43db-bd0b-b7096cce83d8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Erro ao Criar Contato"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        2928,
+        1072
+      ],
+      "id": "e9b11d6a-73ae-4c85-a041-23825e5b6b3b",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "phoneNumber": "554599083422",
+        "message": "=Erro ao criar contato/conversa para lead Aplic-2026\n\nNome:{{ $json.name }}\nNumero:{{ $json.phone_number }}\nPretenção:{{ $('Set Padrão').item.json['pretenção'] }}\nCidade:{{ $('Set Padrão').item.json.cidade }}\n",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiAi",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        1072
+      ],
+      "id": "30dd71e0-6294-4cdc-90ac-0800a8683808",
+      "name": "DinastiAPI AI",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "9v2dXlsJP0a1xLPE",
+          "name": "DinastiAPI Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts/{{ $json.id_contact }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "83c51075-2519-47ab-a671-ddd747e749f7",
+      "name": "Contexto CW",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3120,
+        816
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Criação de Contato CW | Catch Error",
+        "height": 80,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        960
+      ],
+      "id": "0206ab39-074a-403b-815a-efc78856d121",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook e Configs",
+        "height": 80,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        720
+      ],
+      "id": "d925022f-65c6-4012-98b8-b85d1df82593",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Pesquisar se Contato Existe CW",
+        "height": 80,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        720
+      ],
+      "id": "0091cd4e-e589-423a-8250-92772f988f48",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Buscar Conversa Existente",
+        "height": 80,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3056,
+        960
+      ],
+      "id": "ec1d1429-55da-4894-b33c-060c1d3bc4fe",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2af9389-5b4e-49c7-a91e-ba3b4699b0fd",
+              "leftValue": "={{ $json.payload[0] }}",
+              "rightValue": "={{ (($json.payload || []).find(p => p.inbox_id == $('config').item.json.chatwoot.inboxid) || ($json.payload || [])[0])?.id }}",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3280,
+        816
+      ],
+      "id": "b7c9558a-f620-4f2e-8b8e-16aa4d1bcccf",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Criar Conversa CW",
+        "height": 80,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        960
+      ],
+      "id": "53c3e12c-4a4a-4672-a33e-c35bf8326664",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "### Adicionar responsável, caso não houver agente atribuido, ou for o agente 1 i.a.",
+        "height": 80,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4256,
+        704
+      ],
+      "id": "2d531180-669a-404d-9c40-7063793edab8",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1501872b-dcaa-414b-a267-e59f9769064d",
+              "name": "idconversation",
+              "value": "={{ (($json.payload || []).find(p => p.inbox_id == $('config').item.json.chatwoot.inboxid) || ($json.payload || [])[0])?.id ?? $json.id}}",
+              "type": "number"
+            },
+            {
+              "id": "19f9ab4b-b846-44c8-a616-56049a6a6d68",
+              "name": "idresponsavel",
+              "value": "={{ (($json.payload || []).find(p => p.inbox_id == $('config').item.json.chatwoot.inboxid) || ($json.payload || [])[0])?.meta?.assignee?.id ?? $json.payload?.[0]?.meta?.assignee?.id ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "065e2973-1d7f-46c0-8b21-db05a8b62f43",
+              "name": "status_campo",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3792,
+        800
+      ],
+      "id": "c65c81cd-09cd-43d3-b98c-2534291021db",
+      "name": "Definir id Conversation"
+    },
+    {
+      "parameters": {
+        "content": "### Adicionar Nota interna, Adicionar Tags",
+        "height": 80,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4672,
+        704
+      ],
+      "id": "36f41d28-7b0f-4e45-9e08-b4cae60c4b10",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "### Adicionar responsável, caso não houver agente atribuido, ou for o agente 1 i.a.",
+        "height": 80,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3744,
+        704
+      ],
+      "id": "be46e4bf-cfbc-419f-9558-b77d9dfc9e81",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68785c6e-4ae9-4da2-8d04-8519d07d84a9",
+              "name": "id_contact",
+              "value": "={{ $json.id ?? $json.payload.contact.id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2928,
+        816
+      ],
+      "id": "ad776761-31e1-4b4e-94fd-32ddc1e728d3",
+      "name": "Set Contact id"
+    },
+    {
+      "parameters": {
+        "content": "### Verifica se alguém diferente da ia está atendendo o lead",
+        "height": 80,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3968,
+        704
+      ],
+      "id": "1e6c9042-59ca-42a2-8182-f43c303879e5",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ff8e672a-8906-4a83-ba14-38cbee4e56cc",
+              "leftValue": "={{ $json.idresponsavel }}",
+              "rightValue": "1",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "e8f1c889-3733-405a-abd1-9ebac5ac854d",
+              "leftValue": "={{ $json.idresponsavel }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4048,
+        800
+      ],
+      "id": "62fa9106-65c2-44cd-86ef-f41f898beef2",
+      "name": "Atribuir Humano?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/toggle_status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "open"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5440,
+        800
+      ],
+      "id": "4f7addc0-37a1-4ab5-9579-f7e61ff7e35d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "amount": 0.25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4992,
+        800
+      ],
+      "id": "91da7eb4-5cf6-4c03-a069-0c567c03bdb7",
+      "name": "Wait",
+      "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+    },
+    {
+      "parameters": {
+        "amount": 0.25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5296,
+        800
+      ],
+      "id": "5648734d-2cf0-4649-94b4-5d19a1cb7eea",
+      "name": "Wait1",
+      "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+    },
+    {
+      "parameters": {
+        "amount": 0.25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3920,
+        800
+      ],
+      "id": "d5f78aa7-eb12-4e5c-ad14-e2f8516329d0",
+      "name": "Wait2",
+      "webhookId": "d42bef56-d937-4412-8008-7f53c141e63e"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "conversation",
+              "value": "={{ $('Definir id Conversation').item.json.idconversation }}"
+            },
+            {
+              "key": "responsavel",
+              "value": "={{ $('Definir id Conversation').item.json.idresponsavel }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        5632,
+        800
+      ],
+      "id": "874dc6c4-8dd7-4dc0-8d13-4d46c3243ecd",
+      "name": "Execution Data"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Padrão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mudar Agente": {
+      "main": [
+        [
+          {
+            "node": "Adicionar Nota",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adicionar Nota": {
+      "main": [
+        [
+          {
+            "node": "Get Tags1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tags1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Padrão": {
+      "main": [
+        [
+          {
+            "node": "config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config": {
+      "main": [
+        [
+          {
+            "node": "Busca por Contato Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca por Contato Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Encontrado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encontrado": {
+      "main": [
+        [
+          {
+            "node": "Set Contact id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Contato Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Contato Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Set Contact id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Contact id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DinastiAPI AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DinastiAPI AI": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto CW": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Definir id Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Conversa Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Conversa Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Definir id Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DinastiAPI AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Contact id": {
+      "main": [
+        [
+          {
+            "node": "Contexto CW",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir id Conversation": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atribuir Humano?": {
+      "main": [
+        [
+          {
+            "node": "Mudar Agente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Adicionar Nota",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Tags1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Tags1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Atribuir Humano?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "Landingi.com",
+            "content-length": "139",
+            "accept": "*/*",
+            "accept-encoding": "gzip",
+            "authorization": "bearer GA7sbcRvqt0Jtr44",
+            "content-type": "application/x-www-form-urlencoded",
+            "x-forwarded-for": "63.32.197.131",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "63.32.197.131"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "name": "Jesreel David Testando",
+            "email": "testanduedo@testes.com",
+            "phone": "45988258661",
+            "radio": "Janeiro de 2026",
+            "radio1": "Ituiutaba - MG",
+            "IP": "186.194.144.112"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/52fad761-5e11-46fa-8e3e-0b610a16a04f",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "6a351266-bbf5-4d2d-8f4f-a3bb1f53a4f2",
+  "activeVersionId": "6a351266-bbf5-4d2d-8f4f-a3bb1f53a4f2",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-17T00:10:41.161Z",
+      "createdAt": "2025-12-17T00:10:41.161Z",
+      "role": "workflow:owner",
+      "workflowId": "YJu5up0bR3QR8tXh",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-19T14:41:55.258Z",
+    "createdAt": "2025-12-19T14:41:24.506Z",
+    "versionId": "6a351266-bbf5-4d2d-8f4f-a3bb1f53a4f2",
+    "workflowId": "YJu5up0bR3QR8tXh",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "52fad761-5e11-46fa-8e3e-0b610a16a04f",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          1584,
+          832
+        ],
+        "id": "130eb822-311a-461a-9df5-35d919bcd52e",
+        "name": "Webhook",
+        "webhookId": "52fad761-5e11-46fa-8e3e-0b610a16a04f",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qnQydVUu2BO8c8rM",
+            "name": "Landingi - Aplic2026"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a6c5325c-df65-40b4-905c-a3b9b270939c",
+                "name": "nome",
+                "value": "={{ $json.body.name }}",
+                "type": "string"
+              },
+              {
+                "id": "6aabf343-20fa-4c77-82c5-d537d140e548",
+                "name": "email",
+                "value": "={{ $json.body.email }}",
+                "type": "string"
+              },
+              {
+                "id": "cb02c97f-cade-4a01-902e-42313eeecc0d",
+                "name": "telefone",
+                "value": "={{ $json.body.phone }}",
+                "type": "string"
+              },
+              {
+                "id": "9a29d23d-66cc-42bd-9441-49f2d683015b",
+                "name": "pretenção",
+                "value": "={{ $json.body.radio }}",
+                "type": "string"
+              },
+              {
+                "id": "4d50ba0c-659a-4685-9c1f-4b58b0bf8f96",
+                "name": "cidade",
+                "value": "={{ $json.body.radio1 }}",
+                "type": "string"
+              },
+              {
+                "id": "21475827-72bd-4d06-9a62-9744ae0f146e",
+                "name": "responsável",
+                "value": "={{ /ituiutaba/i.test($json.body.radio1.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')) ? 10 : /uberlandia/i.test($json.body.radio1.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')) ? [6,9][Math.floor(Math.random()*2)] : /online/i.test($json.body.radio1.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')) ? [6,9,10][Math.floor(Math.random()*3)] : 0 }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1744,
+          832
+        ],
+        "id": "60693f3a-bb4d-4ceb-b71d-93e33764a09d",
+        "name": "Set Padrão"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"inbox_id\": 7,\n  \"contact_id\": {{ $('Set Contact id').item.json.id_contact }},\n  \"status\": \"open\",\n  \"assignee_id\": {{ $('Set Padrão').item.json['responsável'] }},\n  \"team_id\": 1\n}",
+          "options": {}
+        },
+        "id": "a3f881cb-2e7b-429e-bb82-ea96db748b35",
+        "name": "Criar Conversa Chatwoot",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          3552,
+          1072
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Nó: \"Buscar Contato Chatwoot - Apenas Telefone\"\n\n// ========================================\n// 1. CONFIGURAÇÃO\n// ========================================\nconst CHATWOOT_CONFIG = {\n  url: 'https://chat.aplicgo.com',\n  accountId: '1',\n  apiKey: 'fmURrfLvWrJbtkAu6RUtQLYn',\n  retryDelay: 600 // ms entre tentativas\n};\n\n// ========================================\n// 2. RECUPERAÇÃO DE DADOS (NOVA LÓGICA)\n// ========================================\nlet phoneInput = null;\n\ntry {\n  // Busca direta conforme solicitado\n  phoneInput = $('Set Padrão').first().json.telefone;\n} catch (error) {\n  phoneInput = null;\n}\n\nif (!phoneInput) {\n  throw new Error('❌ Não foi possível recuperar o número de telefone no nó \"Buscar Lead por Telefone\"');\n}\n\nconsole.log('✅ Telefone recuperado para busca:', phoneInput);\n\n// ========================================\n// 3. FUNÇÃO DE BUSCA (MANTIDA)\n// ========================================\nasync function buscarContato(query, tipo) {\n  if (!query) return null;\n    \n  try {\n    console.log('🔍 Buscando por ' + tipo + ': \"' + query + '\"');\n      \n    const options = {\n      method: 'GET',\n      url: `${CHATWOOT_CONFIG.url}/api/v1/accounts/${CHATWOOT_CONFIG.accountId}/contacts/search`,\n      qs: { q: query },\n      headers: {\n        'api_access_token': CHATWOOT_CONFIG.apiKey,\n        'Content-Type': 'application/json'\n      },\n      json: true\n    };\n      \n    const response = await this.helpers.httpRequest(options);\n      \n    const contato = (response.payload && response.payload.length > 0) ? response.payload[0] : null;\n      \n    if (contato) {\n      console.log('✅ Encontrado por ' + tipo + '!');\n    }\n      \n    return contato;\n      \n  } catch (error) {\n    if (error.statusCode === 422) {\n      return null;\n    }\n    console.log('❌ Erro na busca por ' + tipo + ':', error.message);\n    return null;\n  }\n}\n\n// ========================================\n// 4. PREPARAÇÃO DAS VARIAÇÕES DE TELEFONE\n// ========================================\nconst telefoneRaw = phoneInput || '';\n// Remove tudo que não for número para gerar variações limpas\nconst telefone = telefoneRaw.toString().replace(/\\D/g, '');\n\n// Gera todas as variações de telefone\nconst variacoesTelefone = [];\n\nif (telefone) {\n  // 1. Telefone completo (ex: 5541988887777)\n  variacoesTelefone.push({ query: telefone, tipo: 'telefone_completo' });\n    \n  // 2. Sem código do país - 55 (ex: 41999887766)\n  if (telefone.startsWith('55') && telefone.length > 11) {\n    variacoesTelefone.push({ \n      query: telefone.slice(2), \n      tipo: 'telefone_sem_codigo_pais' \n    });\n  }\n\n  // 2.5. Formato Antigo: Remove 55 E remove o 9 verificador\n  if (telefone.startsWith('55') && telefone.length === 13 && telefone[4] === '9') {\n      const ddd = telefone.substring(2, 4); \n      const numeroSem9 = telefone.substring(5); \n      \n      variacoesTelefone.push({\n          query: ddd + numeroSem9,\n          tipo: 'telefone_legacy_sem_9'\n      });\n  }\n    \n  // 3. Últimos 8 dígitos (ex: 88887766)\n  if (telefone.length >= 8) {\n    variacoesTelefone.push({ \n      query: telefone.slice(-8), \n      tipo: 'telefone_reduzido' \n    });\n  }\n    \n  // 4. Formato original (caso tenha caracteres especiais como + ou - salvos)\n  if (telefoneRaw !== telefone && telefoneRaw.length > 0) {\n    variacoesTelefone.push({ \n      query: telefoneRaw, \n      tipo: 'telefone_original' \n    });\n  }\n}\n\nconsole.log('📞 ' + variacoesTelefone.length + ' variações de telefone geradas para busca');\n\n// ========================================\n// 5. BUSCA SEQUENCIAL (APENAS TELEFONE)\n// ========================================\nlet contato = null;\nlet encontradoPor = null;\n\n// Busca por todas as variações de telefone\nfor (let i = 0; i < variacoesTelefone.length; i++) {\n  const variacao = variacoesTelefone[i];\n    \n  contato = await buscarContato.call(this, variacao.query, variacao.tipo);\n    \n  if (contato) {\n    encontradoPor = variacao.tipo;\n    break;\n  }\n    \n  // Delay entre tentativas\n  if (i < variacoesTelefone.length - 1) {\n    await new Promise(resolve => setTimeout(resolve, CHATWOOT_CONFIG.retryDelay));\n  }\n}\n\n// ========================================\n// 6. RETORNO SIMPLIFICADO\n// ========================================\nif (!contato) {\n  console.log('❌ Contato não encontrado após todas as tentativas');\n    \n  return [{\n    json: {\n      encontrado: false,\n      tentativas: variacoesTelefone.length,\n      input_phone: phoneInput\n    }\n  }];\n}\n\nconsole.log('🎉 Contato encontrado!');\n\nreturn [{\n  json: {\n    // Dados do contato encontrado no Chatwoot\n    id: contato.id,\n    name: contato.name,\n    email: contato.email, // E-mail que está no Chatwoot (se houver)\n    phone_number: contato.phone_number,\n    identifier: contato.identifier,\n\n    // Payload Completo\n    payload_completo: contato,\n      \n    // Metadados da busca\n    encontrado: true,\n    encontrado_por: encontradoPor,\n      \n    // Dados originais de entrada\n    input_phone: phoneInput,\n      \n    // Flags úteis\n    tem_identifier: !!contato.identifier,\n    identifier_valido: contato.identifier?.includes('@s.whatsapp.net') || false\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2048,
+          832
+        ],
+        "id": "43729c88-1e6a-4d6f-be2a-c89eff60b09e",
+        "name": "Busca por Contato Chatwoot"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.idconversation }}/assignments",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"assignee_id\": {{ $('Set Padrão').item.json['responsável'] }}\n} ",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          4288,
+          864
+        ],
+        "id": "1af54512-f00c-45a0-8b78-35fce4bce004",
+        "name": "Mudar Agente",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": \"**Lead participante do Aplic 2026**\\n\\nNome: {{ $('Set Padrão').item.json.nome }}\\nClínica Interesse: {{ $('Set Padrão').item.json.cidade }}\\nPretenção de início: {{ $('Set Padrão').item.json['pretenção'] }}\",\n  \"private\": \"true\",\n  \"message_type\": \"outgoing\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          4480,
+          800
+        ],
+        "id": "064db4b1-7c37-491f-9ee8-20dcf54ef434",
+        "name": "Adicionar Nota",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"labels\": [{{ $json.tagsAtualizadas }}]\n} ",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          5152,
+          800
+        ],
+        "id": "59bd49b5-251b-4ed6-b710-7fec3b6cb05e",
+        "name": "Atualizar Tags1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          4704,
+          800
+        ],
+        "id": "06a3ad47-b7af-4e4b-ae9f-afb2b59658a4",
+        "name": "Get Tags1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Função para normalizar texto (remove acentos e deixa minúsculo)\nfunction normalizarTexto(texto) {\n  return texto\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '');\n}\n\n// 1. Pega a cidade do nó anterior\nconst cidadeOriginal = $('Set Padrão').first().json.cidade;\nconst cidadeNormalizada = normalizarTexto(cidadeOriginal);\n\n// 1.2. Define a tag baseada na cidade\nlet tagCidade = '';\n\nif (cidadeNormalizada.includes('ituiutaba')) {\n  tagCidade = 'aplic26-itba';\n} else if (cidadeNormalizada.includes('uberlandia')) {\n  tagCidade = 'aplic26-udia';\n} else if (cidadeNormalizada.includes('online')) {\n  tagCidade = 'aplic26-online';\n}\n\n// 1.3. Tags finais (fixas + dinâmica da cidade)\nconst tagsParaAdicionar = tagCidade \n  ? `${tagCidade}`\n  : ``;\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags1').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4848,
+          800
+        ],
+        "id": "74146308-1d2f-4512-9434-932ce97eb01b",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+                "name": "chatwoot.url",
+                "value": "https://chat.aplicgo.com/",
+                "type": "string"
+              },
+              {
+                "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+                "name": "dina.url",
+                "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+                "type": "string"
+              },
+              {
+                "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+                "name": "dina.instancia",
+                "value": "Aplic_Comercial",
+                "type": "string"
+              },
+              {
+                "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+                "name": "dina.apikey",
+                "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+                "type": "string"
+              },
+              {
+                "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+                "name": "rabbit.fila.mensagens",
+                "value": "fila_processar_resposta",
+                "type": "string"
+              },
+              {
+                "id": "f701268c-e852-4806-a657-67848639ac46",
+                "name": "chatwoot.apikey",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+                "type": "string"
+              },
+              {
+                "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+                "name": "chatwoot.inboxid",
+                "value": "7",
+                "type": "string"
+              },
+              {
+                "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+                "name": "chatwoot.account",
+                "value": "1",
+                "type": "string"
+              },
+              {
+                "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+                "name": "testes.chatwootcontact",
+                "value": "4019",
+                "type": "string"
+              },
+              {
+                "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+                "name": "testes.chatwootconversation",
+                "value": "4063",
+                "type": "string"
+              },
+              {
+                "id": "f78f3c43-9a54-49ca-b2e0-848a30d797a1",
+                "name": "agente.id_responsavel",
+                "value": "={{ $json.body.responsavel_id }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1888,
+          832
+        ],
+        "id": "ab4102b5-070b-4d39-926e-60f1b598bc50",
+        "name": "config"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.encontrado }}",
+                      "rightValue": false,
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "true",
+                        "singleValue": true
+                      },
+                      "id": "07e84a58-c910-4ff1-bf7e-6fc888477568"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "true"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "dcb14695-6654-4a31-9f1a-397caa07bbb8",
+                      "leftValue": "={{ $json.encontrado }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "false",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "false"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          2192,
+          832
+        ],
+        "id": "d47cf03a-a341-4a42-8928-3f7634f8a637",
+        "name": "Encontrado"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "inbox_id",
+                "value": "=7"
+              },
+              {
+                "name": "name",
+                "value": "={{ $('Set Padrão').item.json.nome }}"
+              },
+              {
+                "name": "email",
+                "value": "={{ $('Set Padrão').item.json.email }}"
+              },
+              {
+                "name": "phone_number",
+                "value": "=+{{ ((t) => '55' + t.substring(t.startsWith('55') ? 2 : 0).replace(/^(\\d{2})(\\d{8})$/, '$19$2'))($('Set Padrão').item.json.telefone.toString().replace(/\\D/g, '')) }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "db983cfb-76f3-4e4e-9f16-1eaeb282d908",
+        "name": "Criar Contato Chatwoot",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          2416,
+          1072
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "fdee51e1-ffc8-49ab-95f2-217aab00208f",
+                "leftValue": "={{ $json.error.status }}",
+                "rightValue": 422,
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2592,
+          1072
+        ],
+        "id": "2702a631-6048-43db-bd0b-b7096cce83d8",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "errorMessage": "Erro ao Criar Contato"
+        },
+        "type": "n8n-nodes-base.stopAndError",
+        "typeVersion": 1,
+        "position": [
+          2928,
+          1072
+        ],
+        "id": "e9b11d6a-73ae-4c85-a041-23825e5b6b3b",
+        "name": "Stop and Error"
+      },
+      {
+        "parameters": {
+          "phoneNumber": "554599083422",
+          "message": "=Erro ao criar contato/conversa para lead Aplic-2026\n\nNome:{{ $json.name }}\nNumero:{{ $json.phone_number }}\nPretenção:{{ $('Set Padrão').item.json['pretenção'] }}\nCidade:{{ $('Set Padrão').item.json.cidade }}\n",
+          "additionalOptions": {}
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiAi",
+        "typeVersion": 1,
+        "position": [
+          2768,
+          1072
+        ],
+        "id": "30dd71e0-6294-4cdc-90ac-0800a8683808",
+        "name": "DinastiAPI AI",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "9v2dXlsJP0a1xLPE",
+            "name": "DinastiAPI Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts/{{ $json.id_contact }}/conversations",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "83c51075-2519-47ab-a671-ddd747e749f7",
+        "name": "Contexto CW",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          3120,
+          816
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "content": "## Criação de Contato CW | Catch Error",
+          "height": 80,
+          "width": 704
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2336,
+          960
+        ],
+        "id": "0206ab39-074a-403b-815a-efc78856d121",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Webhook e Configs",
+          "height": 80,
+          "width": 432
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1584,
+          720
+        ],
+        "id": "d925022f-65c6-4012-98b8-b85d1df82593",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Pesquisar se Contato Existe CW",
+          "height": 80,
+          "width": 288
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2032,
+          720
+        ],
+        "id": "0091cd4e-e589-423a-8250-92772f988f48",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Buscar Conversa Existente",
+          "height": 80,
+          "width": 384
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3056,
+          960
+        ],
+        "id": "ec1d1429-55da-4894-b33c-060c1d3bc4fe",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "b2af9389-5b4e-49c7-a91e-ba3b4699b0fd",
+                "leftValue": "={{ $json.payload[0] }}",
+                "rightValue": "={{ (($json.payload || []).find(p => p.inbox_id == $('config').item.json.chatwoot.inboxid) || ($json.payload || [])[0])?.id }}",
+                "operator": {
+                  "type": "object",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          3280,
+          816
+        ],
+        "id": "b7c9558a-f620-4f2e-8b8e-16aa4d1bcccf",
+        "name": "If1"
+      },
+      {
+        "parameters": {
+          "content": "## Criar Conversa CW",
+          "height": 80,
+          "width": 272
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3456,
+          960
+        ],
+        "id": "53c3e12c-4a4a-4672-a33e-c35bf8326664",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "content": "### Adicionar responsável, caso não houver agente atribuido, ou for o agente 1 i.a.",
+          "height": 80,
+          "width": 400
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          4256,
+          704
+        ],
+        "id": "2d531180-669a-404d-9c40-7063793edab8",
+        "name": "Sticky Note6"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1501872b-dcaa-414b-a267-e59f9769064d",
+                "name": "idconversation",
+                "value": "={{ (($json.payload || []).find(p => p.inbox_id == $('config').item.json.chatwoot.inboxid) || ($json.payload || [])[0])?.id ?? $json.id}}",
+                "type": "number"
+              },
+              {
+                "id": "19f9ab4b-b846-44c8-a616-56049a6a6d68",
+                "name": "idresponsavel",
+                "value": "={{ (($json.payload || []).find(p => p.inbox_id == $('config').item.json.chatwoot.inboxid) || ($json.payload || [])[0])?.meta?.assignee?.id ?? $json.payload?.[0]?.meta?.assignee?.id ?? '' }}",
+                "type": "string"
+              },
+              {
+                "id": "065e2973-1d7f-46c0-8b21-db05a8b62f43",
+                "name": "status_campo",
+                "value": "",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          3792,
+          800
+        ],
+        "id": "c65c81cd-09cd-43d3-b98c-2534291021db",
+        "name": "Definir id Conversation"
+      },
+      {
+        "parameters": {
+          "content": "### Adicionar Nota interna, Adicionar Tags",
+          "height": 80,
+          "width": 432
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          4672,
+          704
+        ],
+        "id": "36f41d28-7b0f-4e45-9e08-b4cae60c4b10",
+        "name": "Sticky Note7"
+      },
+      {
+        "parameters": {
+          "content": "### Adicionar responsável, caso não houver agente atribuido, ou for o agente 1 i.a.",
+          "height": 80,
+          "width": 208
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3744,
+          704
+        ],
+        "id": "be46e4bf-cfbc-419f-9558-b77d9dfc9e81",
+        "name": "Sticky Note8"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "68785c6e-4ae9-4da2-8d04-8519d07d84a9",
+                "name": "id_contact",
+                "value": "={{ $json.id ?? $json.payload.contact.id}}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2928,
+          816
+        ],
+        "id": "ad776761-31e1-4b4e-94fd-32ddc1e728d3",
+        "name": "Set Contact id"
+      },
+      {
+        "parameters": {
+          "content": "### Verifica se alguém diferente da ia está atendendo o lead",
+          "height": 80,
+          "width": 272
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3968,
+          704
+        ],
+        "id": "1e6c9042-59ca-42a2-8182-f43c303879e5",
+        "name": "Sticky Note9"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "ff8e672a-8906-4a83-ba14-38cbee4e56cc",
+                "leftValue": "={{ $json.idresponsavel }}",
+                "rightValue": "1",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "e8f1c889-3733-405a-abd1-9ebac5ac854d",
+                "leftValue": "={{ $json.idresponsavel }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "string",
+                  "operation": "empty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          4048,
+          800
+        ],
+        "id": "62fa9106-65c2-44cd-86ef-f41f898beef2",
+        "name": "Atribuir Humano?"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Definir id Conversation').item.json.idconversation }}/toggle_status",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "status",
+                "value": "open"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          5440,
+          800
+        ],
+        "id": "4f7addc0-37a1-4ab5-9579-f7e61ff7e35d",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "amount": 0.25
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          4992,
+          800
+        ],
+        "id": "91da7eb4-5cf6-4c03-a069-0c567c03bdb7",
+        "name": "Wait",
+        "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+      },
+      {
+        "parameters": {
+          "amount": 0.25
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          5296,
+          800
+        ],
+        "id": "5648734d-2cf0-4649-94b4-5d19a1cb7eea",
+        "name": "Wait1",
+        "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+      },
+      {
+        "parameters": {
+          "amount": 0.25
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          3920,
+          800
+        ],
+        "id": "d5f78aa7-eb12-4e5c-ad14-e2f8516329d0",
+        "name": "Wait2",
+        "webhookId": "d42bef56-d937-4412-8008-7f53c141e63e"
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "conversation",
+                "value": "={{ $('Definir id Conversation').item.json.idconversation }}"
+              },
+              {
+                "key": "responsavel",
+                "value": "={{ $('Definir id Conversation').item.json.idresponsavel }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          5632,
+          800
+        ],
+        "id": "874dc6c4-8dd7-4dc0-8d13-4d46c3243ecd",
+        "name": "Execution Data"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Padrão",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mudar Agente": {
+        "main": [
+          [
+            {
+              "node": "Adicionar Nota",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adicionar Nota": {
+        "main": [
+          [
+            {
+              "node": "Get Tags1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Tags1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Padrão": {
+        "main": [
+          [
+            {
+              "node": "config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "config": {
+        "main": [
+          [
+            {
+              "node": "Busca por Contato Chatwoot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca por Contato Chatwoot": {
+        "main": [
+          [
+            {
+              "node": "Encontrado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Encontrado": {
+        "main": [
+          [
+            {
+              "node": "Set Contact id",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Criar Contato Chatwoot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Criar Contato Chatwoot": {
+        "main": [
+          [
+            {
+              "node": "Set Contact id",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Set Contact id",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "DinastiAPI AI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DinastiAPI AI": {
+        "main": [
+          [
+            {
+              "node": "Stop and Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Contexto CW": {
+        "main": [
+          [
+            {
+              "node": "If1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If1": {
+        "main": [
+          [
+            {
+              "node": "Definir id Conversation",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Criar Conversa Chatwoot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Criar Conversa Chatwoot": {
+        "main": [
+          [
+            {
+              "node": "Definir id Conversation",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "DinastiAPI AI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Contact id": {
+        "main": [
+          [
+            {
+              "node": "Contexto CW",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Definir id Conversation": {
+        "main": [
+          [
+            {
+              "node": "Wait2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Atribuir Humano?": {
+        "main": [
+          [
+            {
+              "node": "Mudar Agente",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Adicionar Nota",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Atualizar Tags1": {
+        "main": [
+          [
+            {
+              "node": "Wait1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Atualizar Tags1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait2": {
+        "main": [
+          [
+            {
+              "node": "Atribuir Humano?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Execution Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 6a351266",
+    "description": "Nesta versão foi Adicionado o data-picker para salvar informações de execução",
+    "autosaved": false
+  },
+  "tags": []
+}
