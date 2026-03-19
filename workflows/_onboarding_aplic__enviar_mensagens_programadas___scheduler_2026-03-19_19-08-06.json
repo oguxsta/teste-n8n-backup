@@ -1,0 +1,1401 @@
+{
+  "updatedAt": "2026-02-28T02:37:08.149Z",
+  "createdAt": "2026-01-03T00:51:23.921Z",
+  "id": "0gRPRVxJtsZQqmHO",
+  "name": "[Onboarding-Aplic] Enviar Mensagens Programadas - Scheduler",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scheduler-addcb3d2-f614-4e6f-81b7-46c200088010",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "908dce40-c251-45f4-adef-a92b3ab6daac",
+      "name": "Webhook",
+      "webhookId": "addcb3d2-f614-4e6f-81b7-46c200088010"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH interacoes_lead AS (\n  SELECT\n    COUNT(*) as total,\n    MIN(created_at) as primeira_em,\n    MAX(created_at) as ultima_em,\n    (array_agg(message ORDER BY created_at ASC))[1]  as primeira_mensagem,\n    (array_agg(message ORDER BY created_at DESC))[1] as ultima_mensagem\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n),\ninteracoes_24h AS (\n  SELECT COUNT(*) as total\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n    AND created_at >= NOW() - INTERVAL '24 hours'\n),\natribuir_agente AS (\n  UPDATE leads\n  SET \n    agente_responsavel_id = '23ad7155-0fa3-4904-a492-77b805c044c2'::uuid,\n    updated_at = NOW()\n  WHERE id = $1::uuid\n    AND (\n      agente_responsavel_id IS NULL\n      OR (SELECT total FROM interacoes_lead) = 0\n    )\n  RETURNING agente_responsavel_id\n)\nSELECT \n  l.id,\n  l.full_name,\n  l.phone_number,\n  l.tentativas_follow_up,\n  l.origem,\n  l.source,\n  (l.custom_fields->-1) as custom_fields,\n\n  COALESCE(\n    (SELECT agente_responsavel_id FROM atribuir_agente),\n    a.id\n  ) as agente_id,\n  a.nome as agente_nome,\n  a.prompt_sistema,\n  a.modelo_ia,\n  a.temperatura,\n  a.max_tokens,\n\n  i.total                        as interacoes_total,\n  i.primeira_em,\n  i.ultima_em,\n  LEFT(i.primeira_mensagem, 200) as primeira_mensagem,\n  LEFT(i.ultima_mensagem, 200)   as ultima_mensagem,\n  h.total                        as interacoes_24h,\n\n  CASE \n    WHEN h.total > 0                  THEN 'CANCELAR'\n    WHEN l.tentativas_follow_up >= 10 THEN 'CANCELAR'\n    ELSE 'ENVIAR'\n  END as decisao\n\nFROM leads l\nLEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\nCROSS JOIN interacoes_lead i\nCROSS JOIN interacoes_24h h\nWHERE l.id = $1::uuid;",
+        "options": {
+          "queryReplacement": "={{ $json.body.lead_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d9ffd7f3-dd4a-4a8c-a8e7-5ea7f37360eb",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decisao }}",
+                    "rightValue": "ENVIAR",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "54c01c22-6d64-4eb3-bd18-7d9c8896ad7c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Onboarding"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "efc01971-2a73-4285-84b1-e152f231e069",
+                    "leftValue": "={{ $json.decisao }}",
+                    "rightValue": "CANCELAR",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cancelar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "4ba59eac-bbe5-4435-a56e-1866f7a0a435",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const validacao = $json;\n\n// Pega custom_fields (já vem como array JSONB)\nconst customFields = validacao.custom_fields || [];\n\n// Converte para string formatada (IA interpreta JSON)\nconst contextoCustomFields = customFields.length > 0 \n  ? JSON.stringify(customFields, null, 2)\n  : 'Nenhuma informação adicional disponível';\n\n// Monta contexto completo para IA\nconst contextoCompleto = `\nLEAD: ${validacao.full_name}\nTELEFONE: ${validacao.phone_number}\nORIGEM: ${validacao.estado_nome}\nTENTATIVA: ${validacao.tentativas_follow_up + 1}\n\nDADOS DO FORMULÁRIO/QUIZ:\n${contextoCustomFields}\n`;\n\nreturn [{\n  json: {\n    ...validacao,\n    contexto_completo: contextoCompleto\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "edcd70b1-f472-4cdb-a348-6c85d3cabecf",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06dfad18-521e-4168-b09f-9e60ae1ccc25",
+              "name": "Aplic.whatsapp_number",
+              "value": "553498268523",
+              "type": "string"
+            },
+            {
+              "id": "8e41a4ac-0d20-4497-99f2-20657a47b508",
+              "name": "Aplic.dinastia_token",
+              "value": "fb29784a-0b59-41fd-8b24-9ff551999e07",
+              "type": "string"
+            },
+            {
+              "id": "835c73b2-1327-401f-9200-312b59a06932",
+              "name": "Lead.phone_normalizado",
+              "value": "={{ $json.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "32e77d1f-c055-400f-9700-5862e5be43e0",
+              "name": "prompt_sistema",
+              "value": "={{ $json.prompt_sistema }}",
+              "type": "string"
+            },
+            {
+              "id": "ed14c105-47b7-40a0-a8f3-df5cd8c261bd",
+              "name": "modelo_ia",
+              "value": "={{ $json.modelo_ia }}",
+              "type": "string"
+            },
+            {
+              "id": "3394f76c-bdbb-4519-ad86-141dc769113a",
+              "name": "temperatura",
+              "value": "={{ $json.temperatura }}",
+              "type": "string"
+            },
+            {
+              "id": "811a56dc-3714-4eb0-aa86-0115488616dd",
+              "name": "max_tokens",
+              "value": "={{ $json.max_tokens }}",
+              "type": "number"
+            },
+            {
+              "id": "19c9c4c5-93d4-472d-937a-7d075c887e6b",
+              "name": "Aplic.url_Dinastia",
+              "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host",
+              "type": "string"
+            },
+            {
+              "id": "4e410860-9b43-4f34-85f5-f52b37a937a5",
+              "name": "Lead.Nome_Completo",
+              "value": "={{ $json.full_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        0
+      ],
+      "id": "6b3836f8-9bb2-4a1b-a557-209d7a2ef8b5",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Busca os dados especificamente do nó 'config'\n// Nota: .first() pega o primeiro item. Se o fluxo processar vários itens, \n// o ideal seria iterar sobre 'items', mas para este caso funciona.\nconst inputData = $('config').first().json;\n\n// 2. Tratamento do Nome\n// Acessa Lead.Nome_Completo do JSON de exemplo\nconst nomeCompleto = inputData.Lead.Nome_Completo || \"visitante\";\nconst primeiroNome = nomeCompleto.trim().split(' ')[0];\n\n// Formatação (Primeira maiúscula, resto minúscula -> ex: \"RENATA\" vira \"Renata\")\nconst nome = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();\n\n// 3. Lógica de Saudação (Fuso Horário Brasil -3h)\n// O n8n roda em UTC por padrão, então subtraímos 3 horas\nconst now = new Date();\nconst horaBrasil = new Date(now.getTime() - 3 * 60 * 60 * 1000).getHours();\n\nlet saudacao = \"Boa noite\";\nif (horaBrasil >= 5 && horaBrasil < 12) saudacao = \"Bom dia\";\nelse if (horaBrasil >= 12 && horaBrasil < 18) saudacao = \"Boa tarde\";\n\n// 4. Matriz de Variações Curtas (Foco em resposta rápida)\nconst variacoes = [\n  `Oi ${nome}`,\n  `Olá, este é o contato de ${nome}?`,\n  `Oi ${nome}, tudo bem?`,\n  `${saudacao}, ${nome}. Tudo certo?`,\n  `Oi ${nome}?`,\n  `${saudacao} ${nome} 👋`\n];\n\n// 5. Seleciona uma variação aleatoriamente\nconst mensagemFinal = variacoes[Math.floor(Math.random() * variacoes.length)];\n\n// 6. Retorna os dados originais + a nova mensagem gerada\nreturn {\n  json: {\n    ...inputData, // Mantém os dados do nó config\n    generated_message: mensagemFinal,\n    message_type: \"short_opener_v1\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "8e5ea64c-2e69-48e2-9c88-7ae14e43a44b",
+      "name": "Gerador de Onboarding"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_histories (session_id, message)\n\nVALUES (\n\n  -- 1. Cria o Session ID: id Lead\n\n  '{{ $('Execute a SQL query').item.json.id }}',\n\n\n\n  -- 2. Constrói o JSON idêntico ao padrão LangChain/n8n\n\n  jsonb_build_object(\n\n    'type', 'ai',\n\n    -- Aqui entra a mensagem gerada pelo Javascript, com tratamento de aspas simples para não quebrar o SQL\n\n    'content', 'incio do contato (resumo):{{ $('Execute a SQL query').item.json.custom_fields.resumo_original }}\\n\\n{{ $('Gerador de Onboarding').item.json.generated_message.replace(/'/g, \"''\") }}',\n\n    'tool_calls', '[]'::jsonb,\n\n    'additional_kwargs', '{}'::jsonb,\n\n    'response_metadata', '{}'::jsonb,\n\n    'invalid_tool_calls', '[]'::jsonb\n\n  )\n\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1552,
+        0
+      ],
+      "id": "662b09be-d4a6-45ab-8d04-6f777f2a8e0c",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "##Realiza Onboarding\nEnvia mensagem padrão de onboarding ao lead. Primeira Tentativa",
+        "height": 80,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -128
+      ],
+      "id": "ee2c4b5e-3e52-4c4d-be43-33e8b24e9cad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"{{ $('Execute a SQL query').item.json.id }}_onboarding_b\",\n  \"scheduleTo\": \"{{ $now.plus({ minutes: 15 }).toUTC().toISO() }}\",\n  \"payload\": {\n    \"lead_id\": \"{{ $('Execute a SQL query').item.json.id }}\",\n    \"agente_id\": \"{{ $('Webhook').item.json.body.agente_id }}\",\n    \"phone_number\": \"{{ $('Webhook').item.json.body.phone_number }}\",\n    \"full_name\": \"{{ $('Webhook').item.json.body.full_name }}\",\n    \"origem\": \"{{ $('Webhook').item.json.body.origem }}\",\n    \"estado_atual\": \"{{ $('Webhook').item.json.body.estado_atual }}\",\n    \"tipo\": \"ONBOARDING_INICIAL\",\n    \"resumo\": {{ JSON.stringify($('Webhook').item.json.body.resumo || \"\") }}\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/fup-parametrico-239edccf-e2f9-4813-9448-9083a776f3f0\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1952,
+        272
+      ],
+      "id": "df64cffd-b7b5-404a-90d9-93b0d39828d0",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "afTHktWWDSFZC7oJ",
+          "name": "Aplic-scheduler"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('configBasic').item.json.Aplic.url_Dinastia }}/chat/send/text ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Body",
+              "value": "=Lead Inválido p/ F-Up 👎🏻\n\nNumero: {{ $json.Lead.phone_normalizado }}\nNome: {{ $('Execute a SQL query').item.json.full_name }}\nQuiz: {{ $('Execute a SQL query').last().json.custom_fields[1].quiz_type }}\nRegra: {{ $('Execute a SQL query').item.json.custom_fields[1].dados_pessoais.cidade }}\nAgente: {{ $('Execute a SQL query').item.json.agente_nome }}"
+            },
+            {
+              "name": "Phone",
+              "value": "+554599083422"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1008,
+        176
+      ],
+      "id": "474bf287-9960-4b4b-b2b1-4d449e716221",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06dfad18-521e-4168-b09f-9e60ae1ccc25",
+              "name": "Aplic.whatsapp_number",
+              "value": "553498268523",
+              "type": "string"
+            },
+            {
+              "id": "8e41a4ac-0d20-4497-99f2-20657a47b508",
+              "name": "Aplic.dinastia_token",
+              "value": "fb29784a-0b59-41fd-8b24-9ff551999e07",
+              "type": "string"
+            },
+            {
+              "id": "835c73b2-1327-401f-9200-312b59a06932",
+              "name": "Lead.phone_normalizado",
+              "value": "={{ $json.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "32e77d1f-c055-400f-9700-5862e5be43e0",
+              "name": "prompt_sistema",
+              "value": "={{ $json.prompt_sistema }}",
+              "type": "string"
+            },
+            {
+              "id": "ed14c105-47b7-40a0-a8f3-df5cd8c261bd",
+              "name": "modelo_ia",
+              "value": "={{ $json.modelo_ia }}",
+              "type": "string"
+            },
+            {
+              "id": "3394f76c-bdbb-4519-ad86-141dc769113a",
+              "name": "temperatura",
+              "value": "={{ $json.temperatura }}",
+              "type": "string"
+            },
+            {
+              "id": "811a56dc-3714-4eb0-aa86-0115488616dd",
+              "name": "max_tokens",
+              "value": "={{ $json.max_tokens }}",
+              "type": "number"
+            },
+            {
+              "id": "19c9c4c5-93d4-472d-937a-7d075c887e6b",
+              "name": "Aplic.url_Dinastia",
+              "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host",
+              "type": "string"
+            },
+            {
+              "id": "4e410860-9b43-4f34-85f5-f52b37a937a5",
+              "name": "Lead.Nome_Completo",
+              "value": "={{ $json.full_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        176
+      ],
+      "id": "3c483c63-9ede-4528-8e85-59b56254b234",
+      "name": "configBasic"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_histories (session_id, message)\nVALUES (\n  -- 1. Cria o Session ID: TelefoneUser_TelefoneBot\n  '{{ $('config').item.json.Lead.phone_normalizado }}_{{ $('config').item.json.Aplic.whatsapp_number }}',\n\n  -- 2. Constrói o JSON idêntico ao padrão LangChain/n8n\n  jsonb_build_object(\n    'type', 'ai',\n    -- Aqui entra a mensagem gerada pelo Javascript, com tratamento de aspas simples para não quebrar o SQL\n    'content', '{{ $('Gerador de Onboarding').item.json.generated_message.replace(/'/g, \"''\") }}',\n    'tool_calls', '[]'::jsonb,\n    'additional_kwargs', '{}'::jsonb,\n    'response_metadata', '{}'::jsonb,\n    'invalid_tool_calls', '[]'::jsonb\n  )\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1104,
+        400
+      ],
+      "id": "ebf626ac-a10c-435a-9f3b-db3013e84a08",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO interacoes (\n    lead_id,\n    created_at,\n    type,\n    direction,\n    message,\n    ai_generated,\n    whatsapp_number\n)\nVALUES (\n    -- Lead ID (UUID)\n    '{{ $('Execute a SQL query').item.json.id }}'::uuid,\n    \n    -- Created At\n    NOW(),\n    \n    -- Type e Direction\n    'WHATSAPP_ENVIADO',\n    'OUTBOUND',\n    \n    -- Mensagem\n    '{{ $('Gerador de Onboarding').item.json.generated_message.replace(/'/g, \"''\") }}',\n    \n    -- AI Generated\n    true,\n    \n    -- Número do Bot (Contexto de roteamento/origem)\n    '{{ $('config').item.json.Aplic.whatsapp_number }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "ae12febd-27f9-4414-90f5-4340ca8ba942",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.Aplic.url_Dinastia }}/chat/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $json.Aplic.dinastia_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "554599083422"
+            },
+            {
+              "name": "message",
+              "value": "=Lead Inválido p/ F-Up 👎🏻\n\nNumero: {{ $json.Lead.phone_normalizado }}\nNome: {{ $('Execute a SQL query').item.json.full_name }}\nQuiz: {{ $('Execute a SQL query').last().json.custom_fields[1].quiz_type }}\nRegra: {{ $('Execute a SQL query').item.json.custom_fields[1].dados_pessoais.cidade }}\nAgente: {{ $('Execute a SQL query').item.json.agente_nome }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1312,
+        384
+      ],
+      "id": "87bac2ef-d1be-4f52-93d4-77a3473293b2",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "content": "## Obrigatorio para funcionamento:\nGravar interações para todas mensagems enviadas | recebidas na table interacoes",
+        "width": 464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -320
+      ],
+      "id": "217c096e-b310-4891-95c5-da388551398b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.Aplic.url_Dinastia }}/chat/send/text ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Body",
+              "value": "={{ $json.generated_message }}"
+            },
+            {
+              "name": "Phone",
+              "value": "+554599083422"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "a1b2740a-273b-4a48-8ac9-240ed7f4f1be",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.Aplic.url_Dinastia }}/chat/send/text ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Body",
+              "value": "={{ $('Gerador de Onboarding').item.json.generated_message }}"
+            },
+            {
+              "name": "Phone",
+              "value": "={{ $('Gerador de Onboarding').item.json.Lead.phone_normalizado }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "ec4158dc-c129-4e13-bea0-a9a2bede280c",
+      "name": "HTTP Request4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "configBasic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config": {
+      "main": [
+        [
+          {
+            "node": "Gerador de Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerador de Onboarding": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "configBasic": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "python-requests/2.31.0",
+            "content-length": "1639",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "lead_id": "7c263a0b-9ebb-48e8-8a23-7c21fbe56fd1",
+            "agente_id": "f7eefee6-f9b8-49c1-96ce-b51985db6ed2",
+            "phone_number": "+553499176536",
+            "full_name": "JEANECLER JOSÉ GUIMARAES",
+            "origem": "InLead-Diagnostico_v1",
+            "estado_atual": "168bc0bb-f8cf-479c-a77c-dc5b8deabb93",
+            "tipo": "ONBOARDING_INICIAL",
+            "resumo": "🧩 **RESUMO DO QUIZ**\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n👤 **Nome:** JEANECLER JOSÉ GUIMARAES\n📱 **Telefone:** 5534999176536\n📍 **Cidade:** Ituiutaba\n⚖️ **Peso Atual:** 87 kg\n📏 **Altura:** 161 cm\n🎯 **Peso Desejado:** 60 kg\n📊 **Imc:** 33.6\n📈 **Imc Categoria:** obesidade_grau_1\n🔄 **Momento Vida:** Quero emagrecer com rapidez e segurança\n🚧 **Maior Obstaculo:** Falta de acompanhamento e motivação\n💪 **Motivacao:** -\n💊 **Uso Suplementos:** -\n🩺 **Historico Medicacao:** Nunca usei, mas estou pensando em começar\n💰 **Orcamento Mensal:** -\n⭐ **Protocolo Interesse:** Programa completo Burn&amp;BuildAcompanhamento médico e nutricional + aplicação acompanhada com dose personalizada + suplementação Indicado para quem busca um processo completo, acelerado, com praticidade e conforto.\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n📅 **Atualizado em:** 27/02/2026, 21:51"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/scheduler-addcb3d2-f614-4e6f-81b7-46c200088010",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "1733a1bb-5e21-4339-9ddd-518266cd0aaa",
+  "activeVersionId": "1733a1bb-5e21-4339-9ddd-518266cd0aaa",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-03T00:51:23.921Z",
+      "createdAt": "2026-01-03T00:51:23.921Z",
+      "role": "workflow:owner",
+      "workflowId": "0gRPRVxJtsZQqmHO",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-28T02:37:09.933Z",
+    "createdAt": "2026-02-28T02:37:08.150Z",
+    "versionId": "1733a1bb-5e21-4339-9ddd-518266cd0aaa",
+    "workflowId": "0gRPRVxJtsZQqmHO",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "scheduler-addcb3d2-f614-4e6f-81b7-46c200088010",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          32,
+          0
+        ],
+        "id": "908dce40-c251-45f4-adef-a92b3ab6daac",
+        "name": "Webhook",
+        "webhookId": "addcb3d2-f614-4e6f-81b7-46c200088010"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH interacoes_lead AS (\n  SELECT\n    COUNT(*) as total,\n    MIN(created_at) as primeira_em,\n    MAX(created_at) as ultima_em,\n    (array_agg(message ORDER BY created_at ASC))[1]  as primeira_mensagem,\n    (array_agg(message ORDER BY created_at DESC))[1] as ultima_mensagem\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n),\ninteracoes_24h AS (\n  SELECT COUNT(*) as total\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n    AND created_at >= NOW() - INTERVAL '24 hours'\n),\natribuir_agente AS (\n  UPDATE leads\n  SET \n    agente_responsavel_id = '23ad7155-0fa3-4904-a492-77b805c044c2'::uuid,\n    updated_at = NOW()\n  WHERE id = $1::uuid\n    AND (\n      agente_responsavel_id IS NULL\n      OR (SELECT total FROM interacoes_lead) = 0\n    )\n  RETURNING agente_responsavel_id\n)\nSELECT \n  l.id,\n  l.full_name,\n  l.phone_number,\n  l.tentativas_follow_up,\n  l.origem,\n  l.source,\n  (l.custom_fields->-1) as custom_fields,\n\n  COALESCE(\n    (SELECT agente_responsavel_id FROM atribuir_agente),\n    a.id\n  ) as agente_id,\n  a.nome as agente_nome,\n  a.prompt_sistema,\n  a.modelo_ia,\n  a.temperatura,\n  a.max_tokens,\n\n  i.total                        as interacoes_total,\n  i.primeira_em,\n  i.ultima_em,\n  LEFT(i.primeira_mensagem, 200) as primeira_mensagem,\n  LEFT(i.ultima_mensagem, 200)   as ultima_mensagem,\n  h.total                        as interacoes_24h,\n\n  CASE \n    WHEN h.total > 0                  THEN 'CANCELAR'\n    WHEN l.tentativas_follow_up >= 10 THEN 'CANCELAR'\n    ELSE 'ENVIAR'\n  END as decisao\n\nFROM leads l\nLEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\nCROSS JOIN interacoes_lead i\nCROSS JOIN interacoes_24h h\nWHERE l.id = $1::uuid;",
+          "options": {
+            "queryReplacement": "={{ $json.body.lead_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          208,
+          0
+        ],
+        "id": "d9ffd7f3-dd4a-4a8c-a8e7-5ea7f37360eb",
+        "name": "Execute a SQL query",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.decisao }}",
+                      "rightValue": "ENVIAR",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "54c01c22-6d64-4eb3-bd18-7d9c8896ad7c"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Onboarding"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "efc01971-2a73-4285-84b1-e152f231e069",
+                      "leftValue": "={{ $json.decisao }}",
+                      "rightValue": "CANCELAR",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Cancelar"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          416,
+          0
+        ],
+        "id": "4ba59eac-bbe5-4435-a56e-1866f7a0a435",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "jsCode": "const validacao = $json;\n\n// Pega custom_fields (já vem como array JSONB)\nconst customFields = validacao.custom_fields || [];\n\n// Converte para string formatada (IA interpreta JSON)\nconst contextoCustomFields = customFields.length > 0 \n  ? JSON.stringify(customFields, null, 2)\n  : 'Nenhuma informação adicional disponível';\n\n// Monta contexto completo para IA\nconst contextoCompleto = `\nLEAD: ${validacao.full_name}\nTELEFONE: ${validacao.phone_number}\nORIGEM: ${validacao.estado_nome}\nTENTATIVA: ${validacao.tentativas_follow_up + 1}\n\nDADOS DO FORMULÁRIO/QUIZ:\n${contextoCustomFields}\n`;\n\nreturn [{\n  json: {\n    ...validacao,\n    contexto_completo: contextoCompleto\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          624,
+          0
+        ],
+        "id": "edcd70b1-f472-4cdb-a348-6c85d3cabecf",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "06dfad18-521e-4168-b09f-9e60ae1ccc25",
+                "name": "Aplic.whatsapp_number",
+                "value": "553498268523",
+                "type": "string"
+              },
+              {
+                "id": "8e41a4ac-0d20-4497-99f2-20657a47b508",
+                "name": "Aplic.dinastia_token",
+                "value": "fb29784a-0b59-41fd-8b24-9ff551999e07",
+                "type": "string"
+              },
+              {
+                "id": "835c73b2-1327-401f-9200-312b59a06932",
+                "name": "Lead.phone_normalizado",
+                "value": "={{ $json.phone_number }}",
+                "type": "string"
+              },
+              {
+                "id": "32e77d1f-c055-400f-9700-5862e5be43e0",
+                "name": "prompt_sistema",
+                "value": "={{ $json.prompt_sistema }}",
+                "type": "string"
+              },
+              {
+                "id": "ed14c105-47b7-40a0-a8f3-df5cd8c261bd",
+                "name": "modelo_ia",
+                "value": "={{ $json.modelo_ia }}",
+                "type": "string"
+              },
+              {
+                "id": "3394f76c-bdbb-4519-ad86-141dc769113a",
+                "name": "temperatura",
+                "value": "={{ $json.temperatura }}",
+                "type": "string"
+              },
+              {
+                "id": "811a56dc-3714-4eb0-aa86-0115488616dd",
+                "name": "max_tokens",
+                "value": "={{ $json.max_tokens }}",
+                "type": "number"
+              },
+              {
+                "id": "19c9c4c5-93d4-472d-937a-7d075c887e6b",
+                "name": "Aplic.url_Dinastia",
+                "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host",
+                "type": "string"
+              },
+              {
+                "id": "4e410860-9b43-4f34-85f5-f52b37a937a5",
+                "name": "Lead.Nome_Completo",
+                "value": "={{ $json.full_name }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          800,
+          0
+        ],
+        "id": "6b3836f8-9bb2-4a1b-a557-209d7a2ef8b5",
+        "name": "config"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Busca os dados especificamente do nó 'config'\n// Nota: .first() pega o primeiro item. Se o fluxo processar vários itens, \n// o ideal seria iterar sobre 'items', mas para este caso funciona.\nconst inputData = $('config').first().json;\n\n// 2. Tratamento do Nome\n// Acessa Lead.Nome_Completo do JSON de exemplo\nconst nomeCompleto = inputData.Lead.Nome_Completo || \"visitante\";\nconst primeiroNome = nomeCompleto.trim().split(' ')[0];\n\n// Formatação (Primeira maiúscula, resto minúscula -> ex: \"RENATA\" vira \"Renata\")\nconst nome = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();\n\n// 3. Lógica de Saudação (Fuso Horário Brasil -3h)\n// O n8n roda em UTC por padrão, então subtraímos 3 horas\nconst now = new Date();\nconst horaBrasil = new Date(now.getTime() - 3 * 60 * 60 * 1000).getHours();\n\nlet saudacao = \"Boa noite\";\nif (horaBrasil >= 5 && horaBrasil < 12) saudacao = \"Bom dia\";\nelse if (horaBrasil >= 12 && horaBrasil < 18) saudacao = \"Boa tarde\";\n\n// 4. Matriz de Variações Curtas (Foco em resposta rápida)\nconst variacoes = [\n  `Oi ${nome}`,\n  `Olá, este é o contato de ${nome}?`,\n  `Oi ${nome}, tudo bem?`,\n  `${saudacao}, ${nome}. Tudo certo?`,\n  `Oi ${nome}?`,\n  `${saudacao} ${nome} 👋`\n];\n\n// 5. Seleciona uma variação aleatoriamente\nconst mensagemFinal = variacoes[Math.floor(Math.random() * variacoes.length)];\n\n// 6. Retorna os dados originais + a nova mensagem gerada\nreturn {\n  json: {\n    ...inputData, // Mantém os dados do nó config\n    generated_message: mensagemFinal,\n    message_type: \"short_opener_v1\"\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1008,
+          0
+        ],
+        "id": "8e5ea64c-2e69-48e2-9c88-7ae14e43a44b",
+        "name": "Gerador de Onboarding"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO n8n_chat_histories (session_id, message)\n\nVALUES (\n\n  -- 1. Cria o Session ID: id Lead\n\n  '{{ $('Execute a SQL query').item.json.id }}',\n\n\n\n  -- 2. Constrói o JSON idêntico ao padrão LangChain/n8n\n\n  jsonb_build_object(\n\n    'type', 'ai',\n\n    -- Aqui entra a mensagem gerada pelo Javascript, com tratamento de aspas simples para não quebrar o SQL\n\n    'content', 'incio do contato (resumo):{{ $('Execute a SQL query').item.json.custom_fields.resumo_original }}\\n\\n{{ $('Gerador de Onboarding').item.json.generated_message.replace(/'/g, \"''\") }}',\n\n    'tool_calls', '[]'::jsonb,\n\n    'additional_kwargs', '{}'::jsonb,\n\n    'response_metadata', '{}'::jsonb,\n\n    'invalid_tool_calls', '[]'::jsonb\n\n  )\n\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1552,
+          0
+        ],
+        "id": "662b09be-d4a6-45ab-8d04-6f777f2a8e0c",
+        "name": "Execute a SQL query1",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "##Realiza Onboarding\nEnvia mensagem padrão de onboarding ao lead. Primeira Tentativa",
+          "height": 80,
+          "width": 352
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -16,
+          -128
+        ],
+        "id": "ee2c4b5e-3e52-4c4d-be43-33e8b24e9cad",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"id\": \"{{ $('Execute a SQL query').item.json.id }}_onboarding_b\",\n  \"scheduleTo\": \"{{ $now.plus({ minutes: 15 }).toUTC().toISO() }}\",\n  \"payload\": {\n    \"lead_id\": \"{{ $('Execute a SQL query').item.json.id }}\",\n    \"agente_id\": \"{{ $('Webhook').item.json.body.agente_id }}\",\n    \"phone_number\": \"{{ $('Webhook').item.json.body.phone_number }}\",\n    \"full_name\": \"{{ $('Webhook').item.json.body.full_name }}\",\n    \"origem\": \"{{ $('Webhook').item.json.body.origem }}\",\n    \"estado_atual\": \"{{ $('Webhook').item.json.body.estado_atual }}\",\n    \"tipo\": \"ONBOARDING_INICIAL\",\n    \"resumo\": {{ JSON.stringify($('Webhook').item.json.body.resumo || \"\") }}\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/fup-parametrico-239edccf-e2f9-4813-9448-9083a776f3f0\"\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1952,
+          272
+        ],
+        "id": "df64cffd-b7b5-404a-90d9-93b0d39828d0",
+        "name": "HTTP Request2",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "afTHktWWDSFZC7oJ",
+            "name": "Aplic-scheduler"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('configBasic').item.json.Aplic.url_Dinastia }}/chat/send/text ",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Body",
+                "value": "=Lead Inválido p/ F-Up 👎🏻\n\nNumero: {{ $json.Lead.phone_normalizado }}\nNome: {{ $('Execute a SQL query').item.json.full_name }}\nQuiz: {{ $('Execute a SQL query').last().json.custom_fields[1].quiz_type }}\nRegra: {{ $('Execute a SQL query').item.json.custom_fields[1].dados_pessoais.cidade }}\nAgente: {{ $('Execute a SQL query').item.json.agente_nome }}"
+              },
+              {
+                "name": "Phone",
+                "value": "+554599083422"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1008,
+          176
+        ],
+        "id": "474bf287-9960-4b4b-b2b1-4d449e716221",
+        "name": "HTTP Request1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "06dfad18-521e-4168-b09f-9e60ae1ccc25",
+                "name": "Aplic.whatsapp_number",
+                "value": "553498268523",
+                "type": "string"
+              },
+              {
+                "id": "8e41a4ac-0d20-4497-99f2-20657a47b508",
+                "name": "Aplic.dinastia_token",
+                "value": "fb29784a-0b59-41fd-8b24-9ff551999e07",
+                "type": "string"
+              },
+              {
+                "id": "835c73b2-1327-401f-9200-312b59a06932",
+                "name": "Lead.phone_normalizado",
+                "value": "={{ $json.phone_number }}",
+                "type": "string"
+              },
+              {
+                "id": "32e77d1f-c055-400f-9700-5862e5be43e0",
+                "name": "prompt_sistema",
+                "value": "={{ $json.prompt_sistema }}",
+                "type": "string"
+              },
+              {
+                "id": "ed14c105-47b7-40a0-a8f3-df5cd8c261bd",
+                "name": "modelo_ia",
+                "value": "={{ $json.modelo_ia }}",
+                "type": "string"
+              },
+              {
+                "id": "3394f76c-bdbb-4519-ad86-141dc769113a",
+                "name": "temperatura",
+                "value": "={{ $json.temperatura }}",
+                "type": "string"
+              },
+              {
+                "id": "811a56dc-3714-4eb0-aa86-0115488616dd",
+                "name": "max_tokens",
+                "value": "={{ $json.max_tokens }}",
+                "type": "number"
+              },
+              {
+                "id": "19c9c4c5-93d4-472d-937a-7d075c887e6b",
+                "name": "Aplic.url_Dinastia",
+                "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host",
+                "type": "string"
+              },
+              {
+                "id": "4e410860-9b43-4f34-85f5-f52b37a937a5",
+                "name": "Lead.Nome_Completo",
+                "value": "={{ $json.full_name }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          800,
+          176
+        ],
+        "id": "3c483c63-9ede-4528-8e85-59b56254b234",
+        "name": "configBasic"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO n8n_chat_histories (session_id, message)\nVALUES (\n  -- 1. Cria o Session ID: TelefoneUser_TelefoneBot\n  '{{ $('config').item.json.Lead.phone_normalizado }}_{{ $('config').item.json.Aplic.whatsapp_number }}',\n\n  -- 2. Constrói o JSON idêntico ao padrão LangChain/n8n\n  jsonb_build_object(\n    'type', 'ai',\n    -- Aqui entra a mensagem gerada pelo Javascript, com tratamento de aspas simples para não quebrar o SQL\n    'content', '{{ $('Gerador de Onboarding').item.json.generated_message.replace(/'/g, \"''\") }}',\n    'tool_calls', '[]'::jsonb,\n    'additional_kwargs', '{}'::jsonb,\n    'response_metadata', '{}'::jsonb,\n    'invalid_tool_calls', '[]'::jsonb\n  )\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1104,
+          400
+        ],
+        "id": "ebf626ac-a10c-435a-9f3b-db3013e84a08",
+        "name": "Execute a SQL query2",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO interacoes (\n    lead_id,\n    created_at,\n    type,\n    direction,\n    message,\n    ai_generated,\n    whatsapp_number\n)\nVALUES (\n    -- Lead ID (UUID)\n    '{{ $('Execute a SQL query').item.json.id }}'::uuid,\n    \n    -- Created At\n    NOW(),\n    \n    -- Type e Direction\n    'WHATSAPP_ENVIADO',\n    'OUTBOUND',\n    \n    -- Mensagem\n    '{{ $('Gerador de Onboarding').item.json.generated_message.replace(/'/g, \"''\") }}',\n    \n    -- AI Generated\n    true,\n    \n    -- Número do Bot (Contexto de roteamento/origem)\n    '{{ $('config').item.json.Aplic.whatsapp_number }}'\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1728,
+          0
+        ],
+        "id": "ae12febd-27f9-4414-90f5-4340ca8ba942",
+        "name": "Execute a SQL query3",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $json.Aplic.url_Dinastia }}/chat/send/text",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "token",
+                "value": "={{ $json.Aplic.dinastia_token }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "phone",
+                "value": "554599083422"
+              },
+              {
+                "name": "message",
+                "value": "=Lead Inválido p/ F-Up 👎🏻\n\nNumero: {{ $json.Lead.phone_normalizado }}\nNome: {{ $('Execute a SQL query').item.json.full_name }}\nQuiz: {{ $('Execute a SQL query').last().json.custom_fields[1].quiz_type }}\nRegra: {{ $('Execute a SQL query').item.json.custom_fields[1].dados_pessoais.cidade }}\nAgente: {{ $('Execute a SQL query').item.json.agente_nome }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1312,
+          384
+        ],
+        "id": "87bac2ef-d1be-4f52-93d4-77a3473293b2",
+        "name": "HTTP Request3"
+      },
+      {
+        "parameters": {
+          "content": "## Obrigatorio para funcionamento:\nGravar interações para todas mensagems enviadas | recebidas na table interacoes",
+          "width": 464
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -16,
+          -320
+        ],
+        "id": "217c096e-b310-4891-95c5-da388551398b",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.Aplic.url_Dinastia }}/chat/send/text ",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Body",
+                "value": "={{ $json.generated_message }}"
+              },
+              {
+                "name": "Phone",
+                "value": "+554599083422"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1184,
+          0
+        ],
+        "id": "a1b2740a-273b-4a48-8ac9-240ed7f4f1be",
+        "name": "HTTP Request",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.Aplic.url_Dinastia }}/chat/send/text ",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Body",
+                "value": "={{ $('Gerador de Onboarding').item.json.generated_message }}"
+              },
+              {
+                "name": "Phone",
+                "value": "={{ $('Gerador de Onboarding').item.json.Lead.phone_normalizado }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1360,
+          0
+        ],
+        "id": "ec4158dc-c129-4e13-bea0-a9a2bede280c",
+        "name": "HTTP Request4",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "configBasic",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "config": {
+        "main": [
+          [
+            {
+              "node": "Gerador de Onboarding",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gerador de Onboarding": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query1": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "configBasic": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query3": {
+        "main": [
+          []
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request4": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 1733a1bb",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
