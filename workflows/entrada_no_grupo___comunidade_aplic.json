@@ -1,0 +1,4481 @@
+{
+  "updatedAt": "2026-01-28T04:04:37.863Z",
+  "createdAt": "2025-11-11T17:30:42.296Z",
+  "id": "9fUPngsj6uO9KFdw",
+  "name": "Entrada no Grupo - COMUNIDADE APLIC",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e31aecb7-2a1e-41d5-aa89-2882e4096f96",
+              "name": "adm_User_id",
+              "value": "={{ $json.properties.headers.userID }}",
+              "type": "string"
+            },
+            {
+              "id": "4cb7775f-3a7b-4ad4-b5d4-df2c0fb7d874",
+              "name": "adm_user_JID",
+              "value": "={{ $json.properties.headers.userJID }}",
+              "type": "string"
+            },
+            {
+              "id": "97d98906-20a1-409e-8d67-acd5c0876db9",
+              "name": "id_grupo",
+              "value": "={{ JSON.parse($json.content).data.event.JID }}",
+              "type": "string"
+            },
+            {
+              "id": "e204affe-735f-49c4-a37f-bd8463ed7cab",
+              "name": "numero_entrada",
+              "value": "={{ JSON.parse($json.content).data.event.SenderPN }}",
+              "type": "string"
+            },
+            {
+              "id": "d07c8402-cd41-4424-8beb-668759b6c3df",
+              "name": "nome_entrada",
+              "value": "={{ JSON.parse($json.content).data.event.Notify }}",
+              "type": "string"
+            },
+            {
+              "id": "38ecdf0b-a9e4-4fbb-958a-4f93a88872fc",
+              "name": "movimento_saida",
+              "value": "={{ JSON.parse($json.content).data.event.Join ?? JSON.parse($json.content).data.event.Leave }}",
+              "type": "string"
+            },
+            {
+              "id": "d215de47-8261-467e-b5d0-501633c5a2af",
+              "name": "movimento_entrada",
+              "value": "={{ JSON.parse($json.content).data.event.Join }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        1296
+      ],
+      "id": "a04de8e1-57b6-4413-95ab-ac2a414fb8ce",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.movimento_entrada }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "7d5fd5ab-2a55-4b15-abb8-6ae821ce423f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Entrou"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "144ef440-a906-449e-9cf6-17bc179a945a",
+                    "leftValue": "={{ $json.movimento_saida }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Saiu"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -80,
+        1296
+      ],
+      "id": "ff3facca-eb1a-4de5-9cb0-844877b366b9",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "22c7f9dc-3445-41c9-b2ed-3ae6d739bc49",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        1392
+      ],
+      "id": "13f4f13d-517f-41a3-8044-cfed37dce197",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1376
+      ],
+      "id": "4becdcb2-c54f-46eb-b739-402a0d6eceb3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.aplicgo.com/api/v1/accounts/1/conversations/4058/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $json.output }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\",\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        848,
+        1376
+      ],
+      "id": "53c97169-f49e-4a66-b131-1e503a34b400",
+      "name": "CW Enviar Mensagem1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.aplicgo.com/api/v1/accounts/1/conversations/4058/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $json.output }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\",\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        1376
+      ],
+      "id": "6a2e4d38-9f27-46e5-99bb-8cc97c9d668c",
+      "name": "CW Add Etiqueta"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "856bbfcd-f028-433e-84b9-4e34b48ef53f",
+              "name": "mensagem",
+              "value": "Oi, entrou no grupo ne?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        1376
+      ],
+      "id": "4d8fddf9-71a7-4d65-8d17-5015afdec182",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        1248
+      ],
+      "id": "1b8daacf-efe2-4e6f-add4-ab6e2c479b75",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        1488
+      ],
+      "id": "485ece09-1a77-4898-a1b0-e291f22be613",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// O n8n nos dá um array 'items' com todos os dados de entrada\n// Pegamos o primeiro item da lista (posição [0])\n// e acessamos seu 'json' (os dados)\nconst itemData = items[0].json;\n\n// 1. Verificamos se o 'content' existe\nif (!itemData || !itemData.content) {\n  throw new Error(\"Payload do RabbitMQ não tem o campo 'content'!\");\n}\n\n// 2. O 'content' é um TEXTO (String).\n// Vamos \"converter\" (dar parse) esse texto em um objeto JSON.\nconst parsedContent = JSON.parse(itemData.content);\n\n// 3. Retornamos o objeto JSON \"aberto\" para o próximo nó\nreturn parsedContent;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        160
+      ],
+      "id": "290c0d50-acac-462b-8d73-cf94d0d73326",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e843158c-cf2e-4340-b78e-9099f17fd68c",
+              "leftValue": "={{ $json.data.event.JID }}",
+              "rightValue": "@g.us",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "5590da19-9660-4ced-8a91-d2e4097756c6",
+              "leftValue": "={{ $json.data.event.JID }}",
+              "rightValue": "=120363423422625439@g.us",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        160
+      ],
+      "id": "77025c82-8c4a-4691-bb39-105f0ebd3675",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ ($json.data.event.Join ?? []).length }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "id": "2497bde3-c876-4cd6-b0da-13a17d333f67"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c68ae716-c8c3-4f43-8693-625e2f37e065",
+                    "leftValue": "={{ ($json.data.event.Leave ?? []).length }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -176,
+        160
+      ],
+      "id": "1951b60c-d5d6-46b1-9dc0-449105363972",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.id_conversa }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"Teste\",\n  \"message_type\": \"outgoing\",\n  \"private\": true,\n  \"content_type\": \"text\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1472,
+        1344
+      ],
+      "id": "44ea4861-893d-412b-8849-b62813349ea8",
+      "name": "CW Enviar Mensagem2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getPhoneFromLID",
+        "lid": "={{ $json.data.event.Join[0] }}"
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+      "typeVersion": 1,
+      "position": [
+        304,
+        144
+      ],
+      "id": "b972f03f-ffa5-4de3-b1d5-9517632e0797",
+      "name": "DinastiAPI User",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "9v2dXlsJP0a1xLPE",
+          "name": "DinastiAPI Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+              "name": "chatwoot.url",
+              "value": "https://chat.aplicgo.com/",
+              "type": "string"
+            },
+            {
+              "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+              "name": "dina.url",
+              "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+              "type": "string"
+            },
+            {
+              "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+              "name": "dina.instancia",
+              "value": "Aplic_Comercial",
+              "type": "string"
+            },
+            {
+              "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+              "name": "dina.apikey",
+              "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+              "type": "string"
+            },
+            {
+              "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+              "name": "rabbit.fila.mensagens",
+              "value": "fila_processar_resposta",
+              "type": "string"
+            },
+            {
+              "id": "f701268c-e852-4806-a657-67848639ac46",
+              "name": "chatwoot.apikey",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+              "type": "string"
+            },
+            {
+              "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+              "name": "chatwoot.inboxid",
+              "value": "7",
+              "type": "string"
+            },
+            {
+              "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+              "name": "chatwoot.account",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+              "name": "testes.chatwootcontact",
+              "value": "4019",
+              "type": "string"
+            },
+            {
+              "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+              "name": "testes.chatwootconversation",
+              "value": "4063",
+              "type": "string"
+            },
+            {
+              "id": "88afbfa8-4d10-4b93-94fc-cc2aa223f2a3",
+              "name": "mensagem",
+              "value": "teste",
+              "type": "string"
+            },
+            {
+              "id": "528a6a83-0067-4f80-a684-6dd9c38584bb",
+              "name": "numero limpo",
+              "value": "={{ $json.Numero_limpo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        240
+      ],
+      "id": "54e62e55-6ac4-4cd5-a35e-c94230d46a72",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.meta.count }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "7fe61ea6-594c-4656-a035-466d19c66562"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Não tem Contato"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cef94396-f7f0-4dad-8945-3d0a76ab3452",
+                    "leftValue": "={{ $json.meta.count }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Tem Contato"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1248,
+        240
+      ],
+      "id": "c0ad22c5-0cdb-44d9-9447-7f20e812ebc9",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.event.Join[0] }}",
+                    "rightValue": "@lid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "240b3265-a64a-49aa-866b-82e76d49ba0d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "@lid"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cdec56e4-538e-4deb-a14c-4a9110836135",
+                    "leftValue": "={{ $json.data.event.Join[0] }}",
+                    "rightValue": "@s.whatsapp.net",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "@s"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        80,
+        160
+      ],
+      "id": "b797c0a6-600f-4e75-8477-1c1dbc508aad",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "content": "## bckp",
+        "height": 592,
+        "width": 2256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        1088
+      ],
+      "id": "a1b71352-7f91-452e-a576-4d60773ff173",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Recebimento e Parse",
+        "height": 80,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        48
+      ],
+      "id": "268afaea-6965-405a-b79d-59d8bb351a20",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Filtros",
+        "height": 80,
+        "width": 656
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        48
+      ],
+      "id": "73fa3f17-b877-4c20-9542-7be45d365d6a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Limpar numero",
+        "height": 80,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        48
+      ],
+      "id": "7ca8c639-3106-4c0b-a13c-ebda20b3c2d0",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - Pesquisar Contato e verifica se tem tem contato criado ou nao",
+        "height": 80,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        32
+      ],
+      "id": "c3ed0c3c-4a24-434d-8856-c8acce5fd598",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Notas edição\nOrganizei os nós;\nMudei alguns nomes de nós (quando muda, as vezes tem que atualizar nos nós que usam ele de referencia);\nMudei o nó code javascript pra tirar o \"@s.whats.....\";\nFiz um merge para mesclar o numero, vindo de mais de um lugar, retornar a mesma string. De um ou de outro.",
+        "height": 208,
+        "width": 784,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        -192
+      ],
+      "id": "e2cdf066-449e-487f-ae3f-26af6fc69cfe",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbox_id\": {{ $('config').item.json.chatwoot.inboxid }},\n  \"name\": \"{{ $json.input_phone }}\",\n  \"phone_number\": \"+{{ $json.input_phone }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1488,
+        144
+      ],
+      "id": "83c58559-bdbd-4748-b513-a685af546e09",
+      "name": "Cadastrar Usuário",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - Criar Contato e Conversa",
+        "height": 80,
+        "width": 736,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        32
+      ],
+      "id": "0bb8b3bc-e48f-4c30-b9a0-0f7d29102eea",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbox_id\": {{ $('config').item.json.chatwoot.inboxid }},\n  \"contact_id\": \"{{ $('Cadastrar Usuário').item.json.payload.contact.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1680,
+        144
+      ],
+      "id": "6a2a0fd1-b2be-4f64-b42e-dcff5b5896d3",
+      "name": "Criar Conversa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts/{{ $json.id }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1536,
+        336
+      ],
+      "id": "863440c6-9a6a-4dab-9fc8-17347472d08b",
+      "name": "Pesquisar Conversa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3d6b09ca-acac-4407-87da-0026d4b2fdc9",
+              "name": "id_conversa",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        144
+      ],
+      "id": "e33b3e37-1f5f-4361-ac76-dff1bd405f89",
+      "name": "Set idConversa",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3d6b09ca-acac-4407-87da-0026d4b2fdc9",
+              "name": "id_conversa",
+              "value": "={{ $json.payload[0].id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1776,
+        336
+      ],
+      "id": "728e7cc4-65ee-4f7d-a6c1-7cf45f047a22",
+      "name": "Set idConversa 2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        544
+      ],
+      "id": "54153648-f60e-4369-a40d-8cafbcb04141",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "height": 464,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        1168
+      ],
+      "id": "031eec1e-3f1b-46d1-9b13-c56ac709a954",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, email, phone_number, created_at\nFROM leads\nWHERE\n    phone_number IS NOT NULL\n    AND REPLACE(phone_number, ' ', '') = REPLACE(TRIM('{{ $('config').item.json.phone_number_clean }}'), ' ', '')\n\n  \nORDER BY created_at DESC\nLIMIT 1;",
+        "options": {}
+      },
+      "id": "8945901a-1006-495f-a656-0e5952a94bc3",
+      "name": "Verificar Duplicata",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        1280
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Verificar Duplicata').item.json.id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "3fe7b728-bc13-4171-b512-d40c201d8ee6",
+      "name": "É Duplicata?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2384,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (\n  full_name,\n  email,\n  phone_number,\n  source,\n  utm_source,\n  utm_medium,\n  utm_campaign,\n  landing_page,\n  tags,\n  custom_fields,\n  created_at,\n  updated_at\n)\nVALUES (\n  {{ `'${$('Parse e Validar').item.json.full_name}'` }},\n  {{ $('Parse e Validar').item.json.email ? `'${$('Parse e Validar').item.json.email}'` : 'NULL' }},\n  {{\n    (() => {\n      const data = $('DinastiAPI User1').item.json.data;\n      const users = data && Array.isArray(data.Users) ? data.Users : null;\n      const inWhatsapp = users && users[0] && users[0].IsInWhatsapp;\n      const jid = users && users[0] ? users[0].JID : null;\n      const parsed = $('Parse e Validar').item.json.phone_number;\n      let raw = '';\n      if (inWhatsapp && jid) {\n        raw = jid.split('@')[0];\n      } else if (parsed) {\n        raw = parsed;\n      } else {\n        return 'NULL';\n      }\n      const digits = raw.replace(/\\D/g, '');\n      const finalNumber = digits.length >= 11 ? digits : '5534' + digits;\n      return \"'\" + \"+\" + finalNumber + \"'\";\n    })()\n  }},\n  {{ `'${$('Parse e Validar').item.json.source}'` }},\n  {{ $('Parse e Validar').item.json.utm_source ? `'${$('Parse e Validar').item.json.utm_source}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.utm_medium ? `'${$('Parse e Validar').item.json.utm_medium}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.utm_campaign ? `'${$('Parse e Validar').item.json.utm_campaign}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.landing_page ? `'${$('Parse e Validar').item.json.landing_page}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.tags \n      ? `'${JSON.stringify($('Parse e Validar').item.json.tags).replace(/'/g, \"''\")}'::jsonb` \n      : \"'{}'::jsonb\" \n  }},\n  {{ $('Parse e Validar').item.json.custom_fields \n      ? `'[${JSON.stringify($('Parse e Validar').item.json.custom_fields).replace(/'/g, \"''\")}]'::jsonb` \n      : \"'[]'::jsonb\" \n  }},\n  NOW(),\n  NOW()\n)\nRETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2240,
+        1504
+      ],
+      "id": "392708c0-c395-421b-bf4c-b392c01cd6b5",
+      "name": "Insert Novo Lead",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads\nSET\n  tags = tags || {{ \n    $('Parse e Validar').item.json.tags\n      ? `'${JSON.stringify($('Parse e Validar').item.json.tags).replace(/'/g, \"''\")}'::jsonb`\n      : \"'{}'::jsonb\"\n  }},\n  custom_fields = COALESCE(custom_fields, '[]'::jsonb) || {{ \n    $('Parse e Validar').item.json.custom_fields\n      ? `'[${JSON.stringify($('Parse e Validar').item.json.custom_fields).replace(/'/g, \"''\")}]'::jsonb`\n      : \"'[]'::jsonb\"\n  }},\n  source = CASE\n    WHEN source = 'Desconhecido' THEN {{ `'${$('Parse e Validar').item.json.source}'` }}\n    WHEN TRIM(SPLIT_PART(source, ',', array_length(string_to_array(source, ','), 1))) = {{ `'${$('Parse e Validar').item.json.source}'` }} THEN source\n    ELSE source || ', ' || {{ `'${$('Parse e Validar').item.json.source}'` }}\n  END,\n  full_name = COALESCE({{ `'${$('Parse e Validar').item.json.full_name}'` }}, full_name),\n  email = COALESCE(\n    {{ $('Parse e Validar').item.json.email ? `'${$('Parse e Validar').item.json.email}'` : \"NULL\" }},\n    email\n  ),\n  phone_number = COALESCE(\n    {{\n      (() => {\n        const dinasti = $('DinastiAPI User1').item.json.data;\n        const users = Array.isArray(dinasti?.Users) ? dinasti.Users : [];\n        const inWhatsapp = users[0]?.IsInWhatsapp || false;\n        const jid = users[0]?.JID || null;\n        const parsed = $('Parse e Validar').item.json.phone_number;\n        let raw = '';\n        if (inWhatsapp && jid) {\n          raw = jid.split('@')[0];\n        } else if (parsed) {\n          raw = parsed;\n        } else {\n          return 'NULL';\n        }\n        const digits = raw.replace(/\\D/g, '');\n        const finalNumber = digits.length >= 11 ? digits : '5534' + digits;\n        return `'+' || '${finalNumber}'`;\n      })()\n    }},\n    phone_number\n  ),\n  updated_at = NOW()\nWHERE id = {{ `'${$('Verificar Duplicata').item.json.id}'` }}\nRETURNING *;",
+        "options": {}
+      },
+      "id": "c14c48db-c36f-4820-abbc-bb31ad256fcd",
+      "name": "Update Lead Existente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        1504
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumbers": "={{ $('config').item.json.phone_number_clean }}"
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        1280
+      ],
+      "id": "4777929f-a4e0-457e-aef3-98b20a33a059",
+      "name": "DinastiAPI User1",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "9v2dXlsJP0a1xLPE",
+          "name": "DinastiAPI Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "queue": "whatsapp.GroupInfo",
+        "options": {
+          "acknowledge": "laterMessageNode"
+        }
+      },
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        160
+      ],
+      "id": "307e83f6-4d86-41cd-abb0-838ddb2fea98",
+      "name": "RabbitMQ Trigger",
+      "credentials": {
+        "rabbitmq": {
+          "id": "E3p6dib91KuK3u4z",
+          "name": "RabbitMQ-Tech"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2416,
+        1504
+      ],
+      "id": "774f389f-2d13-4780-88f3-e562a0354612",
+      "name": "Merge",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.id_conversa }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"### 🚀 Novo Membro na Comunidade!\\n\\nO {{ $if($(\"Pesquisar Conversa\").isExecuted, $(\"Pesquisar Conversa\").item.json.payload[0].meta.sender.name, $(\"Criar Conversa\").item.json.meta.sender.name) }} acabou de entrar no grupo **Comunidade APLIC**.\\n\\n**Ação Sugerida:** Dar boas-vindas.\\n\\n--- \\n*Notificação Automática*\",\n  \"message_type\": \"outgoing\",\n  \"private\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2592,
+        240
+      ],
+      "id": "c9d21bd6-196e-42cf-ba7f-45a460b4682a",
+      "name": "Add Nota Interna",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b0a133e-cdc1-4ebc-9706-35042bb3441d",
+              "name": "Numero_limpo",
+              "value": "={{ $json.data.phone.replace(/@.*/, '').replace(/\\D/g, '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        144
+      ],
+      "id": "8d0c97c9-ca68-4179-8eeb-bea3852faab7",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inicializa o array de saída\nlet itemsOutput = [];\n\nfor (const item of items) {\n  \n  const rawJid = item.json.data?.event?.Join?.[0];\n  let numeroTratado = null;\n\n  if (typeof rawJid === 'string') {\n    \n    // 1. Limpeza inicial\n    let tempNum = rawJid.split('@')[0].replace(/\\D/g, '');\n    let len = tempNum.length;\n\n    /* --- LÓGICA DE REMOÇÃO DO 9 (Sua lógica original) --- */\n    if (len === 13 && tempNum[4] === '9') {\n      tempNum = tempNum.substring(0, 4) + tempNum.substring(5);\n    }\n    else if (len === 11 && tempNum[2] === '9') {\n      tempNum = tempNum.substring(0, 2) + tempNum.substring(3);\n    }\n    \n    /* --- NOVA LÓGICA: INSERÇÃO DO 9 ADICIONAL --- */\n    // Atualizamos o tamanho após a limpeza\n    len = tempNum.length;\n\n    // Se o número tem 12 dígitos (Ex: 551188887777), inserimos o '9' na posição 4\n    // O resultado será: 5511 9 88887777 (13 dígitos)\n    if (len === 12 && tempNum.startsWith('55')) {\n      tempNum = tempNum.substring(0, 4) + '9' + tempNum.substring(4);\n    }\n    // Se o número tem 10 dígitos (Ex: 1188887777), inserimos o '9' na posição 2\n    else if (len === 10) {\n      tempNum = tempNum.substring(0, 2) + '9' + tempNum.substring(2);\n    }\n\n    numeroTratado = tempNum;\n  }\n\n  // 4. Adiciona o campo 'phone_number_clean' ao JSON original\n  itemsOutput.push({\n    json: {\n      ...item.json,\n      phone_number_clean: numeroTratado\n    }\n  });\n}\n\nreturn itemsOutput;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        352
+      ],
+      "id": "34ff2bc2-60c0-486b-b5dc-2c5cb600267f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Add Nota Interna').item.json.conversation_id }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"labels\": [{{ $json.tagsAtualizadas }}]}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4512,
+        224
+      ],
+      "id": "b8929563-9ac9-426b-9227-af4f0e2ae392",
+      "name": "Add Label1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Add Nota Interna').item.json.conversation_id }}/assignments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assignee_id\": {{ $('Busca por Contato Chatwoot').item.json.agente_sorteado_id }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4992,
+        384
+      ],
+      "id": "1121e361-2ae4-4de7-bced-d85ae25781fc",
+      "name": "Atribuir Agente1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5232,
+        176
+      ],
+      "id": "a5d31df0-3398-42b1-8fb3-6b7ae6369742",
+      "name": "Wait1",
+      "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.conversation_id }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2768,
+        240
+      ],
+      "id": "a3b370ae-e342-4065-b116-f885e134ce21",
+      "name": "Get Tags1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Tags que você deseja adicionar (se não existirem)\nconst tagsParaAdicionar = \"comunidade-aplic\";\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"1-lead-novo\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags1').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4240,
+        224
+      ],
+      "id": "f021b07b-edc6-4b23-9880-1b62071fdcea",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "230d6c8b-201c-4c2d-ab83-27e31eb7ec94",
+              "leftValue": "={{ $('Busca por Contato Chatwoot').item.json.encontrado }}",
+              "rightValue": "open",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4784,
+        192
+      ],
+      "id": "eb5553b6-4680-45b8-a01e-6856465c5705",
+      "name": "If2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nó: \"Buscar Contato Chatwoot - Telefone + Meta + Sorteio\"\n\n// ========================================\n// 1. CONFIGURAÇÃO E SORTEIO\n// ========================================\nconst CHATWOOT_CONFIG = {\n  url: 'https://chat.aplicgo.com',\n  accountId: '1',\n  apiKey: 'fmURrfLvWrJbtkAu6RUtQLYn',\n  retryDelay: 600\n};\n\n// Sorteio aleatório de agentes (IDs: 10, 9 ou 6)\nconst agentes = [10, 9, 6];\nconst agenteSorteado = agentes[Math.floor(Math.random() * agentes.length)];\n\n// ========================================\n// 2. RECUPERAÇÃO DE DADOS\n// ========================================\nlet phoneInput = null;\ntry {\n  // Busca direta do nó anterior\n  phoneInput = $input.first().json['numero limpo'];\n} catch (error) {\n  phoneInput = null;\n}\n\nif (!phoneInput) {\n  throw new Error('❌ Não foi possível recuperar o número de telefone no nó \"Edit Fields2\"');\n}\n\n// ========================================\n// 3. FUNÇÃO DE BUSCA (EXTRAÇÃO DE META)\n// ========================================\nasync function buscarContato(query, tipo) {\n  if (!query) return null;\n  try {\n    const options = {\n      method: 'GET',\n      url: `${CHATWOOT_CONFIG.url}/api/v1/accounts/${CHATWOOT_CONFIG.accountId}/contacts/search`,\n      qs: { q: query },\n      headers: {\n        'api_access_token': CHATWOOT_CONFIG.apiKey,\n        'Content-Type': 'application/json'\n      },\n      json: true\n    };\n    \n    const response = await this.helpers.httpRequest(options);\n    \n    return {\n      contato: (response.payload && response.payload.length > 0) ? response.payload[0] : null,\n      meta: response.meta || { count: 0 }\n    };\n  } catch (error) {\n    return { contato: null, meta: { count: 0 } };\n  }\n}\n\n// ========================================\n// 4. PREPARAÇÃO DAS VARIAÇÕES DE TELEFONE\n// ========================================\nconst telefone = phoneInput.toString().replace(/\\D/g, '');\nconst variacoesTelefone = [{ query: telefone, tipo: 'telefone_completo' }];\n\nif (telefone.startsWith('55')) {\n  if (telefone.length > 11) {\n    variacoesTelefone.push({ query: telefone.slice(2), tipo: 'telefone_sem_55' });\n  }\n  if (telefone.length === 13 && telefone[4] === '9') {\n    variacoesTelefone.push({ \n      query: telefone.substring(2, 4) + telefone.substring(5), \n      tipo: 'telefone_sem_9_legacy' \n    });\n  }\n}\n\n// ========================================\n// 5. EXECUÇÃO DA BUSCA\n// ========================================\nlet contatoEncontrado = null;\nlet metaFinal = { count: 0 };\nlet encontradoPor = null;\n\nfor (let i = 0; i < variacoesTelefone.length; i++) {\n  const resultado = await buscarContato.call(this, variacoesTelefone[i].query, variacoesTelefone[i].tipo);\n  \n  if (resultado.contato) {\n    contatoEncontrado = resultado.contato;\n    metaFinal = resultado.meta;\n    encontradoPor = variacoesTelefone[i].tipo;\n    break;\n  }\n  \n  if (i < variacoesTelefone.length - 1) {\n    await new Promise(r => setTimeout(r, CHATWOOT_CONFIG.retryDelay));\n  }\n}\n\n// ========================================\n// 6. RETORNO FINAL PARA O n8n\n// ========================================\nreturn [{\n  json: {\n    encontrado: !!contatoEncontrado,\n    count: metaFinal.count, // Facilita o uso no Switch logo após este nó\n    meta: metaFinal,\n    \n    // Agente sorteado para atribuição\n    agente_sorteado_id: agenteSorteado,\n    \n    // Dados do Contato\n    id: contatoEncontrado?.id || null,\n    name: contatoEncontrado?.name || null,\n    phone_number: contatoEncontrado?.phone_number || null,\n    encontrado_por: encontradoPor,\n    input_phone: phoneInput,\n    payload_completo: contatoEncontrado\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        240
+      ],
+      "id": "3621b09e-9323-4150-a0d4-36d0dc80063e",
+      "name": "Busca por Contato Chatwoot"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.chatwoot.url }}api/v1/accounts/{{ $json.chatwoot.account }}/contacts/search?q={{ $json[\"numero limpo\"] }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1456,
+        1136
+      ],
+      "id": "69e2a9cb-ec5b-4fb6-bfb2-6b070a4c52bc",
+      "name": "Pesquisar Contato1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Add Nota Interna').item.json.conversation_id }}/toggle_status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "open"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5456,
+        176
+      ],
+      "id": "b8f161a7-f7fd-49ae-9614-88c1cfddb779",
+      "name": "Abrir Conversa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2208,
+        304
+      ],
+      "id": "516139b8-c3da-4b9b-a79d-0e4d027994fd",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        704,
+        240
+      ],
+      "id": "c3c5714e-2b52-499d-802f-887f6ce64366",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b5bf77f8-2773-4e56-8bd3-eaae63bbebf4",
+              "name": "Numero_limpo",
+              "value": "={{ $json.phone_number_clean }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        352
+      ],
+      "id": "56f62861-746d-4917-af8d-9dc2c38c5a4c",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "content": "## Numero Limpo em um 1\n",
+        "height": 80,
+        "width": 288,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        688,
+        48
+      ],
+      "id": "22edb8c9-0791-494b-93b5-533bb7852c0c",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - Pesquisa conversa e separa o id da conversa\n",
+        "height": 80,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        496
+      ],
+      "id": "feaadf49-c802-4c9f-bfd6-388954fa2795",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - ID de ambos vira um 1\n",
+        "height": 80,
+        "width": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        176
+      ],
+      "id": "51d69332-626f-44bc-b445-17f43d6a7d7c",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - Nota de Lead novo e verificacao de tags se ja possui ou nao alguma\n\n\n",
+        "height": 80,
+        "width": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        128
+      ],
+      "id": "2dee613a-ea92-478d-93a7-b3d21cf32c87",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - Adicionar tag Comunidade-aplic sem remover as tag anteriores\n\n\n\n",
+        "height": 128,
+        "width": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4176,
+        80
+      ],
+      "id": "19266c0a-e825-4350-b051-4af6ab7d7a4e",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Chatwoot - Verifica se ja tem conversa com agente ou humano! se caso nao houver humano redirecionado pra uma das agente!\n\n\n\n",
+        "height": 144,
+        "width": 432,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4752,
+        0
+      ],
+      "id": "ab288df8-a115-4175-9f1e-3a741cc42c51",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Atualiza o status da conversa\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5376,
+        0
+      ],
+      "id": "a43faf9a-887b-4990-ae55-6eb3eba4bbbe",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tags = $('Get Tags1').first().json.payload || [];\n\n// Se ainda não tem a tag comunidade-aplic, é a primeira vez\nconst primeiraVez = !tags.includes('comunidade-aplic');\n\nreturn [{\n  json: {\n    primeira_vez: primeiraVez,\n    tags_atuais: tags\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2976,
+        240
+      ],
+      "id": "cf0e60ad-f252-4bec-8425-bb114e94267d",
+      "name": "Verificar se eh a primeira entrada no grupo !"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "238b9a93-21f0-4ae0-84a9-748201d25bbf",
+              "leftValue": "={{ $json.primeira_vez }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3184,
+        240
+      ],
+      "id": "1478b0fd-2910-42d0-b9d9-c6b0be23daeb",
+      "name": "1v ou Reentrar !"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Merge1').item.json.id_conversa }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"Que bom te ver novamente na Comunidade APLIC 👋\\n\\nSe precisar de algo, estamos por aqui!\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3824,
+        304
+      ],
+      "id": "b813c88c-8236-44e6-8542-7af71301c6db",
+      "name": "Manda mensagem novamente !",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Merge1').item.json.id_conversa }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"Olá! 👋 Vi que você entrou na Comunidade APLIC 🚀\\n\\nMe conta uma coisa rápida só pra eu te ajudar melhor: \\n\\nVocê está pensando em começar a usar as canetinha ou só quer entender mais sobre elas?\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3824,
+        128
+      ],
+      "id": "5fc27066-2b8e-401e-9b1f-d09bdc5ad7f4",
+      "name": "Mandar mensagem normal !",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Mandar Mensagem e Verficar se ja possuia parte da  comunidade",
+        "height": 80,
+        "width": 1200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        16
+      ],
+      "id": "6d18f00f-f987-47fe-be3d-7b42450b74ce",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c0bacadf-da78-4a95-a4c4-a75c459a7453",
+              "leftValue": "={{ $json.dentro_horario_comercial }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2976,
+        464
+      ],
+      "id": "71250f86-82ae-4471-a6e9-50432df76e58",
+      "name": "Dentro do horario2"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage"
+      },
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        352
+      ],
+      "id": "00b7d8b6-9ccd-42c4-8b8c-610a7f81aabd",
+      "name": "RabbitMQ",
+      "credentials": {
+        "rabbitmq": {
+          "id": "IruJASyhbIKKogud",
+          "name": "RabbitMQ aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * CONFIGURAÇÃO DE HORÁRIO COMERCIAL\n * Ajuste conforme necessário\n */\nconst CONFIG = {\n  timezone: 'America/Sao_Paulo',\n  diasPermitidos: [1, 2, 3, 4, 5], // 1=Segunda ... 5=Sexta\n  horaInicio: 9,   // 09:00\n  horaFim: 21     // 18:00 (não envia após isso)\n};\n\nconst agora = new Date(\n  new Date().toLocaleString('en-US', { timeZone: CONFIG.timezone })\n);\n\nconst diaSemana = agora.getDay(); // 0=Domingo\nconst horaAtual = agora.getHours();\n\nconst dentroDoHorario =\n  CONFIG.diasPermitidos.includes(diaSemana) &&\n  horaAtual >= CONFIG.horaInicio &&\n  horaAtual < CONFIG.horaFim;\n\nreturn [{\n  json: {\n    dentro_horario_comercial: dentroDoHorario,\n    hora_atual: horaAtual,\n    dia_semana: diaSemana\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3440,
+        624
+      ],
+      "id": "c27bafa7-ebd3-4e5f-9f17-862a9933319f",
+      "name": "Horario Comercial !2"
+    }
+  ],
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "CW Enviar Mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CW Enviar Mensagem1": {
+      "main": [
+        [
+          {
+            "node": "CW Add Etiqueta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CW Add Etiqueta": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DinastiAPI User": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config": {
+      "main": [
+        [
+          {
+            "node": "Busca por Contato Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Cadastrar Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pesquisar Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "DinastiAPI User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastrar Usuário": {
+      "main": [
+        [
+          {
+            "node": "Criar Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pesquisar Conversa": {
+      "main": [
+        [
+          {
+            "node": "Set idConversa 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Conversa": {
+      "main": [
+        [
+          {
+            "node": "Set idConversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set idConversa": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set idConversa 2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CW Enviar Mensagem2": {
+      "main": [
+        []
+      ]
+    },
+    "Verificar Duplicata": {
+      "main": [
+        [
+          {
+            "node": "DinastiAPI User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Duplicata?": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Existente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Novo Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Novo Lead": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead Existente": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "DinastiAPI User1": {
+      "main": [
+        [
+          {
+            "node": "É Duplicata?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RabbitMQ Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atribuir Agente1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Abrir Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tags1": {
+      "main": [
+        [
+          {
+            "node": "Verificar se eh a primeira entrada no grupo !",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Add Label1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Atribuir Agente1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Nota Interna": {
+      "main": [
+        [
+          {
+            "node": "Get Tags1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca por Contato Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir Conversa": {
+      "main": [
+        []
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Add Nota Interna",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se eh a primeira entrada no grupo !": {
+      "main": [
+        [
+          {
+            "node": "1v ou Reentrar !",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1v ou Reentrar !": {
+      "main": [
+        [
+          {
+            "node": "Mandar mensagem normal !",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Manda mensagem novamente !",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mandar mensagem normal !": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manda mensagem novamente !": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "DinastiAPI User": [
+      {
+        "json": {
+          "code": 200,
+          "data": {
+            "lid": "148116795867181@lid",
+            "phone": "5545999746605@s.whatsapp.net",
+            "success": true
+          },
+          "success": true
+        }
+      }
+    ],
+    "Code in JavaScript2": [
+      {
+        "json": {
+          "baseURL": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host",
+          "businessName": "Aplic&Go Comercial",
+          "data": {
+            "event": {
+              "JID": "120363423422625439@g.us",
+              "Notify": "Otavio",
+              "Sender": "219365605666886@lid",
+              "SenderPN": "553497107493@s.whatsapp.net",
+              "Timestamp": "2025-12-04T15:21:40-03:00",
+              "Name": null,
+              "Topic": null,
+              "Locked": null,
+              "Announce": null,
+              "Ephemeral": null,
+              "MembershipApprovalMode": null,
+              "Delete": null,
+              "Link": null,
+              "Unlink": null,
+              "NewInviteLink": null,
+              "PrevParticipantVersionID": "1764866546920576",
+              "ParticipantVersionID": "1764872500762907",
+              "JoinReason": "",
+              "Join": [
+                "5545999746605@s.whatsapp.net"
+              ],
+              "Leave": null,
+              "Promote": null,
+              "Demote": null,
+              "UnknownChanges": null
+            },
+            "type": "GroupInfo"
+          },
+          "eventType": "GroupInfo",
+          "pushName": "Aplic&Go Comercial",
+          "queueName": "whatsapp.GroupInfo",
+          "timestamp": 1764872501,
+          "userID": "7d0e1d34667b648ded53198c8b9de9b7",
+          "userJID": "553497340123:9@s.whatsapp.net",
+          "userName": "Aplic_Comercial",
+          "userToken": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb"
+        }
+      }
+    ]
+  },
+  "versionId": "85ec3cdd-a948-446e-ab65-fb4ea8cc6fad",
+  "activeVersionId": "44751c18-5dea-4b91-ba57-e43227a7073d",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-11T17:30:42.296Z",
+      "createdAt": "2025-11-11T17:30:42.296Z",
+      "role": "workflow:owner",
+      "workflowId": "9fUPngsj6uO9KFdw",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-23T00:36:27.418Z",
+    "createdAt": "2026-01-23T00:36:19.816Z",
+    "versionId": "44751c18-5dea-4b91-ba57-e43227a7073d",
+    "workflowId": "9fUPngsj6uO9KFdw",
+    "nodes": [
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "e31aecb7-2a1e-41d5-aa89-2882e4096f96",
+                "name": "adm_User_id",
+                "value": "={{ $json.properties.headers.userID }}",
+                "type": "string"
+              },
+              {
+                "id": "4cb7775f-3a7b-4ad4-b5d4-df2c0fb7d874",
+                "name": "adm_user_JID",
+                "value": "={{ $json.properties.headers.userJID }}",
+                "type": "string"
+              },
+              {
+                "id": "97d98906-20a1-409e-8d67-acd5c0876db9",
+                "name": "id_grupo",
+                "value": "={{ JSON.parse($json.content).data.event.JID }}",
+                "type": "string"
+              },
+              {
+                "id": "e204affe-735f-49c4-a37f-bd8463ed7cab",
+                "name": "numero_entrada",
+                "value": "={{ JSON.parse($json.content).data.event.SenderPN }}",
+                "type": "string"
+              },
+              {
+                "id": "d07c8402-cd41-4424-8beb-668759b6c3df",
+                "name": "nome_entrada",
+                "value": "={{ JSON.parse($json.content).data.event.Notify }}",
+                "type": "string"
+              },
+              {
+                "id": "38ecdf0b-a9e4-4fbb-958a-4f93a88872fc",
+                "name": "movimento_saida",
+                "value": "={{ JSON.parse($json.content).data.event.Join ?? JSON.parse($json.content).data.event.Leave }}",
+                "type": "string"
+              },
+              {
+                "id": "d215de47-8261-467e-b5d0-501633c5a2af",
+                "name": "movimento_entrada",
+                "value": "={{ JSON.parse($json.content).data.event.Join }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -272,
+          1296
+        ],
+        "id": "a04de8e1-57b6-4413-95ab-ac2a414fb8ce",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.movimento_entrada }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "exists",
+                        "singleValue": true
+                      },
+                      "id": "7d5fd5ab-2a55-4b15-abb8-6ae821ce423f"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Entrou"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "144ef440-a906-449e-9cf6-17bc179a945a",
+                      "leftValue": "={{ $json.movimento_saida }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "exists",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Saiu"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          -80,
+          1296
+        ],
+        "id": "ff3facca-eb1a-4de5-9cb0-844877b366b9",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "22c7f9dc-3445-41c9-b2ed-3ae6d739bc49",
+                "leftValue": "",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          272,
+          1392
+        ],
+        "id": "13f4f13d-517f-41a3-8044-cfed37dce197",
+        "name": "If"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          1376
+        ],
+        "id": "4becdcb2-c54f-46eb-b739-402a0d6eceb3",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://chat.aplicgo.com/api/v1/accounts/1/conversations/4058/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": \"{{ $json.output }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\",\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          848,
+          1376
+        ],
+        "id": "53c97169-f49e-4a66-b131-1e503a34b400",
+        "name": "CW Enviar Mensagem1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://chat.aplicgo.com/api/v1/accounts/1/conversations/4058/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": \"{{ $json.output }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false,\n  \"content_type\": \"text\",\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1024,
+          1376
+        ],
+        "id": "6a2e4d38-9f27-46e5-99bb-8cc97c9d668c",
+        "name": "CW Add Etiqueta"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "856bbfcd-f028-433e-84b9-4e34b48ef53f",
+                "name": "mensagem",
+                "value": "Oi, entrou no grupo ne?",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          512,
+          1376
+        ],
+        "id": "4d8fddf9-71a7-4d65-8d17-5015afdec182",
+        "name": "Edit Fields1"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -528,
+          1248
+        ],
+        "id": "1b8daacf-efe2-4e6f-add4-ab6e2c479b75",
+        "name": "Loop Over Items"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          1488
+        ],
+        "id": "485ece09-1a77-4898-a1b0-e291f22be613",
+        "name": "No Operation, do nothing1"
+      },
+      {
+        "parameters": {
+          "jsCode": "// O n8n nos dá um array 'items' com todos os dados de entrada\n// Pegamos o primeiro item da lista (posição [0])\n// e acessamos seu 'json' (os dados)\nconst itemData = items[0].json;\n\n// 1. Verificamos se o 'content' existe\nif (!itemData || !itemData.content) {\n  throw new Error(\"Payload do RabbitMQ não tem o campo 'content'!\");\n}\n\n// 2. O 'content' é um TEXTO (String).\n// Vamos \"converter\" (dar parse) esse texto em um objeto JSON.\nconst parsedContent = JSON.parse(itemData.content);\n\n// 3. Retornamos o objeto JSON \"aberto\" para o próximo nó\nreturn parsedContent;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -640,
+          160
+        ],
+        "id": "290c0d50-acac-462b-8d73-cf94d0d73326",
+        "name": "Code in JavaScript2"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "e843158c-cf2e-4340-b78e-9099f17fd68c",
+                "leftValue": "={{ $json.data.event.JID }}",
+                "rightValue": "@g.us",
+                "operator": {
+                  "type": "string",
+                  "operation": "endsWith"
+                }
+              },
+              {
+                "id": "5590da19-9660-4ced-8a91-d2e4097756c6",
+                "leftValue": "={{ $json.data.event.JID }}",
+                "rightValue": "=120363423422625439@g.us",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -400,
+          160
+        ],
+        "id": "77025c82-8c4a-4691-bb39-105f0ebd3675",
+        "name": "If1"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ ($json.data.event.Join ?? []).length }}",
+                      "rightValue": 0,
+                      "operator": {
+                        "type": "number",
+                        "operation": "gt"
+                      },
+                      "id": "2497bde3-c876-4cd6-b0da-13a17d333f67"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "c68ae716-c8c3-4f43-8693-625e2f37e065",
+                      "leftValue": "={{ ($json.data.event.Leave ?? []).length }}",
+                      "rightValue": 0,
+                      "operator": {
+                        "type": "number",
+                        "operation": "gt"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          -176,
+          160
+        ],
+        "id": "1951b60c-d5d6-46b1-9dc0-449105363972",
+        "name": "Switch1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.id_conversa }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"content\": \"Teste\",\n  \"message_type\": \"outgoing\",\n  \"private\": true,\n  \"content_type\": \"text\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1472,
+          1344
+        ],
+        "id": "44ea4861-893d-412b-8849-b62813349ea8",
+        "name": "CW Enviar Mensagem2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "getPhoneFromLID",
+          "lid": "={{ $json.data.event.Join[0] }}"
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+        "typeVersion": 1,
+        "position": [
+          304,
+          144
+        ],
+        "id": "b972f03f-ffa5-4de3-b1d5-9517632e0797",
+        "name": "DinastiAPI User",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "9v2dXlsJP0a1xLPE",
+            "name": "DinastiAPI Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+                "name": "chatwoot.url",
+                "value": "https://chat.aplicgo.com/",
+                "type": "string"
+              },
+              {
+                "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+                "name": "dina.url",
+                "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+                "type": "string"
+              },
+              {
+                "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+                "name": "dina.instancia",
+                "value": "Aplic_Comercial",
+                "type": "string"
+              },
+              {
+                "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+                "name": "dina.apikey",
+                "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+                "type": "string"
+              },
+              {
+                "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+                "name": "rabbit.fila.mensagens",
+                "value": "fila_processar_resposta",
+                "type": "string"
+              },
+              {
+                "id": "f701268c-e852-4806-a657-67848639ac46",
+                "name": "chatwoot.apikey",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+                "type": "string"
+              },
+              {
+                "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+                "name": "chatwoot.inboxid",
+                "value": "7",
+                "type": "string"
+              },
+              {
+                "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+                "name": "chatwoot.account",
+                "value": "1",
+                "type": "string"
+              },
+              {
+                "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+                "name": "testes.chatwootcontact",
+                "value": "4019",
+                "type": "string"
+              },
+              {
+                "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+                "name": "testes.chatwootconversation",
+                "value": "4063",
+                "type": "string"
+              },
+              {
+                "id": "88afbfa8-4d10-4b93-94fc-cc2aa223f2a3",
+                "name": "mensagem",
+                "value": "teste",
+                "type": "string"
+              },
+              {
+                "id": "528a6a83-0067-4f80-a684-6dd9c38584bb",
+                "name": "numero limpo",
+                "value": "={{ $json.Numero_limpo }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          896,
+          240
+        ],
+        "id": "54e62e55-6ac4-4cd5-a35e-c94230d46a72",
+        "name": "config"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "loose",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.meta.count }}",
+                      "rightValue": 0,
+                      "operator": {
+                        "type": "number",
+                        "operation": "equals"
+                      },
+                      "id": "7fe61ea6-594c-4656-a035-466d19c66562"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Não tem Contato"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "loose",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cef94396-f7f0-4dad-8945-3d0a76ab3452",
+                      "leftValue": "={{ $json.meta.count }}",
+                      "rightValue": 0,
+                      "operator": {
+                        "type": "number",
+                        "operation": "gt"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Tem Contato"
+              }
+            ]
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          1248,
+          240
+        ],
+        "id": "c0ad22c5-0cdb-44d9-9447-7f20e812ebc9",
+        "name": "Switch2"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.data.event.Join[0] }}",
+                      "rightValue": "@lid",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      },
+                      "id": "240b3265-a64a-49aa-866b-82e76d49ba0d"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "@lid"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cdec56e4-538e-4deb-a14c-4a9110836135",
+                      "leftValue": "={{ $json.data.event.Join[0] }}",
+                      "rightValue": "@s.whatsapp.net",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "@s"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          80,
+          160
+        ],
+        "id": "b797c0a6-600f-4e75-8477-1c1dbc508aad",
+        "name": "Switch3"
+      },
+      {
+        "parameters": {
+          "content": "## bckp",
+          "height": 592,
+          "width": 2256
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -608,
+          1088
+        ],
+        "id": "a1b71352-7f91-452e-a576-4d60773ff173",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Recebimento e Parse",
+          "height": 80,
+          "width": 432
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -832,
+          48
+        ],
+        "id": "268afaea-6965-405a-b79d-59d8bb351a20",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Filtros",
+          "height": 80,
+          "width": 656
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -384,
+          48
+        ],
+        "id": "73fa3f17-b877-4c20-9542-7be45d365d6a",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Limpar numero",
+          "height": 80,
+          "width": 368
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          288,
+          48
+        ],
+        "id": "7ca8c639-3106-4c0b-a13c-ebda20b3c2d0",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - Pesquisar Contato e verifica se tem tem contato criado ou nao",
+          "height": 80,
+          "width": 416,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1040,
+          32
+        ],
+        "id": "c3ed0c3c-4a24-434d-8856-c8acce5fd598",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "content": "## Notas edição\nOrganizei os nós;\nMudei alguns nomes de nós (quando muda, as vezes tem que atualizar nos nós que usam ele de referencia);\nMudei o nó code javascript pra tirar o \"@s.whats.....\";\nFiz um merge para mesclar o numero, vindo de mais de um lugar, retornar a mesma string. De um ou de outro.",
+          "height": 208,
+          "width": 784,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -832,
+          -192
+        ],
+        "id": "e2cdf066-449e-487f-ae3f-26af6fc69cfe",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"inbox_id\": {{ $('config').item.json.chatwoot.inboxid }},\n  \"name\": \"{{ $json.input_phone }}\",\n  \"phone_number\": \"+{{ $json.input_phone }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1488,
+          144
+        ],
+        "id": "83c58559-bdbd-4748-b513-a685af546e09",
+        "name": "Cadastrar Usuário",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - Criar Contato e Conversa",
+          "height": 80,
+          "width": 736,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1488,
+          32
+        ],
+        "id": "0bb8b3bc-e48f-4c30-b9a0-0f7d29102eea",
+        "name": "Sticky Note6"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"inbox_id\": {{ $('config').item.json.chatwoot.inboxid }},\n  \"contact_id\": \"{{ $('Cadastrar Usuário').item.json.payload.contact.id }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1680,
+          144
+        ],
+        "id": "6a2a0fd1-b2be-4f64-b42e-dcff5b5896d3",
+        "name": "Criar Conversa",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/contacts/{{ $json.id }}/conversations",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1536,
+          336
+        ],
+        "id": "863440c6-9a6a-4dab-9fc8-17347472d08b",
+        "name": "Pesquisar Conversa",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3d6b09ca-acac-4407-87da-0026d4b2fdc9",
+                "name": "id_conversa",
+                "value": "={{ $json.id }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1856,
+          144
+        ],
+        "id": "e33b3e37-1f5f-4361-ac76-dff1bd405f89",
+        "name": "Set idConversa",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3d6b09ca-acac-4407-87da-0026d4b2fdc9",
+                "name": "id_conversa",
+                "value": "={{ $json.payload[0].id }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1776,
+          336
+        ],
+        "id": "728e7cc4-65ee-4f7d-a6c1-7cf45f047a22",
+        "name": "Set idConversa 2",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -80,
+          544
+        ],
+        "id": "54153648-f60e-4369-a40d-8cafbcb04141",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "height": 464,
+          "width": 608
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1936,
+          1168
+        ],
+        "id": "031eec1e-3f1b-46d1-9b13-c56ac709a954",
+        "name": "Sticky Note7"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT id, email, phone_number, created_at\nFROM leads\nWHERE\n    phone_number IS NOT NULL\n    AND REPLACE(phone_number, ' ', '') = REPLACE(TRIM('{{ $('config').item.json.phone_number_clean }}'), ' ', '')\n\n  \nORDER BY created_at DESC\nLIMIT 1;",
+          "options": {}
+        },
+        "id": "8945901a-1006-495f-a656-0e5952a94bc3",
+        "name": "Verificar Duplicata",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          1280
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $('Verificar Duplicata').item.json.id }}",
+                "operation": "isNotEmpty"
+              }
+            ]
+          }
+        },
+        "id": "3fe7b728-bc13-4171-b512-d40c201d8ee6",
+        "name": "É Duplicata?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          2384,
+          1264
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO leads (\n  full_name,\n  email,\n  phone_number,\n  source,\n  utm_source,\n  utm_medium,\n  utm_campaign,\n  landing_page,\n  tags,\n  custom_fields,\n  created_at,\n  updated_at\n)\nVALUES (\n  {{ `'${$('Parse e Validar').item.json.full_name}'` }},\n  {{ $('Parse e Validar').item.json.email ? `'${$('Parse e Validar').item.json.email}'` : 'NULL' }},\n  {{\n    (() => {\n      const data = $('DinastiAPI User1').item.json.data;\n      const users = data && Array.isArray(data.Users) ? data.Users : null;\n      const inWhatsapp = users && users[0] && users[0].IsInWhatsapp;\n      const jid = users && users[0] ? users[0].JID : null;\n      const parsed = $('Parse e Validar').item.json.phone_number;\n      let raw = '';\n      if (inWhatsapp && jid) {\n        raw = jid.split('@')[0];\n      } else if (parsed) {\n        raw = parsed;\n      } else {\n        return 'NULL';\n      }\n      const digits = raw.replace(/\\D/g, '');\n      const finalNumber = digits.length >= 11 ? digits : '5534' + digits;\n      return \"'\" + \"+\" + finalNumber + \"'\";\n    })()\n  }},\n  {{ `'${$('Parse e Validar').item.json.source}'` }},\n  {{ $('Parse e Validar').item.json.utm_source ? `'${$('Parse e Validar').item.json.utm_source}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.utm_medium ? `'${$('Parse e Validar').item.json.utm_medium}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.utm_campaign ? `'${$('Parse e Validar').item.json.utm_campaign}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.landing_page ? `'${$('Parse e Validar').item.json.landing_page}'` : 'NULL' }},\n  {{ $('Parse e Validar').item.json.tags \n      ? `'${JSON.stringify($('Parse e Validar').item.json.tags).replace(/'/g, \"''\")}'::jsonb` \n      : \"'{}'::jsonb\" \n  }},\n  {{ $('Parse e Validar').item.json.custom_fields \n      ? `'[${JSON.stringify($('Parse e Validar').item.json.custom_fields).replace(/'/g, \"''\")}]'::jsonb` \n      : \"'[]'::jsonb\" \n  }},\n  NOW(),\n  NOW()\n)\nRETURNING *;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2240,
+          1504
+        ],
+        "id": "392708c0-c395-421b-bf4c-b392c01cd6b5",
+        "name": "Insert Novo Lead",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE leads\nSET\n  tags = tags || {{ \n    $('Parse e Validar').item.json.tags\n      ? `'${JSON.stringify($('Parse e Validar').item.json.tags).replace(/'/g, \"''\")}'::jsonb`\n      : \"'{}'::jsonb\"\n  }},\n  custom_fields = COALESCE(custom_fields, '[]'::jsonb) || {{ \n    $('Parse e Validar').item.json.custom_fields\n      ? `'[${JSON.stringify($('Parse e Validar').item.json.custom_fields).replace(/'/g, \"''\")}]'::jsonb`\n      : \"'[]'::jsonb\"\n  }},\n  source = CASE\n    WHEN source = 'Desconhecido' THEN {{ `'${$('Parse e Validar').item.json.source}'` }}\n    WHEN TRIM(SPLIT_PART(source, ',', array_length(string_to_array(source, ','), 1))) = {{ `'${$('Parse e Validar').item.json.source}'` }} THEN source\n    ELSE source || ', ' || {{ `'${$('Parse e Validar').item.json.source}'` }}\n  END,\n  full_name = COALESCE({{ `'${$('Parse e Validar').item.json.full_name}'` }}, full_name),\n  email = COALESCE(\n    {{ $('Parse e Validar').item.json.email ? `'${$('Parse e Validar').item.json.email}'` : \"NULL\" }},\n    email\n  ),\n  phone_number = COALESCE(\n    {{\n      (() => {\n        const dinasti = $('DinastiAPI User1').item.json.data;\n        const users = Array.isArray(dinasti?.Users) ? dinasti.Users : [];\n        const inWhatsapp = users[0]?.IsInWhatsapp || false;\n        const jid = users[0]?.JID || null;\n        const parsed = $('Parse e Validar').item.json.phone_number;\n        let raw = '';\n        if (inWhatsapp && jid) {\n          raw = jid.split('@')[0];\n        } else if (parsed) {\n          raw = parsed;\n        } else {\n          return 'NULL';\n        }\n        const digits = raw.replace(/\\D/g, '');\n        const finalNumber = digits.length >= 11 ? digits : '5534' + digits;\n        return `'+' || '${finalNumber}'`;\n      })()\n    }},\n    phone_number\n  ),\n  updated_at = NOW()\nWHERE id = {{ `'${$('Verificar Duplicata').item.json.id}'` }}\nRETURNING *;",
+          "options": {}
+        },
+        "id": "c14c48db-c36f-4820-abbc-bb31ad256fcd",
+        "name": "Update Lead Existente",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2,
+        "position": [
+          2048,
+          1504
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "phoneNumbers": "={{ $('config').item.json.phone_number_clean }}"
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+        "typeVersion": 1,
+        "position": [
+          2208,
+          1280
+        ],
+        "id": "4777929f-a4e0-457e-aef3-98b20a33a059",
+        "name": "DinastiAPI User1",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "9v2dXlsJP0a1xLPE",
+            "name": "DinastiAPI Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "queue": "whatsapp.GroupInfo",
+          "options": {
+            "acknowledge": "laterMessageNode"
+          }
+        },
+        "type": "n8n-nodes-base.rabbitmqTrigger",
+        "typeVersion": 1,
+        "position": [
+          -848,
+          160
+        ],
+        "id": "307e83f6-4d86-41cd-abb0-838ddb2fea98",
+        "name": "RabbitMQ Trigger",
+        "credentials": {
+          "rabbitmq": {
+            "id": "E3p6dib91KuK3u4z",
+            "name": "RabbitMQ-Tech"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {
+            "includeUnpaired": true
+          }
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          2416,
+          1504
+        ],
+        "id": "774f389f-2d13-4780-88f3-e562a0354612",
+        "name": "Merge",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.id_conversa }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": \"### 🚀 Novo Membro na Comunidade!\\n\\nO {{ $if($(\"Pesquisar Conversa\").isExecuted, $(\"Pesquisar Conversa\").item.json.payload[0].meta.sender.name, $(\"Criar Conversa\").item.json.meta.sender.name) }} acabou de entrar no grupo **Comunidade APLIC**.\\n\\n**Ação Sugerida:** Dar boas-vindas.\\n\\n--- \\n*Notificação Automática*\",\n  \"message_type\": \"outgoing\",\n  \"private\": true\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2592,
+          240
+        ],
+        "id": "c9d21bd6-196e-42cf-ba7f-45a460b4682a",
+        "name": "Add Nota Interna",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7b0a133e-cdc1-4ebc-9706-35042bb3441d",
+                "name": "Numero_limpo",
+                "value": "={{ $json.data.phone.replace(/@.*/, '').replace(/\\D/g, '') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          480,
+          144
+        ],
+        "id": "8d0c97c9-ca68-4179-8eeb-bea3852faab7",
+        "name": "Edit Fields2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Inicializa o array de saída\nlet itemsOutput = [];\n\nfor (const item of items) {\n  \n  const rawJid = item.json.data?.event?.Join?.[0];\n  let numeroTratado = null;\n\n  if (typeof rawJid === 'string') {\n    \n    // 1. Limpeza inicial\n    let tempNum = rawJid.split('@')[0].replace(/\\D/g, '');\n    let len = tempNum.length;\n\n    /* --- LÓGICA DE REMOÇÃO DO 9 (Sua lógica original) --- */\n    if (len === 13 && tempNum[4] === '9') {\n      tempNum = tempNum.substring(0, 4) + tempNum.substring(5);\n    }\n    else if (len === 11 && tempNum[2] === '9') {\n      tempNum = tempNum.substring(0, 2) + tempNum.substring(3);\n    }\n    \n    /* --- NOVA LÓGICA: INSERÇÃO DO 9 ADICIONAL --- */\n    // Atualizamos o tamanho após a limpeza\n    len = tempNum.length;\n\n    // Se o número tem 12 dígitos (Ex: 551188887777), inserimos o '9' na posição 4\n    // O resultado será: 5511 9 88887777 (13 dígitos)\n    if (len === 12 && tempNum.startsWith('55')) {\n      tempNum = tempNum.substring(0, 4) + '9' + tempNum.substring(4);\n    }\n    // Se o número tem 10 dígitos (Ex: 1188887777), inserimos o '9' na posição 2\n    else if (len === 10) {\n      tempNum = tempNum.substring(0, 2) + '9' + tempNum.substring(2);\n    }\n\n    numeroTratado = tempNum;\n  }\n\n  // 4. Adiciona o campo 'phone_number_clean' ao JSON original\n  itemsOutput.push({\n    json: {\n      ...item.json,\n      phone_number_clean: numeroTratado\n    }\n  });\n}\n\nreturn itemsOutput;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          304,
+          352
+        ],
+        "id": "34ff2bc2-60c0-486b-b5dc-2c5cb600267f",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Add Nota Interna').item.json.conversation_id }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\"labels\": [{{ $json.tagsAtualizadas }}]}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          4512,
+          224
+        ],
+        "id": "b8929563-9ac9-426b-9227-af4f0e2ae392",
+        "name": "Add Label1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Add Nota Interna').item.json.conversation_id }}/assignments",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"assignee_id\": {{ $('Busca por Contato Chatwoot').item.json.agente_sorteado_id }}\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          4992,
+          384
+        ],
+        "id": "1121e361-2ae4-4de7-bced-d85ae25781fc",
+        "name": "Atribuir Agente1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 0.5
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          5232,
+          176
+        ],
+        "id": "a5d31df0-3398-42b1-8fb3-6b7ae6369742",
+        "name": "Wait1",
+        "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+      },
+      {
+        "parameters": {
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $json.conversation_id }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2768,
+          240
+        ],
+        "id": "a3b370ae-e342-4065-b116-f885e134ce21",
+        "name": "Get Tags1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Tags que você deseja adicionar (se não existirem)\nconst tagsParaAdicionar = \"comunidade-aplic\";\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"1-lead-novo\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags1').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4240,
+          224
+        ],
+        "id": "f021b07b-edc6-4b23-9880-1b62071fdcea",
+        "name": "Code in JavaScript4"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "230d6c8b-201c-4c2d-ab83-27e31eb7ec94",
+                "leftValue": "={{ $('Busca por Contato Chatwoot').item.json.encontrado }}",
+                "rightValue": "open",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          4784,
+          192
+        ],
+        "id": "eb5553b6-4680-45b8-a01e-6856465c5705",
+        "name": "If2",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "jsCode": "// Nó: \"Buscar Contato Chatwoot - Telefone + Meta + Sorteio\"\n\n// ========================================\n// 1. CONFIGURAÇÃO E SORTEIO\n// ========================================\nconst CHATWOOT_CONFIG = {\n  url: 'https://chat.aplicgo.com',\n  accountId: '1',\n  apiKey: 'fmURrfLvWrJbtkAu6RUtQLYn',\n  retryDelay: 600\n};\n\n// Sorteio aleatório de agentes (IDs: 10, 9 ou 6)\nconst agentes = [10, 9, 6];\nconst agenteSorteado = agentes[Math.floor(Math.random() * agentes.length)];\n\n// ========================================\n// 2. RECUPERAÇÃO DE DADOS\n// ========================================\nlet phoneInput = null;\ntry {\n  // Busca direta do nó anterior\n  phoneInput = $input.first().json['numero limpo'];\n} catch (error) {\n  phoneInput = null;\n}\n\nif (!phoneInput) {\n  throw new Error('❌ Não foi possível recuperar o número de telefone no nó \"Edit Fields2\"');\n}\n\n// ========================================\n// 3. FUNÇÃO DE BUSCA (EXTRAÇÃO DE META)\n// ========================================\nasync function buscarContato(query, tipo) {\n  if (!query) return null;\n  try {\n    const options = {\n      method: 'GET',\n      url: `${CHATWOOT_CONFIG.url}/api/v1/accounts/${CHATWOOT_CONFIG.accountId}/contacts/search`,\n      qs: { q: query },\n      headers: {\n        'api_access_token': CHATWOOT_CONFIG.apiKey,\n        'Content-Type': 'application/json'\n      },\n      json: true\n    };\n    \n    const response = await this.helpers.httpRequest(options);\n    \n    return {\n      contato: (response.payload && response.payload.length > 0) ? response.payload[0] : null,\n      meta: response.meta || { count: 0 }\n    };\n  } catch (error) {\n    return { contato: null, meta: { count: 0 } };\n  }\n}\n\n// ========================================\n// 4. PREPARAÇÃO DAS VARIAÇÕES DE TELEFONE\n// ========================================\nconst telefone = phoneInput.toString().replace(/\\D/g, '');\nconst variacoesTelefone = [{ query: telefone, tipo: 'telefone_completo' }];\n\nif (telefone.startsWith('55')) {\n  if (telefone.length > 11) {\n    variacoesTelefone.push({ query: telefone.slice(2), tipo: 'telefone_sem_55' });\n  }\n  if (telefone.length === 13 && telefone[4] === '9') {\n    variacoesTelefone.push({ \n      query: telefone.substring(2, 4) + telefone.substring(5), \n      tipo: 'telefone_sem_9_legacy' \n    });\n  }\n}\n\n// ========================================\n// 5. EXECUÇÃO DA BUSCA\n// ========================================\nlet contatoEncontrado = null;\nlet metaFinal = { count: 0 };\nlet encontradoPor = null;\n\nfor (let i = 0; i < variacoesTelefone.length; i++) {\n  const resultado = await buscarContato.call(this, variacoesTelefone[i].query, variacoesTelefone[i].tipo);\n  \n  if (resultado.contato) {\n    contatoEncontrado = resultado.contato;\n    metaFinal = resultado.meta;\n    encontradoPor = variacoesTelefone[i].tipo;\n    break;\n  }\n  \n  if (i < variacoesTelefone.length - 1) {\n    await new Promise(r => setTimeout(r, CHATWOOT_CONFIG.retryDelay));\n  }\n}\n\n// ========================================\n// 6. RETORNO FINAL PARA O n8n\n// ========================================\nreturn [{\n  json: {\n    encontrado: !!contatoEncontrado,\n    count: metaFinal.count, // Facilita o uso no Switch logo após este nó\n    meta: metaFinal,\n    \n    // Agente sorteado para atribuição\n    agente_sorteado_id: agenteSorteado,\n    \n    // Dados do Contato\n    id: contatoEncontrado?.id || null,\n    name: contatoEncontrado?.name || null,\n    phone_number: contatoEncontrado?.phone_number || null,\n    encontrado_por: encontradoPor,\n    input_phone: phoneInput,\n    payload_completo: contatoEncontrado\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1072,
+          240
+        ],
+        "id": "3621b09e-9323-4150-a0d4-36d0dc80063e",
+        "name": "Busca por Contato Chatwoot"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.chatwoot.url }}api/v1/accounts/{{ $json.chatwoot.account }}/contacts/search?q={{ $json[\"numero limpo\"] }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1456,
+          1136
+        ],
+        "id": "69e2a9cb-ec5b-4fb6-bfb2-6b070a4c52bc",
+        "name": "Pesquisar Contato1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Add Nota Interna').item.json.conversation_id }}/toggle_status",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "status",
+                "value": "open"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          5456,
+          176
+        ],
+        "id": "b8f161a7-f7fd-49ae-9614-88c1cfddb779",
+        "name": "Abrir Conversa",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          2208,
+          304
+        ],
+        "id": "516139b8-c3da-4b9b-a79d-0e4d027994fd",
+        "name": "Merge1"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          704,
+          240
+        ],
+        "id": "c3c5714e-2b52-499d-802f-887f6ce64366",
+        "name": "Merge2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b5bf77f8-2773-4e56-8bd3-eaae63bbebf4",
+                "name": "Numero_limpo",
+                "value": "={{ $json.phone_number_clean }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {
+            "ignoreConversionErrors": true
+          }
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          480,
+          352
+        ],
+        "id": "56f62861-746d-4917-af8d-9dc2c38c5a4c",
+        "name": "Edit Fields3"
+      },
+      {
+        "parameters": {
+          "content": "## Numero Limpo em um 1\n",
+          "height": 80,
+          "width": 288,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          688,
+          48
+        ],
+        "id": "22edb8c9-0791-494b-93b5-533bb7852c0c",
+        "name": "Sticky Note8"
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - Pesquisa conversa e separa o id da conversa\n",
+          "height": 80,
+          "width": 416,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1488,
+          496
+        ],
+        "id": "feaadf49-c802-4c9f-bfd6-388954fa2795",
+        "name": "Sticky Note9"
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - ID de ambos vira um 1\n",
+          "height": 80,
+          "width": 400,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2048,
+          176
+        ],
+        "id": "51d69332-626f-44bc-b445-17f43d6a7d7c",
+        "name": "Sticky Note10"
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - Nota de Lead novo e verificacao de tags se ja possui ou nao alguma\n\n\n",
+          "height": 80,
+          "width": 400,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2528,
+          128
+        ],
+        "id": "2dee613a-ea92-478d-93a7-b3d21cf32c87",
+        "name": "Sticky Note11"
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - Adicionar tag Comunidade-aplic sem remover as tag anteriores\n\n\n\n",
+          "height": 128,
+          "width": 400,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          4176,
+          80
+        ],
+        "id": "19266c0a-e825-4350-b051-4af6ab7d7a4e",
+        "name": "Sticky Note12"
+      },
+      {
+        "parameters": {
+          "content": "## Chatwoot - Verifica se ja tem conversa com agente ou humano! se caso nao houver humano redirecionado pra uma das agente!\n\n\n\n",
+          "height": 144,
+          "width": 432,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          4752,
+          0
+        ],
+        "id": "ab288df8-a115-4175-9f1e-3a741cc42c51",
+        "name": "Sticky Note13"
+      },
+      {
+        "parameters": {
+          "content": "## Atualiza o status da conversa\n"
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          5376,
+          0
+        ],
+        "id": "a43faf9a-887b-4990-ae55-6eb3eba4bbbe",
+        "name": "Sticky Note14"
+      },
+      {
+        "parameters": {
+          "jsCode": "const tags = $('Get Tags1').first().json.payload || [];\n\n// Se ainda não tem a tag comunidade-aplic, é a primeira vez\nconst primeiraVez = !tags.includes('comunidade-aplic');\n\nreturn [{\n  json: {\n    primeira_vez: primeiraVez,\n    tags_atuais: tags\n  }\n}];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2976,
+          240
+        ],
+        "id": "cf0e60ad-f252-4bec-8425-bb114e94267d",
+        "name": "Verificar se eh a primeira entrada no grupo !"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "238b9a93-21f0-4ae0-84a9-748201d25bbf",
+                "leftValue": "={{ $json.primeira_vez }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          3184,
+          240
+        ],
+        "id": "1478b0fd-2910-42d0-b9d9-c6b0be23daeb",
+        "name": "1v ou Reentrar !"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Merge1').item.json.id_conversa }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"content\": \"Que bom te ver novamente na Comunidade APLIC 👋\\n\\nSe precisar de algo, estamos por aqui!\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3824,
+          304
+        ],
+        "id": "b813c88c-8236-44e6-8542-7af71301c6db",
+        "name": "Manda mensagem novamente !",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Merge1').item.json.id_conversa }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"content\": \"Olá! 👋 Vi que você entrou na Comunidade APLIC 🚀\\n\\nMe conta uma coisa rápida só pra eu te ajudar melhor: \\n\\nVocê está pensando em começar a usar as canetinha ou só quer entender mais sobre elas?\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3824,
+          128
+        ],
+        "id": "5fc27066-2b8e-401e-9b1f-d09bdc5ad7f4",
+        "name": "Mandar mensagem normal !",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "Mandar Mensagem e Verficar se ja possuia parte da  comunidade",
+          "height": 80,
+          "width": 1200
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2960,
+          16
+        ],
+        "id": "6d18f00f-f987-47fe-be3d-7b42450b74ce",
+        "name": "Sticky Note15"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "c0bacadf-da78-4a95-a4c4-a75c459a7453",
+                "leftValue": "={{ $json.dentro_horario_comercial }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2976,
+          464
+        ],
+        "id": "71250f86-82ae-4471-a6e9-50432df76e58",
+        "name": "Dentro do horario2"
+      },
+      {
+        "parameters": {
+          "operation": "deleteMessage"
+        },
+        "type": "n8n-nodes-base.rabbitmq",
+        "typeVersion": 1.1,
+        "position": [
+          -720,
+          352
+        ],
+        "id": "00b7d8b6-9ccd-42c4-8b8c-610a7f81aabd",
+        "name": "RabbitMQ",
+        "credentials": {
+          "rabbitmq": {
+            "id": "IruJASyhbIKKogud",
+            "name": "RabbitMQ aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "/**\n * CONFIGURAÇÃO DE HORÁRIO COMERCIAL\n * Ajuste conforme necessário\n */\nconst CONFIG = {\n  timezone: 'America/Sao_Paulo',\n  diasPermitidos: [1, 2, 3, 4, 5], // 1=Segunda ... 5=Sexta\n  horaInicio: 9,   // 09:00\n  horaFim: 21     // 18:00 (não envia após isso)\n};\n\nconst agora = new Date(\n  new Date().toLocaleString('en-US', { timeZone: CONFIG.timezone })\n);\n\nconst diaSemana = agora.getDay(); // 0=Domingo\nconst horaAtual = agora.getHours();\n\nconst dentroDoHorario =\n  CONFIG.diasPermitidos.includes(diaSemana) &&\n  horaAtual >= CONFIG.horaInicio &&\n  horaAtual < CONFIG.horaFim;\n\nreturn [{\n  json: {\n    dentro_horario_comercial: dentroDoHorario,\n    hora_atual: horaAtual,\n    dia_semana: diaSemana\n  }\n}];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3440,
+          624
+        ],
+        "id": "c27bafa7-ebd3-4e5f-9f17-862a9933319f",
+        "name": "Horario Comercial !2"
+      }
+    ],
+    "connections": {
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "CW Enviar Mensagem1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CW Enviar Mensagem1": {
+        "main": [
+          [
+            {
+              "node": "CW Add Etiqueta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CW Add Etiqueta": {
+        "main": [
+          []
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [],
+          [
+            {
+              "node": "No Operation, do nothing1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript2": {
+        "main": [
+          [
+            {
+              "node": "If1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If1": {
+        "main": [
+          [
+            {
+              "node": "Switch1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch1": {
+        "main": [
+          [
+            {
+              "node": "Switch3",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DinastiAPI User": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "config": {
+        "main": [
+          [
+            {
+              "node": "Busca por Contato Chatwoot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch2": {
+        "main": [
+          [
+            {
+              "node": "Cadastrar Usuário",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Pesquisar Conversa",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch3": {
+        "main": [
+          [
+            {
+              "node": "DinastiAPI User",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Code in JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cadastrar Usuário": {
+        "main": [
+          [
+            {
+              "node": "Criar Conversa",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pesquisar Conversa": {
+        "main": [
+          [
+            {
+              "node": "Set idConversa 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Criar Conversa": {
+        "main": [
+          [
+            {
+              "node": "Set idConversa",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set idConversa": {
+        "main": [
+          [
+            {
+              "node": "Merge1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set idConversa 2": {
+        "main": [
+          [
+            {
+              "node": "Merge1",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "CW Enviar Mensagem2": {
+        "main": [
+          []
+        ]
+      },
+      "Verificar Duplicata": {
+        "main": [
+          [
+            {
+              "node": "DinastiAPI User1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "É Duplicata?": {
+        "main": [
+          [
+            {
+              "node": "Update Lead Existente",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Insert Novo Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert Novo Lead": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Lead Existente": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "DinastiAPI User1": {
+        "main": [
+          [
+            {
+              "node": "É Duplicata?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RabbitMQ Trigger": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          []
+        ]
+      },
+      "Edit Fields2": {
+        "main": [
+          [
+            {
+              "node": "Merge2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Label1": {
+        "main": [
+          [
+            {
+              "node": "If2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Atribuir Agente1": {
+        "main": [
+          [
+            {
+              "node": "Wait1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait1": {
+        "main": [
+          [
+            {
+              "node": "Abrir Conversa",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Tags1": {
+        "main": [
+          [
+            {
+              "node": "Verificar se eh a primeira entrada no grupo !",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript4": {
+        "main": [
+          [
+            {
+              "node": "Add Label1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If2": {
+        "main": [
+          [
+            {
+              "node": "Wait1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Atribuir Agente1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Nota Interna": {
+        "main": [
+          [
+            {
+              "node": "Get Tags1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca por Contato Chatwoot": {
+        "main": [
+          [
+            {
+              "node": "Switch2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Abrir Conversa": {
+        "main": [
+          []
+        ]
+      },
+      "Merge1": {
+        "main": [
+          [
+            {
+              "node": "Add Nota Interna",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields3": {
+        "main": [
+          [
+            {
+              "node": "Merge2",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge2": {
+        "main": [
+          [
+            {
+              "node": "config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verificar se eh a primeira entrada no grupo !": {
+        "main": [
+          [
+            {
+              "node": "1v ou Reentrar !",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "1v ou Reentrar !": {
+        "main": [
+          [
+            {
+              "node": "Mandar mensagem normal !",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Manda mensagem novamente !",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mandar mensagem normal !": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manda mensagem novamente !": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 44751c18",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
