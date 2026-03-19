@@ -1,0 +1,500 @@
+{
+  "updatedAt": "2026-01-26T12:02:23.119Z",
+  "createdAt": "2026-01-26T11:58:05.602Z",
+  "id": "27wHrqGuIqfosGRKz_-GF",
+  "name": "[Endpoint] Envio Mensagem de Video",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Envio de Video",
+        "height": 80,
+        "width": 1152
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0b0255a6-0228-41cb-99b3-a79e412a5b0b",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.tempo_em_ms / 1000}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        112
+      ],
+      "id": "dd5b4f39-10cf-4593-beed-666ef870f5f9",
+      "name": "TempoDigitando2",
+      "webhookId": "6b1b52a7-610c-4194-853c-ebf342c0a474"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Code in JavaScript2').item.json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $('single_msg').item.json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        832,
+        112
+      ],
+      "id": "0bd219ce-b260-4142-b028-0d8c208ae8c7",
+      "name": "CW Enviar Mensagem2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const message_part = $('single_msg').first().json.texto;\n\nif (typeof message_part !== 'string' || message_part.length === 0) {\n  return { error: 'A entrada \"message_part\" deve ser um texto (string) não vazio.' };\n}\n\n// Velocidade de um escritor profissional: 80 palavras por minuto.\n// Média de caracteres por palavra (padrão): 5.\n// Caracteres por minuto de um profissional: 80 * 5 = 400.\n// Capacidade 3x superior: 400 * 3 = 1200 caracteres por minuto.\nconst caracteresPorMinuto = 1100;\nconst caracteresPorSegundo = caracteresPorMinuto / 60;\n\nconst numeroDeCaracteres = message_part.length;\nconst tempoEmSegundos = numeroDeCaracteres / caracteresPorSegundo;\nconst tempoEmMs = Math.round(tempoEmSegundos * 1000);\n\n// Retorna o resultado\nreturn { tempo_em_ms: tempoEmMs };$input.first().json.message_part$input.first().json.message_part"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        112
+      ],
+      "id": "3f85b95b-ba11-4170-86b9-6c430807ac1d",
+      "name": "Contabilizador de Caracteres2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/presence",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $('Content').item.json._config.dinastia_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Phone",
+              "value": "={{ $('evento_limpo').item.json.data.phone_normalizado }}"
+            },
+            {
+              "name": "State",
+              "value": "composing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        112
+      ],
+      "id": "dcdacb40-64ba-4172-b756-83ef1b8fe7e2",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        992,
+        112
+      ],
+      "id": "f01ba60f-2dcb-49af-b4ab-ccc2e248e3f9",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        112
+      ],
+      "id": "bd2241f3-1cd8-4d58-bb27-892275783068",
+      "name": "Validador Minimo3"
+    },
+    {
+      "parameters": {
+        "path": "enviar-mensagens-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "id": "aa2ae9d8-e349-4b82-99c0-7a1f1a7eab96",
+      "name": "SendVideo",
+      "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3OR56oonNljjF873",
+          "name": "Yampi-Checkout"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "TempoDigitando2": {
+      "main": [
+        [
+          {
+            "node": "CW Enviar Mensagem2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CW Enviar Mensagem2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contabilizador de Caracteres2": {
+      "main": [
+        [
+          {
+            "node": "TempoDigitando2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Contabilizador de Caracteres2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validador Minimo3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendVideo": {
+      "main": [
+        [
+          {
+            "node": "Validador Minimo3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "7a3f4b0c-1df9-46cf-993f-d693df1e0679",
+  "activeVersionId": "7a3f4b0c-1df9-46cf-993f-d693df1e0679",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-26T11:58:05.602Z",
+      "createdAt": "2026-01-26T11:58:05.602Z",
+      "role": "workflow:owner",
+      "workflowId": "27wHrqGuIqfosGRKz_-GF",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-26T12:02:29.794Z",
+    "createdAt": "2026-01-26T12:02:23.120Z",
+    "versionId": "7a3f4b0c-1df9-46cf-993f-d693df1e0679",
+    "workflowId": "27wHrqGuIqfosGRKz_-GF",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## Envio de Video",
+          "height": 80,
+          "width": 1152
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "0b0255a6-0228-41cb-99b3-a79e412a5b0b",
+        "name": "Sticky Note8"
+      },
+      {
+        "parameters": {
+          "amount": "={{ $json.tempo_em_ms / 1000}}"
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          112
+        ],
+        "id": "dd5b4f39-10cf-4593-beed-666ef870f5f9",
+        "name": "TempoDigitando2",
+        "webhookId": "6b1b52a7-610c-4194-853c-ebf342c0a474"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Code in JavaScript2').item.json.conversation_id }}/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "content",
+                "value": "={{ $('single_msg').item.json.texto }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          832,
+          112
+        ],
+        "id": "0bd219ce-b260-4142-b028-0d8c208ae8c7",
+        "name": "CW Enviar Mensagem2"
+      },
+      {
+        "parameters": {
+          "jsCode": "const message_part = $('single_msg').first().json.texto;\n\nif (typeof message_part !== 'string' || message_part.length === 0) {\n  return { error: 'A entrada \"message_part\" deve ser um texto (string) não vazio.' };\n}\n\n// Velocidade de um escritor profissional: 80 palavras por minuto.\n// Média de caracteres por palavra (padrão): 5.\n// Caracteres por minuto de um profissional: 80 * 5 = 400.\n// Capacidade 3x superior: 400 * 3 = 1200 caracteres por minuto.\nconst caracteresPorMinuto = 1100;\nconst caracteresPorSegundo = caracteresPorMinuto / 60;\n\nconst numeroDeCaracteres = message_part.length;\nconst tempoEmSegundos = numeroDeCaracteres / caracteresPorSegundo;\nconst tempoEmMs = Math.round(tempoEmSegundos * 1000);\n\n// Retorna o resultado\nreturn { tempo_em_ms: tempoEmMs };$input.first().json.message_part$input.first().json.message_part"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          512,
+          112
+        ],
+        "id": "3f85b95b-ba11-4170-86b9-6c430807ac1d",
+        "name": "Contabilizador de Caracteres2"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/presence",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "token",
+                "value": "={{ $('Content').item.json._config.dinastia_token }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Phone",
+                "value": "={{ $('evento_limpo').item.json.data.phone_normalizado }}"
+              },
+              {
+                "name": "State",
+                "value": "composing"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          352,
+          112
+        ],
+        "id": "dcdacb40-64ba-4172-b756-83ef1b8fe7e2",
+        "name": "HTTP Request2"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          992,
+          112
+        ],
+        "id": "f01ba60f-2dcb-49af-b4ab-ccc2e248e3f9",
+        "name": "Respond to Webhook3"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          176,
+          112
+        ],
+        "id": "bd2241f3-1cd8-4d58-bb27-892275783068",
+        "name": "Validador Minimo3"
+      },
+      {
+        "parameters": {
+          "path": "enviar-mensagens-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "id": "aa2ae9d8-e349-4b82-99c0-7a1f1a7eab96",
+        "name": "SendVideo",
+        "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "3OR56oonNljjF873",
+            "name": "Yampi-Checkout"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "TempoDigitando2": {
+        "main": [
+          [
+            {
+              "node": "CW Enviar Mensagem2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CW Enviar Mensagem2": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Contabilizador de Caracteres2": {
+        "main": [
+          [
+            {
+              "node": "TempoDigitando2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request2": {
+        "main": [
+          [
+            {
+              "node": "Contabilizador de Caracteres2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validador Minimo3": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SendVideo": {
+        "main": [
+          [
+            {
+              "node": "Validador Minimo3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 7a3f4b0c",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
