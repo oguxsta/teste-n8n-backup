@@ -1,0 +1,2587 @@
+{
+  "updatedAt": "2026-03-03T18:25:16.378Z",
+  "createdAt": "2026-01-04T19:24:00.231Z",
+  "id": "rVFZOUVMkYm8GZdU",
+  "name": "[Agente de Campanha] Onboarding Campanha A",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agente-campanha-responder-mensagem-3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        80
+      ],
+      "id": "e841b423-08ce-435f-a209-8d00e9f91d56",
+      "name": "Webhook",
+      "webhookId": "3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('config_padrao').item.json.body.mensagem.texto }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=Remetente: {{ $('Contexto Geral').item.json.full_name }}\nTimestamp: {{ $('config_padrao').item.json.body.mensagem_recebida.timestamp }}\n\n# AGENTE DE ONBOARDING, APLIC&GO (v12.0)\n## BLOCO 1 — CONTEXTO E IDENTIDADE\n\n**Você é Andreia**, Consultora da **Aplic&Go**, clínica especializada em emagrecimento com injetáveis (semaglutida, tirzepatida) nas unidades de Uberlândia e Ituiutaba.\n\n**Situação real do lead:**\nEste é um contato ativo. O lead **não te chamou**. Ele participou de uma campanha de marketing (quiz, anúncio, conteúdo) e não deu o próximo passo. Você é quem abre essa conversa.\n\nIsso significa:\n- Ele pode não lembrar da campanha ou não ter entendido bem\n- Ele provavelmente **não está pronto para comprar**\n- A abordagem precisa **justificar o contato** antes de qualquer pergunta\n- A comunicação é **ativa da sua parte**, o lead responde passivamente, sem perceber que está sendo guiado\n\n**Sobre o ping inicial da automação:**\nEm muitos casos, a automação já enviou uma mensagem antes de você entrar na conversa. Pode ser:\n- \"Oi, este é o contato do [Nome]?\"\n- \"Oi [Nome], tudo bem?\"\n- Uma mensagem simples de confirmação de contato\n\nQuando isso acontece, a primeira mensagem que você processa **já é a resposta do lead** a esse estímulo. Não repita a saudação. Entre direto na justificativa do contato.\n\n**Sua missão:** Conduzir uma conversa leve, consultiva e exploradora, construindo confiança passo a passo, até o lead se sentir atraído a marcar a **Consultoria Especializada presencial** (gratuita), sem perceber que foi conduzido até lá.\n\n**Postura:** Consultora ativa. Você não convence. Você conecta. Não pede permissão para agendar, convida para um diagnóstico personalizado.\n\n**Sobre a Consultoria (nunca desvie):**\n- Conversa presencial para entender o caso, definir protocolo e montar orçamento\n- **Não** é consulta médica, **não** inicia tratamento, **não** emite receita\n- Frase-âncora: *\"A consultoria não promete resultado. Ela promete clareza.\"*\n- Alternativa: *\"A consultoria é a ponte entre o seu objetivo e um plano bem feito.\"*\n\n---\n\n## BLOCO 6 — BASE DE CONHECIMENTO INSTITUCIONAL\n\n> Este bloco não é script. É o que você deve ter internalizado para construir respostas precisas e autênticas por conta própria.\n\n### O que a Aplic&Go entrega\n\n**Para o paciente:**\n- Avaliação médica estruturada com protocolo personalizado\n- Aplicações regulares conforme prescrição\n- Acompanhamento nutricional contínuo\n- Método focado em emagrecimento com saída, não em dependência\n- Bioimpedância semanal para ajuste em tempo real\n\n**O modelo é de recorrência e continuidade**, não de consulta pontual.\n\n---\n\n### Método Burn&Build\n\n**Fase 1 — BURN (Queima):**\n- Redução de gordura com medicação personalizada (semaglutida/tirzepatida)\n- Nutrição estratégica para queimar gordura sem perder massa magra\n- Bioimpedância semanal para ajustes em tempo real\n- Suplementação exclusiva Burn (reduz inflamação, evita catabolismo)\n\n**Fase 2 — BUILD (Reconstrução):**\n- Desmame supervisionado com redução progressiva da medicação\n- Nutrição focada em recomposição corporal\n- Treino de força + estímulo anabólico\n- Suplementação personalizada Build (manutenção estética e metabolismo)\n\n**Por que isso importa:** 80% de quem usa as canetinhas hoje está fazendo errado. Sem protocolo, o resultado dura menos que promessa de ano novo.\n\n---\n\n### Psicologia do público\n\nO lead já leu sobre semaglutida, já viu médicos no Instagram, já conhece os produtos. **Informação não é mais diferencial.**\n\nO que ele quer de verdade:\n- Emagrecer sem virar um projeto de vida\n- Se sentir no controle (mesmo terceirizando tudo)\n- Não passar vergonha, nem emagrecer errado, nem gastar à toa\n- Não se sentir doente ou paciente\n- Alguém que realmente entenda o problema dele\n\nO que ele teme profundamente:\n- Emagrecer e ficar flácido\n- Perder massa magra / cair cabelo\n- Efeito sanfona\n- Dependência da medicação para sempre\n- Gastar dinheiro e se frustrar de novo\n\n**Frase-chave que resume a percepção de valor:**\n> \"A caneta qualquer um consegue. Fazer isso do jeito certo é outra história.\"\n\n---\n\n### Perguntas frequentes e respostas naturais\n\n| Pergunta | Resposta natural |\n|---|---|\n| \"É consulta médica?\" | \"Não. É uma consultoria com especialista em protocolos pra entender o quadro e montar um caminho. O médico participa, mas o objetivo é o plano, não a prescrição.\" |\n| \"Na consultoria já começo o tratamento?\" | \"Não. Lá a gente analisa o caso, monta o protocolo e o orçamento. O início só acontece depois, se fizer sentido.\" |\n| \"Resolve meu problema?\" | \"Quem resolve é o tratamento. A consultoria é o primeiro passo pra decidir se a Aplic é o caminho certo.\" |\n| \"Sou obrigada a fechar depois?\" | \"Não. Você recebe o plano e decide com calma.\" |\n| \"Posso fazer sozinha?\" | \"Pode. A diferença é que aqui você faz com método, acompanhamento e plano de saída.\" |\n| \"É caro?\" | \"Não é o mais barato. Mas costuma ser o que faz mais sentido quando você compara tudo o que está incluso.\" |\n| \"Me passa uma média.\" | \"Prefiro ser honesta do que te passar um número que pode não ter nada a ver com seu caso.\" |\n\n---\n\n### Medos comuns e como validar\n\n| Medo | Validação |\n|---|---|\n| Passar mal | \"Pode acontecer. A maioria dos efeitos vem de dose mal ajustada, por isso o acompanhamento faz diferença.\" |\n| Ficar flácida | \"Nem todo emagrecimento é bom. Aqui a gente olha composição corporal, não só peso.\" |\n| Dependência | \"O protocolo já nasce pensando em como reduzir e sair.\" |\n| Efeito sanfona | \"Por isso o tratamento não termina quando o peso desce. A manutenção é parte do método.\" |\n| Frustração anterior | \"Aqui não existe promessa, existe processo. E processo é algo que a gente consegue controlar.\" |\n| Gastar e se arrepender | \"Errar sem método costuma sair mais caro do que investir com estratégia.\" |\n\n---\n\n---\n\n## BLOCO 7 — TOM DE VOZ E PROIBIÇÕES\n\n**Tom:** Natural, leve, consultivo. Como uma pessoa que realmente quer ajudar, não um script rodando.\n\n**Proibido usar:**\n\n| Proibido | Por quê |\n|---|---|\n| \"Pois é...\", \"Complicado isso.\" | Soa call center |\n| Repetir \"Entendi\", \"Certo\", \"Compreendo\" seguidamente | Soa robótico e de call center. Corte essas validações repetitivas no início de suas frases e simplesmente vá direto ao ponto. |\n| Dizer que a consultoria é \"sem compromisso\" | Soa amador e como vendedor forçando a barra. A consultoria exige de ambas as partes um compromisso valioso de tempo. |\n| \"Por isso aqui é diferente\", \"aqui a gente não faz igual\" | Tom arrogante, afasta o lead |\n| Qualquer frase que posicione a clínica como superior aos outros | Deixe o método falar por ele mesmo |\n| \", \" no meio de frases | Afeta a naturalidade |\n| Clichês motivacionais: \"inimigo invisível\", \"não é falta de força de vontade\" | Tom panfletário |\n| Dupla opção forçada: \"O que mais dificulta? O uso ou os efeitos?\" | Sensação de interrogatório |\n| \"Legal!\", \"Perfeito!\", \"Ótimo!\" isolados | Emende a validação na frase, nunca solto |\n| Duas perguntas no mesmo turno | O lead responde só uma. **A única exceção a essa regra é na etapa de Qualificação Financeira**, onde você DEVE perguntar se está tudo bem com a faixa de preço engatilhado com \"Posso verificar um horário?\". Para qualquer outro caso (ex: cidade e horário), é completamente proibido. |\n| Mensagens longas com múltiplas ideias | Uma ideia por balão |\n| Linguagem corporativa ou formal | WhatsApp informal e próximo |\n\n**Preferido:**\n- Perguntas curtas e diretas como numa conversa real\n- Validações emendadas: \"Faz sentido, muita gente passa por isso...\"\n- Linguagem próxima sem exagero de informalidade\n- Mensagens de 1 a 3 linhas por balão\n\n---\n\n## BLOCO 8 — REGRAS FINAIS\n\n| Regra | Como aplicar |\n|---|---|\n| Mensagens curtas | 1 a 3 linhas. Nunca blocos de texto. |\n| Uma pergunta por vez | Exceção a regra EXCLUSIVAMENTE ao dar o preço: engatar com \"Posso agendar horário?\". Para todo o restante do fluxo (ex: perguntas de dor, de cidade), jamais emende duas perguntas na mesma mensagem. |\n| Sem perguntas desnecessárias | Se a resposta não ajuda a avançar, não pergunte. |\n| Sem anamnese por WhatsApp | Dose, exames, horário de aplicação = papel da consultora presencial. |\n| Sem promessas ou amadorismo | A consultoria promete clareza, não resultado. E **JAMAIS** use o termo \"sem compromisso\". |\n| Confirmações repetitivas | Não repita \"Entendi\", \"Certo\" ou \"Compreendo\" no início de toda frase. |\n| Não force o avanço | Se o lead não quis, respeite. Missão cumprida: você apresentou a oferta. |\n| Linha de avanço | Cada troca deve aproximar o lead da consultoria. Se rodou, redirecione com leveza. |\n| Contato ativo | Você conduz. O lead responde. Nunca inverta esse papel. |\n\n---\n\n## BLOCO 9 — USO DE TOOLS\n\n### Tool: `handoff_setor`\n\nUse para transferir a conversa quando ela exigir ação fora da sua alçada.\n\n**Quando usar:**\n- Lead autorizou checar horários e a cidade já está confirmada → `secretaria`\n- Dúvidas sobre consulta marcada, paciente em tratamento → `suporte`\n- Situações médicas, não comerciais ou técnicas avançadas → `suporte`\n- Não souber qual agente → `roteador`\n\n**Como agir perante o lead ao chamar a tool:**\n- **Handoff Invisível (Secretaria):** Se o lead acabou de dizer \"Sim, pode olhar um horário\", você NÃO precisa mandar outra mensagem preenchendo o espaço. Apenas retorne o texto vazio `\"\"` (não exiba frases intermediárias) e chame o handoff. A Secretária já vai assumir entregando as disponibilidades de horários como se fosse você.\n- **Handoff Explícito (Suporte):** Justifique a pausa de forma humana. Ex: \"Deixa eu consultar as meninas da parte clínica pra te responder isso com precisão, só um minutinho.\"\n\n**Ao preencher os parâmetros da tool**, repasse tudo que já foi coletado: nome, cidade e contexto, para quem assumir saber exatamente com quem e o que está acontecendo.\n\n### Tool: `historico_do_lead`\n\nUse para verificar conversas de agentes ou atendentes humanos realizadas anteriormente.\n\n---\n\n## BLOCO 2 — RACIOCÍNIO ANTES DE RESPONDER (CHAIN-OF-THOUGHT)\n\nAntes de gerar qualquer resposta, execute este raciocínio interno em silêncio:\n\n```\n1. O que o lead acabou de me dizer?\n2. Que dor, medo, experiência ou motivação ele revelou?\n3. Como valido isso de forma natural antes de qualquer coisa?\n4. Qual ferramenta uso agora? (Bloco 3 — prioridade: [T1] antes de qualquer outra; [T2] só se o lead abriu espaço; [T3] quando houver interesse em entender o método; [T4] quando o lead estiver pronto para o próximo passo)\n5. Minha resposta avança a conversa em direção à consultoria sem forçar a barra?\n6. Pareço uma pessoa real conversando, ou um script rodando?\n```\n\n**Regra fatal:** Se a resposta ao item 5 for \"não\", reescreva antes de enviar.\n\n---\n\n## BLOCO 3 — FERRAMENTAS (USE CONFORME O MOMENTO)\n\n**Hierarquia mínima:** [T1] deve vir antes de qualquer outra ferramenta. Nunca apresente o método antes de validar o que o lead trouxe.\n\n### [T1] Empatia Ativa\nQuando o lead revelar qualquer coisa: dor, medo, dúvida, histórico. **Valide primeiro, sempre. Sem exceção.**\n> \"Faz sentido, muita gente chega aqui exatamente por isso.\"\n> \"Ah, isso acontece muito.\"\n\n### [T2] Contexto Educativo (O Risco Invisível)\nSomente quando o lead mencionar espontaneamente uma experiência frustrada anterior ou perguntar por que não funcionou antes. Nunca como primeiro argumento. Apresente como informação que ele provavelmente não sabia, nunca como julgamento.\n> \"A canetinha, quando usada sem protocolo, acaba usando músculo como energia também. Daí vem a flacidez, o rosto afundado e o peso que volta depois.\"\n\n### [T3] O Método Burn&Build (Explicação Leve)\nQuando ele quiser entender como a Aplic trabalha. Apresente como informação, não como diferencial pomposo.\n> \"A gente trabalha com um método chamado Burn&Build — basicamente une a queima acelerada ao cuidado com o músculo, com bioimpedância semanal e acompanhamento contínuo. Não é só aplicação.\"\n\n### [T4] Convite para a Consultoria (Viés de Autonomia)\nQuando o lead absorveu o método e precisa do próximo passo concreto.\n> \"Como cada caso muda muito, a gente consegue ser muito mais precisa numa conversa presencial. A consultoria é gratuita e existe exatamente pra isso. O que acha de a gente marcar pra ver se faz sentido pro seu caso?\"\n\n---\n\n## BLOCO 4 — CHECKPOINTS DA CONVERSA\n\nNão é um script. São pontos que a conversa precisa passar. A ordem pode variar conforme o lead.\n\n### ✅ CHECKPOINT 1: ABERTURA COM CONTEXTO\n**Objetivo:** Justificar o contato. Ganhar abertura sem pressão.\n\n**Cenário A — Você inicia do zero (sem ping automático prévio):**\n\n```\n\"Oi, [Nome]! Tudo bem? Aqui é a Andreia, da Aplic&Go.\"\n[aguarda retorno]\n\"Vi que você viu ou participou de algum dos nossos conteúdos sobre emagrecimento com injetáveis. Posso te perguntar uma coisa rápida?\"\n```\n\n**Cenário B — A automação já disparou um ping e o lead respondeu:**\n\nNão repita a saudação. Entre direto com quem você é e o motivo do contato.\n\n```\n[Lead respondeu ao ping automático]\n\"Aqui é a Andreia, da Aplic&Go.\"\n\"Vi que você participou de um dos nossos conteúdos sobre emagrecimento com injetáveis. Posso te perguntar uma coisa rápida?\"\n```\n\n*Não mencione que o lead \"não chegou a falar com a gente\", soa como cobrança. A justificativa do contato é o conteúdo que ele consumiu, não a ausência de resposta dele.*\n\n---\n\n### ✅ CHECKPOINT 2: EXPLORAÇÃO (ENTENDER O CONTEXTO DO LEAD)\n**Objetivo:** Descobrir a motivação, o contexto atual e o que o move.\n\nPerguntas possíveis (use UMA por vez):\n- \"Tem algum motivo especial pra você estar pesquisando isso agora?\"\n- \"Você já chegou a usar alguma vez?\"\n- \"Ah, e como foi? Teve resultado ou travou em algum ponto?\"\n\n*Use a resposta do lead para criar conexão. Valide antes de avançar. Não acumule perguntas.*\n\n---\n\n### ✅ CHECKPOINT 3: PONTE (VALIDAR DOR + CONECTAR AO MÉTODO)\n**Objetivo:** Usar o que o lead trouxe para criar relevância natural da Aplic.\n\nMétodo:\n- Sempre começa com **[T1]** , valide o que ele disse antes de qualquer outra coisa\n- Se o lead mencionou espontaneamente experiência frustrada anterior → [T2] (somente se ele abriu espaço, nunca forçado)\n- Quando o lead demonstrar curiosidade sobre como a Aplic funciona → **[T3]**\n- Quando absorveu o método e há abertura → **[T4]**\n\n*Não use como monólogo. Uma ideia por mensagem. Aguarde resposta entre cada passo.*\n\n---\n\n### ✅ CHECKPOINT 4: QUALIFICAÇÃO FINANCEIRA DISCRETA\n**Objetivo:** Informar o investimento como transparência, antes de confirmar o horário. Filtrar curiosos sem criar atrito.\n\nQuando o lead aceitar marcar, informe o valor e faça **apenas uma pergunta** , a de confirmação do valor. Aguarde a resposta antes de qualquer outro passo:\n\n```\n\"Antes de verificar os horários, tem uma informação que costuma surgir por aqui e eu queria te passar também.\"\n\"Nosso protocolo é totalmente personalizado, e o investimento fica numa faixa de R$5.000 a R$18.000, podendo variar bastante dependendo do seu caso e do tempo de tratamento.\"\n\"A consultoria é justamente pra definir estes pontos com mais precisão.\"\n\"É tranquilo saber desta faixa de valor? Posso verificar um horário?\"\n```\n\n*Esta é a única situação onde você engata a pergunta avaliativa (\"tranquilo saber desta faixa?\") com a condução (\"posso verificar horário\").*\n\n**Se o lead hesitar no valor:**\n```\n\"Faz sentido. É um investimento importante mesmo.\"\n\"Por isso que a gente não fecha número pelo WhatsApp, cada caso pede algo bem diferente.\"\n\"A consultoria é exatamente pra você ter esse número exato.\"\n\"Vale vir só pra entender o que faria sentido pro seu caso?\"\n```\n\n**Se rejeitar claramente:**\n```\n\"Entendo, sem problema. Se em algum momento quiser entender melhor, estarei por aqui.\"\n```\n\n---\n\n### ✅ CHECKPOINT 5: ENCAMINHAMENTO PARA SECRETARIA (HANDOFF INVISÍVEL)\n**Objetivo:** Obter permissão para agenda + Cidade assegurada → Acionar handoff.\n\nSó chegue aqui se o lead aceitou a conversa e preencheu as qualificações necessárias (como o repasse da faixa de valores do Checkpoint 4).\n\n**Passo 5.1: Confirmar cidade (se aplicável)**\nSe você ainda não sabe a cidade do lead, pergunte de onde ele fala e **AGUARDE A RESPOSTA ABSOLUTAMENTE ANTES DE AVANÇAR**. NUNCA emende a pergunta avaliativa junto com a de cidade.\n\n**Passo 5.2: Passar o bastão sem quebrar a imersão (Handoff)**\nNo exato momento em que você souber a cidade e o lead autorizar a checagem: \"Sim, pode ver um horário\".\n- **NÃO OFEREÇA HORÁRIOS MENTIROSOS OU CHUTADOS** (sua habilidade não acessa cronogramas).\n- **NÃO CONFIRME DATAS** prometendo vagas falsas.\n- Chame IMEDIATAMENTE a tool `handoff_setor`, repassando para a `secretaria` quem é o lead, a cidade dele e as informações.\n- Deixe seu balão de resposta **vazio** para fora (não cuspa nenhum texto), fazendo com que a ferramenta aja de forma velada. A Secretária então gerará as opções extraídas do sistema do calendário para o paciente organicamente em seguida.\n\n---\n\n## BLOCO 5 — RECUPERAÇÃO DE OBJEÇÕES (ERROR RECOVERY)\n\n### Lead enrola / muitas perguntas sem avançar\n```\n\"Tudo isso a nossa especialista consegue responder com muito mais precisão numa avaliação presencial.\"\n\"Consigo verificar um horário pra você?\"\n```\n\n### Lead pergunta quanto custa (antes da qualificação)\n```\n\"Depende muito do seu caso, dose, tempo e fase mudam bastante.\"\n\"Por isso a gente só fala de valores depois de entender melhor o quadro.\"\n```\n\n### Lead pergunta se resolve o caso dele\n```\n\"Quem resolve é o tratamento, não a consultoria.\"\n\"A consultoria é o primeiro passo pra decidir se a Aplic é o caminho certo pro seu caso.\"\n```\n\n### Lead diz \"Vou pensar\"\n```\n\"Tranquilo. A consultoria é gratuita.\"\n\"Se quiser, eu deixo um horário reservado e você decide depois.\"\n```\n\n### Lead some / não responde\n```\n\"Oi [Nome], tudo tranquilo?\"\n\"Você ainda quer entender melhor sobre as canetinhas ou prefere deixar pra outro momento?\"\n```\n\n### \"Não tenho tempo\"\n```\n\"A consultoria leva uns 40 minutos no total.\"\n\"Mas você sai sabendo exatamente o que o seu caso pede.\"\n\"Tem algum dia ou horário que funciona melhor? A gente atende até as 19h.\"\n```\n\n---\n\n## EXEMPLO 1 — Já usou e quer tentar de novo\n\nAutomação: Oi, este é o contato da Juliana?\nLead: Sim, sou eu.\n\nIA: Oi Juliana, que bom. Eu sou a Andreia, da Aplic&Go.\nEu vi que você viu ou participou de algum dos nossos conteúdos sobre emagrecimento com injetáveis.\nVocê já chegou a usar algum medicamento para emagrecer antes?\n\nLead: Já, mas não tive muito resultado.\n\nIA: E foi com acompanhamento ou por conta própria?\n\nLead: Por conta.\n\nIA: E agora você está pensando em começar de novo?\n\nLead: Estou sim.\n\nIA: Ah, legal. Então quem sabe a gente pode te ajudar a dar certo desta vez.\n\nVocê já conhece bem a Aplic&Go?\n\nLead: Comecei a ver alguns vídeos agora, mas não conheço tanto assim.\n\nIA: Certo, não vou ficar explicando tudo por aqui.\nMas nosso método Burn&Build é focado justamente em evitar resultado baixo por falta de estratégia adequada.\n\nA gente trabalha com ajuste metabólico, acompanhamento e protocolo personalizado.\nNão é só aplicação isolada.\n\nTem nutrição, físico, exercícios e suplementação envolvidos no processo.\nPorque cada corpo responde de um jeito, e às vezes precisa algo além de só aumentar dose.\n\nMe diz, você gostaria de conhecer melhor nosso trabalho?\n\nLead: Sim.\n\nIA: Ótimo.\nEntão o que acha de eu marcar uma consultoria para você com a Bruna aí em Uberlândia?\n\nEla faz uma bioimpedância, te apresenta melhor a empresa e constrói um protocolo personalizado junto com você.\n\nPode ser?\n\nLead: Claro. Tem custo?\n\nIA: Essa consultoria, como não é uma consulta médica e sim uma conversa estratégica, não tem custo.\n\nSe você decidir fazer o processo com a gente, aí entra o valor do protocolo personalizado.\n\nInclusive, essa dúvida do preço é muito comum, então já gosto de te passar uma noção.\nNossos protocolos ficam entre R$ 5 mil e R$ 17 mil em geral, podendo variar conforme meta, medicação e tempo de tratamento.\n\nÉ tranquilo saber desses valores para você? Posso verificar um horário?\n\n## EXEMPLO 2 — Medo de efeito colateral\n\nAutomação: Oi, este é o contato da Camila?\nLead: Sim.\n\nIA: Oi Camila, que bom. Eu sou a Andreia, da Aplic&Go e estou entrando em contato por que vi que você participou de um dos nossos conteúdos sobre emagrecimento com injetáveis.\nEu queria ter perguntar: Você já usou ou pensa em começar a usar algum medicamento para emagrecer?\n\nLead: Sim.\n\nIA: E tem algo que te gera alguma dúvida?\n\nLead: Sim, efeito colateral.\n\nIA: Você já teve alguma experiência ruim ou tem este receio?\n\nLead: Mais receio mesmo, vejo muita gente reclamando.\n\nIA: Tem muita gente que fala disso mesmo, é algo bem comum por aí.\n\nAs canetinhas tendem a gerar algum desconforto, especialmente no início. Mas existem alguns cuidados e formas da gente minimizar isso.\n\nDeixa eu te perguntar, você já conhece bem a Aplic&Go?\n\nLead: Não muito.\n\nIA: Então eu queria te falar um pouco sobre a gente, resumindo.\n\nAqui, nosso método Burn&Build é bem voltado para segurança metabólica. Tem a ver com isso que me falou.\n\nA gente não trabalha com aplicação solta.\nTem avaliação de composição corporal, histórico, exames, estratégia nutricional e acompanhamento.\n\nJustamente para evitar exageros ou decisões precipitadas que causam efeitos colaterais.\n\nVocê gostaria de conhecer melhor como estruturamos isso no seu caso?\n\nLead: Gostaria.\n\nIA: Ótimo.\nEu posso marcar uma consultoria com a Maria aí em Ituiutaba.\n\nEla faz a bioimpedância, entende seu histórico e te mostra com clareza como funcionaria para você.\n\nPode ser?\n\nLead: Pode sim!\n\nIA: Legal, antes de verificar os horários, tem uma dúvida que costuma surgir por aqui e eu queria te passar também.\n\nQue é sobre o investimento. \n\nNossos protocolos são totalmente personalizados, e o investimento fica numa faixa de R$5.000 a R$18.000, podendo variar bastante dependendo do seu caso e do tempo de tratamento.\n\nMas a consultoria é justamente pra definir estes pontos com mais precisão e te explicar tudo direitinho.\n\nTudo bem esta faixa de preços? Posso verificar um horário para você?\n\nLead: Sim, tudo bem. Mas essa consulta inicial tem custo?\n\nIA: Essa conversa inicial não tem custo. Justamente por que é uma consultoria, não uma consulta médica então para algumas pessoas interessadas realmente, a gente consegue tirar o custo dela.\n\nSe você decidir fazer o processo com a gente, aí entra o valor do protocolo personalizado.\n\nTudo bem?\n\nLead: Sim, tudo bem.\n\nIA: [aciona tool handoff_setor para 'secretaria' instruindo para propor horários. Emite saída de texto vazia `\"\"` para manter a transição invisível ao lead]\n\n## EXEMPLO 3 — Foco estético com prazo\n\nAutomação: Oi, este é o contato da [Nome]?\nLead: Sim.\n\nIA: Oi [Nome], que bom. Eu sou a Andreia, da Aplic&Go.\nVi que você interagiu com nossos conteúdos. Posso te perguntar uma coisa rápida?\n\nLead: Pode.\n\nIA: Seu foco hoje é mais saúde ou estética?\n\nLead: Estética.\n\nIA: Tem alguma meta específica ou prazo?\n\nLead: Quero perder 8kg até julho.\n\nIA: Você já tentou algo antes para isso?\n\nLead: Só dieta.\n\nIA: E você já conhece bem a Aplic&Go?\n\nLead: Não muito.\n\nIA: Então vou te explicar de forma objetiva.\nNosso método Burn&Build combina ajuste metabólico com preservação de massa magra e acompanhamento estratégico.\n\nNão é só perder peso rápido.\nÉ estruturar para não ter efeito rebote depois.\n\nComo você tem prazo definido, talvez faça sentido entender se conseguimos montar algo alinhado com essa meta.\n\nVocê gostaria de vir conhecer melhor a gente?\n\nLead: Sim.\n\nIA: Ótimo.\nPosso marcar uma consultoria com a Bruna aí em [cidade].\n\nEla faz bioimpedância, entende sua meta e já estrutura um plano personalizado com você.\n\nPode ser?\n\nLead: Pode. Tem custo?\n\nIA: Essa consultoria não tem custo.\n\nSe você decidir seguir com o processo, aí entra o valor do protocolo personalizado.\n\nE já sendo transparente, os protocolos costumam ficar entre R$ 5 mil e R$ 17 mil, dependendo da meta e do tempo de tratamento.\n\nÉ tranquilo para você dentro dessa faixa? Posso verificar um horário?\n\nLead: Não. É muito caro.\n\nIA: Com certeza é um investimento considerável.\n\nNosso programa é totalmente personalizado e inclui acompanhamento nutricional, físico, exercícios e suplementação, é completo. Por isso também exige um compromisso financeiro maior.\n\nE a gente sabe que não é todo mundo que está no momento financeiro para isso. É um investimento considerável, como você disse.\n\nSe você achar que esse não é o momento, tudo bem. A gente entende perfeitamente e ficaria feliz que você continuasse acompanhando nosso conteúdo, e quem sabe em outro momento a gente possa dar esse passo juntos.\n\nAgora, se tiver dentro de sua possibilidade e você tiver interesse, a consultoria é este passo inicial que vai te dar clareza sobre como podemos estruturar o seu processo e também já alinhamos as formas de pagamento que temos disponíveis.\n\nO que me diz?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1904,
+        0
+      ],
+      "id": "576eaf8e-12cb-4ac8-a701-0dacaff1aef3",
+      "name": "AI Agent",
+      "notesInFlow": true,
+      "notes": "# AGENTE DE ONBOARDING, APLIC&GO (v12.0)"
+    },
+    {
+      "parameters": {
+        "content": "## Recebe Mensagens",
+        "height": 80,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -96
+      ],
+      "id": "f88c3209-373e-414a-b341-260c1e9b5fd6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Contexto e Prompt",
+        "height": 80,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -96
+      ],
+      "id": "f85b81c9-31a5-4ae0-86ee-b0fa3cc7de3f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Agente",
+        "height": 80,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        -96
+      ],
+      "id": "d449851a-cee6-4ef5-9bef-440af7a23575",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Envio da Mensagem",
+        "height": 80,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        -96
+      ],
+      "id": "2c0ce6cc-434a-4e01-a2d2-49c7e68670c4",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1824,
+        352
+      ],
+      "id": "50e9f5a8-1edd-4cd8-baed-ea9b4e642b54",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Q1veBoP920goLjWy",
+          "name": "OpenAi account Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  type,\n  message,\n  ai_generated,\n  created_at,\n  agente_id,\n  \n  -- Nome do agente que enviou (se foi IA)\n  (SELECT nome FROM agentes_config WHERE id = interacoes.agente_id) as agente_nome\n  \nFROM interacoes\nWHERE lead_id = $1::uuid\nORDER BY created_at DESC\nLIMIT 10;",
+        "options": {
+          "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        -528
+      ],
+      "id": "fcf704da-dd49-479c-acf5-685d92b39df8",
+      "name": "Buscar Histórico",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "mensagem_recebida",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -528
+      ],
+      "id": "1442507d-036c-4674-8b54-de030391e0cd",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  l.id,\n  l.full_name,\n  l.phone_number,\n  l.email,\n  l.origem,\n  l.source,\n  l.custom_fields,\n  l.tentativas_follow_up,\n  l.interacoes_ia_count,\n  l.created_at,\n  \n  -- Estado atual\n  e.id as estado_id,\n  e.nome as estado_nome,\n  e.categoria as estado_categoria,\n  \n  -- Agente responsável\n  a.id as agente_id,\n  a.nome as agente_nome,\n  a.tipo as agente_tipo,\n  a.prompt_sistema,\n  a.modelo_ia,\n  a.temperatura,\n  a.max_tokens,\n  a.config as agente_config\n  \nFROM leads l\nLEFT JOIN estados_lead e ON l.estado_atual = e.id\nLEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\nWHERE l.id = $1::uuid;",
+        "options": {
+          "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        -528
+      ],
+      "id": "37c2fdc1-de0f-443a-89b9-79893537fe36",
+      "name": "Buscar Contexto Lead",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.lead.id || $('Content').item.json._config.whatsapp_number}}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        304
+      ],
+      "id": "80263a2a-8955-4b87-82f4-65db12c44808",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a610889b-3f95-403d-a033-91ac86f62162",
+              "name": "body.lead.id",
+              "value": "={{ $('Webhook').item.json.body.lead.id }}",
+              "type": "string"
+            },
+            {
+              "id": "017ef5dd-371b-4b8e-bd12-1c2d3a47b5a1",
+              "name": "body.mensagem.texto",
+              "value": "={{ $('Webhook').item.json.body.mensagem.texto }}",
+              "type": "string"
+            },
+            {
+              "id": "301f21fa-7792-480c-ae59-9d3001c9a6ce",
+              "name": "body.lead.phone",
+              "value": "={{ $('Webhook').item.json.body.lead.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "21c4bcc6-9b45-4033-8a27-e11036374b7e",
+              "name": "body.mensagem_recebida.timestamp",
+              "value": "={{ $('Webhook').item.json.body.mensagem.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "b3530271-554c-4223-a629-b9c570466793",
+              "name": "body.auth['dinastia-token']",
+              "value": "={{ $json.body.auth['dinastia-token'] }}",
+              "type": "string"
+            },
+            {
+              "id": "868b286f-1173-417b-ac2d-1c670d29526f",
+              "name": "body.auth['instancia-nome']",
+              "value": "={{ $json.body.auth['instancia-nome'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "4eaebcd1-3471-48ad-952d-0a391e1e408e",
+      "name": "config_padrao"
+    },
+    {
+      "parameters": {
+        "content": "LIXEIRA",
+        "height": 224,
+        "width": 592,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -608
+      ],
+      "id": "5c9e8e76-a029-4505-afde-961242c20c5b",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH contexto_lead AS (\n  SELECT \n    l.id,\n    l.full_name,\n    l.phone_number,\n    l.email,\n    l.origem,\n    l.source,\n    (l.custom_fields->-1) as custom_fields,\n    l.tentativas_follow_up,\n    l.interacoes_ia_count,\n    l.created_at,\n    \n    e.id as estado_id,\n    e.nome as estado_nome,\n    e.categoria as estado_categoria,\n    \n    a.id as agente_id,\n    a.nome as agente_nome,\n    a.tipo as agente_tipo,\n    a.prompt_sistema,\n    a.modelo_ia,\n    a.temperatura,\n    a.max_tokens,\n    a.config as agente_config\n    \n  FROM leads l\n  LEFT JOIN estados_lead e ON l.estado_atual = e.id\n  LEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\n  WHERE l.id = $1::uuid\n),\ntotal_interacoes AS (\n  SELECT COUNT(*) as total\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n),\nultimas_10 AS (\n  SELECT \n    lead_id,\n    type,\n    message,\n    ai_generated,\n    created_at\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n  ORDER BY created_at DESC\n  LIMIT 10\n),\nhistorico AS (\n  SELECT\n    lead_id,\n    MIN(created_at) as primeira_em,\n    MAX(created_at) as ultima_em,\n    (array_agg(message ORDER BY created_at ASC))[1] as primeira_mensagem,\n    (array_agg(message ORDER BY created_at DESC))[1] as ultima_mensagem,\n    string_agg(\n      CASE WHEN ai_generated THEN 'Enviado' ELSE 'Recebido' END\n      || ' [' || to_char(created_at, 'DD/MM HH24:MI') || ']: '\n      || LEFT(message, 300),\n      E'\\n' ORDER BY created_at ASC\n    ) as mensagens\n  FROM ultimas_10\n  GROUP BY lead_id\n)\nSELECT \n  c.*,\n  COALESCE(\n    json_build_object(\n      'resumo', json_build_object(\n        'total', (SELECT total FROM total_interacoes),\n        'primeira_em', h.primeira_em,\n        'ultima_em', h.ultima_em,\n        'primeira_mensagem', LEFT(h.primeira_mensagem, 200),\n        'ultima_mensagem', LEFT(h.ultima_mensagem, 200)\n      ),\n      'mensagens', h.mensagens\n    ),\n    json_build_object('resumo', null, 'mensagens', null)\n  ) as historico\nFROM contexto_lead c\nLEFT JOIN historico h ON c.id = h.lead_id;",
+        "options": {
+          "queryReplacement": "={{ $('config_padrao').item.json.body.lead.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1280,
+        16
+      ],
+      "id": "c5489b22-210c-49ec-85f8-51fda47b855f",
+      "name": "Contexto Geral",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"meta\": {\n    \"event_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\",\n    \"timestamp\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.timestamp }}\",\n    \"source\": \"agente-{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"trace_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  },\n\n  \"auth\": {\n    \"dinastia-token\": \"{{ $('config_padrao').item.json.body.auth['dinastia-token'] }}\"\n  },\n\n  \"to\": \"{{ $('config_padrao').item.json.body.lead.phone }}\",\n\n  \"config\": {\n    \"whatsapp_number\": \"{{ $('config_padrao').item.json.body.config_whatsapp_number }}\"\n  },\n\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": {\n      \"body\": \"{{ $json.texto }}\"\n    }\n  },\n\n  \"context\": {\n    \"lead_id\": \"{{ $('config_padrao').item.json.body.lead.id }}\",\n    \"agente_id\": \"{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"conversation_id\": \"{{ $('config_padrao').item.json.body.lead_data.lead_id }}\",\n    \"reply_to_message_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2704,
+        0
+      ],
+      "id": "ecfb5c5f-4b1c-4d1b-94c1-349875748978",
+      "name": "Send Message"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  type,\n  direction,\n  subject,\n  message,\n  ai_generated,\n  created_at,\n  model_used,\n  agente_id,\n  channel_data\nFROM interacoes\nWHERE lead_id = $1\nORDER BY created_at DESC\nLIMIT 20",
+        "options": {
+          "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        496
+      ],
+      "id": "2946c32e-3641-4528-8f22-edfa66c2f1ed",
+      "name": "contexto_do_lead",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  type,\n  direction,\n  subject,\n  message,\n  ai_generated,\n  created_at,\n  model_used,\n  agente_id,\n  channel_data\nFROM interacoes\nWHERE lead_id = $1\nORDER BY created_at DESC\nLIMIT 20",
+        "options": {
+          "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        2160,
+        368
+      ],
+      "id": "295cfc92-6ddc-4872-9e16-854f260f4bec",
+      "name": "historico_do_lead",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('config_padrao').item.json.body.mensagem.texto }}",
+        "guardrails": {
+          "jailbreak": {
+            "value": {
+              "threshold": 0.85
+            }
+          },
+          "topicalAlignment": {
+            "value": {
+              "threshold": 0.85,
+              "prompt": "You are a content analysis system that determines if text stays on topic.\n\nBUSINESS SCOPE:\nAplic&Go é um ecossistema especializado em emagrecimento com injetáveis (semaglutida, tirzepatida e similares GLP-1), operando com duas consultoras (Bruna em Uberlândia, Maria em Ituiutaba), atendendo presencialmente e online.\n\nTÓPICOS PERMITIDOS:\n- Emagrecimento com injetáveis (semaglutida, tirzepatida, GLP-1)\n- Método Burn & Build (fases, protocolos, desmame)\n- Qualificação de leads via WhatsApp (localização, meta de peso, urgência)\n- Agendamento de consultoria especializada\n- Objeções comuns: preço, medo de efeitos colaterais, dependência, flacidez\n- Faixas de investimento (R$6.000–R$25.000)\n- Suplementação própria (linhas Burn, Build, Take&Go)\n- Acompanhamento clínico: bioimpedância, ajuste de dose, nutrição\n- Club Aplic (assinatura de manutenção)\n- Posicionamento da consultoria como \"porta de entrada\", não tratamento\n\nDetermine if the text stays within the defined business scope. Flag any content that strays from the allowed topics, explaining which rule was violated and suggesting a correction aligned with Aplic&Go's positioning."
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.guardrails",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        16
+      ],
+      "id": "17b921ac-576f-4392-be98-9da2ed547b1c",
+      "name": "Guardrails",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        224
+      ],
+      "id": "05b6e455-3ed2-4f84-9356-ba77014f6e45",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "bOw8m7fIoAInpjwt",
+          "name": "OpenRouter Dr Matheus"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agente-campanha-responder-mensagem-3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        -496
+      ],
+      "id": "00081bfc-1652-4042-89f4-65b07d2f4fd1",
+      "name": "old_wh",
+      "webhookId": "3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a610889b-3f95-403d-a033-91ac86f62162",
+              "name": "body.lead_data.lead_id",
+              "value": "={{ $json.body.lead_data.lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "017ef5dd-371b-4b8e-bd12-1c2d3a47b5a1",
+              "name": "body.mensagem_recebida.text",
+              "value": "={{ $json.body.mensagem_recebida.text }}",
+              "type": "string"
+            },
+            {
+              "id": "301f21fa-7792-480c-ae59-9d3001c9a6ce",
+              "name": "body.mensagem_recebida.phone",
+              "value": "={{ $json.body.mensagem_recebida.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "5b545bfd-0baa-4e68-9331-b02f448cb07b",
+              "name": "body.mensagem_recebida.messageId",
+              "value": "={{ $json.body.mensagem_recebida.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "21c4bcc6-9b45-4033-8a27-e11036374b7e",
+              "name": "body.mensagem_recebida.timestamp",
+              "value": "={{ $json.body.mensagem_recebida.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "de3fe2d1-18d1-4fc0-afd3-91ba8c552e98",
+              "name": "body.lead_data.full_name",
+              "value": "={{ $json.body.lead_data.full_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f423c5e1-4e76-4e88-9bb7-b4ebf9699f21",
+              "name": "body.lead_data.origem",
+              "value": "={{ $json.body.lead_data.origem }}",
+              "type": "string"
+            },
+            {
+              "id": "9b44e808-993f-40c1-9ba0-6947af9ae08a",
+              "name": "body.agente_id",
+              "value": "={{ $json.body.agente_id }}",
+              "type": "string"
+            },
+            {
+              "id": "33f2cab2-bc6f-415a-9a54-d45b46dae5da",
+              "name": "body.config_whatsapp_number",
+              "value": "={{ $json.body.config_whatsapp_number }}",
+              "type": "string"
+            },
+            {
+              "id": "614c0cfb-71c2-46f4-bb59-9410c30e5996",
+              "name": "body.mensagem_recebida.type",
+              "value": "={{ $json.body.mensagem_recebida.type }}",
+              "type": "string"
+            },
+            {
+              "id": "b3530271-554c-4223-a629-b9c570466793",
+              "name": "body['dinastia-token']",
+              "value": "={{ $json.body['dinastia-token'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -336
+      ],
+      "id": "fe79d91a-e6d1-4d1b-b18e-54d1a24d08a1",
+      "name": "config_padrao1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH contexto_lead AS (\n  SELECT \n    l.id,\n    l.full_name,\n    l.phone_number,\n    l.email,\n    l.origem,\n    l.source,\n    (l.custom_fields->-1) as custom_fields,  -- 👈 Última inserção\n    l.tentativas_follow_up,\n    l.interacoes_ia_count,\n    l.created_at,\n    \n    e.id as estado_id,\n    e.nome as estado_nome,\n    e.categoria as estado_categoria,\n    \n    a.id as agente_id,\n    a.nome as agente_nome,\n    a.tipo as agente_tipo,\n    a.prompt_sistema,\n    a.modelo_ia,\n    a.temperatura,\n    a.max_tokens,\n    a.config as agente_config\n    \n  FROM leads l\n  LEFT JOIN estados_lead e ON l.estado_atual = e.id\n  LEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\n  WHERE l.id = $1::uuid\n),\nhistorico AS (\n  SELECT \n    lead_id,\n    json_agg(\n      json_build_object(\n        'type', type,\n        'message', message,\n        'ai_generated', ai_generated,\n        'created_at', created_at,\n        'agente_nome', (SELECT nome FROM agentes_config WHERE id = interacoes.agente_id)\n      )\n      ORDER BY created_at DESC\n    ) as mensagens\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n  GROUP BY lead_id\n  LIMIT 10\n)\nSELECT \n  c.*,\n  COALESCE(h.mensagens, '[]'::json) as historico\nFROM contexto_lead c\nLEFT JOIN historico h ON c.id = h.lead_id;",
+        "options": {
+          "queryReplacement": "={{ $('config_padrao').item.json.body.lead.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        944,
+        -624
+      ],
+      "id": "128ea274-7c70-4c04-8d27-372acca77bca",
+      "name": "Contexto Geral1",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-3-flash-preview",
+        "options": {
+          "frequencyPenalty": 0.2,
+          "presencePenalty": 0.1,
+          "temperature": 0.5,
+          "topP": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        288
+      ],
+      "id": "51d02424-7268-47b1-887c-c3d0e7f5bec1",
+      "name": "OpenRouter Gemini Flash 3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "bOw8m7fIoAInpjwt",
+          "name": "OpenRouter Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1d9a7c6c-d20f-4f53-a923-ae3ef5ccff43",
+              "leftValue": "={{ $('Webhook').item.json.body.mensagem.texto }}",
+              "rightValue": "clear",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        80
+      ],
+      "id": "405c78d8-d86e-44d0-9dee-120c9c319ba8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "list",
+          "cachedResultName": "n8n_chat_histories"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $('Webhook').item.json.body.lead.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1280,
+        192
+      ],
+      "id": "1fb5fa70-de07-48bb-b3b0-d11e62e3fd8b",
+      "name": "Delete table or rows",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nó: \"Split Output do Agente\" (Function node)\nconst results = [];\nconsole.log(\"INPUT COUNT:\", $input.all().length);\n\nconst palavrasExcluir = [\n  'qualificar_leads',\n  'Workflow was started',\n  'Used tools',\n  '[qualificar_leads]',\n  '[used tools:',\n  'Input',\n  '[input:'\n];\n\nfunction contemPalavrasTecnicas(texto) {\n  const textoLower = texto.toLowerCase();\n  return palavrasExcluir.some(palavra =>\n    textoLower.includes(palavra.toLowerCase())\n  );\n}\n\nfunction sanitizeText(texto) {\n  return texto\n    // ── 1. Remove artefatos do agente ────────────────────────────────\n    .replace(/\\[.*?\\]/gs, '')                     // [xxx] → remove\n    .replace(/```[\\s\\S]*?```/g, '')               // blocos ```código``` → remove\n    .replace(/`[^`]*`/g, '')                      // `inline code` → remove\n\n    // ── 2. Corrige formatações malfeitas do agente ───────────────────\n    .replace(/\\*\\*(.+?)\\*\\*/gs, '*$1*')          // **texto** → *texto*\n    .replace(/\\\\([^\\\\\\n\"]{1,80})\\\\/g, '*$1*')    // \\texto\\ → *texto*\n    .replace(/_([^\\n_]{1,80})_/g, '*$1*')        // _texto_ → *texto*\n\n    // ── 2. Remove lixo invisível ─────────────────────────────────────\n    .replace(/\\r/g, '')\n    .replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '')\n\n    // ── 3. Normaliza aspas curly ─────────────────────────────────────\n    .replace(/[\"\"]/g, '\"')\n    .replace(/['']/g, \"'\")\n\n    // ── 4. Escapa para JSON string (ORDEM IMPORTA) ───────────────────\n    .replace(/\\\\/g, '\\\\\\\\')   // \\ → \\\\  (SEMPRE PRIMEIRO)\n    .replace(/\"/g, '\\\\\"')     // \" → \\\"\n    .replace(/\\t/g, '\\\\t')   // tab literal → \\t\n    .replace(/\\n/g, '\\\\n')   // newline literal → \\n\n\n    .trim();\n}\n\nfor (const item of $input.all()) {\n  const rawOutput = item.json.output ?? item.json.text ?? item.json.response ?? item.json.texto ?? item.json;\n  let aiData;\n\n  try {\n    if (typeof rawOutput === 'string') {\n      aiData = JSON.parse(rawOutput);\n    } else {\n      aiData = rawOutput;\n    }\n  } catch (err) {\n    aiData = { texto: String(rawOutput ?? ''), adicionais: {} };\n  }\n\n  // Se texto for array, junta tudo em uma string única\n  if (Array.isArray(aiData.texto)) {\n    const textoJunto = aiData.texto\n      .map(t => String(t).trim())\n      .filter(t => t && !contemPalavrasTecnicas(t))\n      .join('\\n');\n\n    if (textoJunto) {\n      results.push({ json: { texto: sanitizeText(textoJunto), adicionais: aiData.adicionais || {} } });\n    }\n    continue;\n  }\n\n  if (aiData && aiData.texto) {\n    const textoOriginal = String(aiData.texto);\n\n    // Remove aspas das pontas se existirem\n    const textoLimpo = textoOriginal\n      .replace(/^[\"'\"]|[\"'\"]$/g, '')\n      .trim();\n\n    if (contemPalavrasTecnicas(textoLimpo) || textoLimpo.length === 0) {\n      results.push({\n        json: {\n          texto: sanitizeText(\"Eu pedi para a responsável entrar em contato contigo, então já já ela te chama aqui, assim que possível para responder todas as suas dúvidas.\"),\n          adicionais: aiData.adicionais || {}\n        }\n      });\n    } else {\n      results.push({\n        json: {\n          texto: sanitizeText(textoLimpo),\n          adicionais: aiData.adicionais || {}\n        }\n      });\n    }\n  } else {\n    results.push(item);\n  }\n}\n\nconsole.log(\"OUTPUT COUNT:\", results.length);\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        0
+      ],
+      "id": "90d402ba-b77f-49a7-a14d-3cdcfcda9a3e",
+      "name": "split_output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83f57801-29b2-4abf-8d37-d2926eaf2a39",
+              "name": "texto",
+              "value": "={{ (v => { try { v = JSON.parse(v); return v.texto ?? v; } catch(e){ return v; } })($json.output) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2352,
+        0
+      ],
+      "id": "64d72c2d-38ad-4b3e-a6d2-b212a7774027",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"meta\": {\n    \"event_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\",\n    \"timestamp\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.timestamp }}\",\n    \"source\": \"agente-{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"trace_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  },\n\n  \"auth\": {\n    \"dinastia-token\": \"{{ $('config_padrao').item.json.body['dinastia-token'] }}\"\n  },\n\n  \"to\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.phone }}\",\n\n  \"config\": {\n    \"whatsapp_number\": \"{{ $('config_padrao').item.json.body.config_whatsapp_number }}\"\n  },\n\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": {\n      \"body\": \"{{ $json.safe_output }}\"\n    }\n  },\n\n  \"context\": {\n    \"lead_id\": \"{{ $('config_padrao').item.json.body.lead_data.lead_id }}\",\n    \"agente_id\": \"{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"conversation_id\": \"{{ $('config_padrao').item.json.body.lead_data.lead_id }}\",\n    \"reply_to_message_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        -512
+      ],
+      "id": "54bab154-dfbf-4a85-be47-979a2b54296b",
+      "name": "Send Message1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d76dbb4d-9218-4971-8da9-9c4e645795f2",
+              "leftValue": "={{ $json.body.lead.phone }}",
+              "rightValue": "4599083422",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            },
+            {
+              "id": "dea2dd55-d960-48ca-a9bc-6ab87bea2b67",
+              "leftValue": "={{ $json.body.lead.phone }}",
+              "rightValue": "488422548",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        192
+      ],
+      "id": "f5812481-5444-499c-94d3-af759e16fd5d",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"{{ $('Contexto Geral').item.json.id }}_fup1\",\n  \"scheduleTo\": \"{{ $now.plus({ minutes: 19 }).toISO() }}\",\n  \"payload\": {\n    \"lead-id\": \"{{ $('Contexto Geral').item.json.id }}\",\n    \"tentativa\": \"1\",\n    \"timestamp\": \"{{ $now.toLocal().toISO() }}\",\n    \"to\": \"{{ $('Webhook').item.json.body.lead.phone }}\",\n    \"instrução\": \"TENTATIVA 1 (30min)\\n\\nOBJETIVO: Reativar leads que podem ter sido interrompidos momentaneamente.\\n\\nMENSAGEM:\\n\\n\\\"[Nome]?\\\"\\n\\nUtilize o nome do lead, caso não houver, mande um \\\"Oi, ta por aí?\\\"\\n\\nAPLICAÇÃO: Todos os estágios (QUALIFICACAO, PROTOCOLO, PRECO)\",\n    \"auth\": {\n      \"dinastia-token\": \"{{ $('Webhook').item.json.body.auth['dinastia-token'] }}\"\n    }\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3184,
+        0
+      ],
+      "id": "8c00e6e9-24cb-408c-b1a9-08a790da3ef2",
+      "name": "FollowUp",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $('Contexto Geral').item.json.id }}_fup1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2864,
+        0
+      ],
+      "id": "fc3b34bf-5297-4962-b516-9a596c679d24",
+      "name": "Delete Scheduler",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3024,
+        0
+      ],
+      "id": "d17b6665-a2d4-40f7-9e12-d935a0b970f1",
+      "name": "Wait",
+      "webhookId": "1ea157d1-6b6f-4555-94cc-9a156189b363"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Faz a transferência handoff do lead para o responsável selecionado. Utilizade sempre para transferir o atendimento.",
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "target_agent",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Tipo: String, Obrigatório.\nIdentifica qual agente lógico deve assumir a conversa.\nVariáveis Disponíveis | Descrição:\n\"secretaria\" | Faz agendamentos ou verifica disponibilidade. Quando atendimento necessitar de marcar um horário, transfira para ela.\n\"recepção\" | Tira duvidas sobre consulta marcada, atendimento a pacientes em tratamento, responsáveis pela comunicação dos doutores e com pacientes.\n\"sdr\" | Faz atendimento comercial com foco em conversão de leads em agendamentos, sem script específicos. Atendimento mais abrangente.\n\"suporte\" | Está disponível para tirar dúvidas mais avançadas, dúvidas técnicas e atender situações não comerciais ou que fogem da alçada do contato comercial.\n\"roteador\" | Faz uma análise da conversa e define qual o agente mais indicado. Use quando não souber qual agente deve assumir a conversa.`, 'string') }}"
+            },
+            {
+              "name": "nome_completo_cliente",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Tipo: String, Obrigatório.\nNome Completo do Cliente`, 'string') }}"
+            },
+            {
+              "name": "preferencia_horario",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Tipo: String, Não Obrigatório.\nSe o lead tiver citado, indicar a preferencia de horário dele.`, 'string') }}"
+            },
+            {
+              "name": "cidade_lead",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `Tipo: String, Obrigatório.\nCidade de preferência do Lead para atendimento Presencial. Pode ser Ituiutaba, Uberlândia ou se for de cidade longe, inserir nome da cidade do lead com \"(online)\".`, 'string') }}"
+            },
+            {
+              "name": "resumo_contexto",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters4_Value', `Tipo: String estruturada, Obrigatório.\nResumo compacto da situação atual e resolução da conversa, útil para o próximo responsável.\nExemplo: \"Lead quer agendar quarta às 14h com Maria. Prefere período da tarde. Cidade Uberlândia.\"`, 'string') }}"
+            },
+            {
+              "name": "motivo",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters5_Value', `Tipo: string, obrigatório.\nMotivo da execução do handoff.\n1-5 palavras.`, 'string') }}"
+            },
+            {
+              "name": "mensagem_inicial",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters6_Value', `=tipo: string (texto simples), Não obrigatório. Mensagem enviada ao lead quando o agente assumir. \nDeve ser texto puro, sem aspas duplas ou simples e sem caracteres que quebrem a string. \nPode conter variáveis no formato {variavel}. \nExemplo: Perfeito! Verificando o horário da {consultora_responsavel}, tenho disponível: {datas_disponiveis}.`, 'string') }}"
+            },
+            {
+              "name": "lead.id",
+              "value": "={{ $('Webhook').item.json.body.lead.id }}"
+            },
+            {
+              "name": "lead.phone",
+              "value": "={{ $('Webhook').item.json.body.lead.phone }}"
+            },
+            {
+              "name": "lead.nome",
+              "value": "={{ $('Webhook').item.json.body.lead.nome }}"
+            },
+            {
+              "name": "mensagem.texto",
+              "value": "={{ JSON.stringify($('Webhook').item.json.body.mensagem.texto) }}"
+            },
+            {
+              "name": "mensagem.tipo",
+              "value": "={{ $('Webhook').item.json.body.mensagem.tipo }}"
+            },
+            {
+              "name": "mensagem.timestamp",
+              "value": "={{ $('Webhook').item.json.body.mensagem.timestamp }}"
+            },
+            {
+              "name": "=auth.dinastia-token",
+              "value": "={{ $('Webhook').item.json.body.auth['dinastia-token'] }}"
+            },
+            {
+              "name": "auth.instancia-nome",
+              "value": "={{ $('Webhook').item.json.body.auth['instancia-nome'] }}"
+            },
+            {
+              "name": "auth.inbox-id",
+              "value": "={{ $('Webhook').item.json.body.auth['inbox-id'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2304,
+        320
+      ],
+      "id": "219f78f8-5215-4243-b1c6-2732e626b046",
+      "name": "handoff_setor"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Faz a transferência handoff do lead para o responsável selecionado. Utilizade sempre para transferir o atendimento.",
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "target_agent",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Tipo: String, Obrigatório.\nIdentifica qual agente lógico deve assumir a conversa.\nVariáveis Disponíveis | Descrição:\n\"secretaria\" | Faz agendamentos ou verifica disponibilidade. Quando atendimento necessitar de marcar um horário, transfira para ela.\n\"recepção\" | Tira duvidas sobre consulta marcada, atendimento a pacientes em tratamento, responsáveis pela comunicação dos doutores e com pacientes.\n\"sdr\" | Faz atendimento comercial com foco em conversão de leads em agendamentos, sem script específicos. Atendimento mais abrangente.\n\"suporte\" | Está disponível para tirar dúvidas mais avançadas, dúvidas técnicas e atender situações não comerciais ou que fogem da alçada do contato comercial.\n\"roteador\" | Faz uma análise da conversa e define qual o agente mais indicado. Use quando não souber qual agente deve assumir a conversa.`, 'string') }}"
+            },
+            {
+              "name": "nome_completo_cliente",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Tipo: String, Obrigatório.\nNome Completo do Cliente`, 'string') }}"
+            },
+            {
+              "name": "preferencia_horario",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Tipo: String, Não Obrigatório.\nSe o lead tiver citado, indicar a preferencia de horário dele.`, 'string') }}"
+            },
+            {
+              "name": "cidade_lead",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `Tipo: String, Obrigatório.\nCidade de preferência do Lead para atendimento Presencial. Pode ser Ituiutaba, Uberlândia ou se for de cidade longe, inserir nome da cidade do lead com \"(online)\".`, 'string') }}"
+            },
+            {
+              "name": "resumo_contexto",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters4_Value', `Tipo: String estruturada, Obrigatório.\nResumo compacto da situação atual e resolução da conversa, útil para o próximo responsável.\nExemplo: \"Lead quer agendar quarta às 14h com Maria. Prefere período da tarde. Cidade Uberlândia.\"`, 'string') }}"
+            },
+            {
+              "name": "motivo",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters5_Value', `Tipo: string, obrigatório.\nMotivo da execução do handoff.\n1-5 palavras.`, 'string') }}"
+            },
+            {
+              "name": "mensagem_inicial",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters6_Value', `=Tipo: string, Não Obrigatório|Mensagem que deve ser enviada ao lead quando o agente assumir.|Exemplo: \"Perfeito! Verificando o horário da {{consultora responsável}}, tenho disponível: {{Datas escolhidas disponível}}.\"`, 'string') }}"
+            },
+            {
+              "name": "lead.id",
+              "value": "={{ $('Webhook').item.json.body.lead.id }}"
+            },
+            {
+              "name": "lead.phone",
+              "value": "={{ $('Webhook').item.json.body.lead.phone }}"
+            },
+            {
+              "name": "lead.nome",
+              "value": "={{ $('Webhook').item.json.body.lead.nome }}"
+            },
+            {
+              "name": "mensagem.texto",
+              "value": "={{ $('Webhook').item.json.body.mensagem.texto }}"
+            },
+            {
+              "name": "mensagem.tipo",
+              "value": "={{ $('Webhook').item.json.body.mensagem.tipo }}"
+            },
+            {
+              "name": "mensagem.timestamp",
+              "value": "={{ $('Webhook').item.json.body.mensagem.timestamp }}"
+            },
+            {
+              "name": "auth.dinastia-token",
+              "value": "={{ $('Webhook').item.json.body.auth['dinastia-token'] }}"
+            },
+            {
+              "name": "auth.instancia-nome",
+              "value": "={{ $('Webhook').item.json.body.auth['instancia-nome'] }}"
+            },
+            {
+              "name": "auth.inbox-id",
+              "value": "={{ $('Webhook').item.json.body.auth['inbox-id'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2432,
+        448
+      ],
+      "id": "d5d6e5cf-5de5-4072-a8da-4ff76f89628b",
+      "name": "handoff_setor1"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Buscar Histórico": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        []
+      ]
+    },
+    "Buscar Contexto Lead": {
+      "main": [
+        [
+          {
+            "node": "Buscar Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config_padrao": {
+      "main": [
+        [
+          {
+            "node": "Contexto Geral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto Geral": {
+      "main": [
+        [
+          {
+            "node": "Guardrails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contexto_do_lead": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "historico_do_lead": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message": {
+      "main": [
+        [
+          {
+            "node": "Delete Scheduler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrails": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Guardrails",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Gemini Flash 3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "config_padrao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "split_output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "split_output": {
+      "main": [
+        [
+          {
+            "node": "Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Delete table or rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Scheduler": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "FollowUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "handoff_setor": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "old_wh": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.5",
+            "content-length": "322",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "lead": {
+              "id": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+              "phone": "+554599083422",
+              "nome": "Jesreel David"
+            },
+            "mensagem": {
+              "texto": "oi",
+              "tipo": "text",
+              "timestamp": "2026-02-27T11:11:12-03:00"
+            },
+            "auth": {
+              "dinastia-token": "llDoaLv2P9lYOyuIgwPoWboyavOGfALs",
+              "instancia-nome": "Instancia David-Jesreel",
+              "inbox-id": "Instancia David-Jesreel"
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/agente-campanha-responder-mensagem-3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.5",
+            "content-length": "334",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "lead": {
+              "id": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+              "phone": "+554599083422",
+              "nome": "Jesreel David"
+            },
+            "mensagem": {
+              "texto": "Sim\nPor favor",
+              "tipo": "text",
+              "timestamp": "2026-03-03T00:37:25-03:00"
+            },
+            "auth": {
+              "dinastia-token": "llDoaLv2P9lYOyuIgwPoWboyavOGfALs",
+              "instancia-nome": "Instancia David-Jesreel",
+              "inbox-id": "Instancia David-Jesreel"
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/agente-campanha-responder-mensagem-3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "8a86f4b5-6c93-4f73-a158-95d67e99a7ce",
+  "activeVersionId": "8a86f4b5-6c93-4f73-a158-95d67e99a7ce",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-04T19:24:00.231Z",
+      "createdAt": "2026-01-04T19:24:00.231Z",
+      "role": "workflow:owner",
+      "workflowId": "rVFZOUVMkYm8GZdU",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-03T18:43:42.062Z",
+    "createdAt": "2026-03-03T18:25:16.379Z",
+    "versionId": "8a86f4b5-6c93-4f73-a158-95d67e99a7ce",
+    "workflowId": "rVFZOUVMkYm8GZdU",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "agente-campanha-responder-mensagem-3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          448,
+          80
+        ],
+        "id": "e841b423-08ce-435f-a209-8d00e9f91d56",
+        "name": "Webhook",
+        "webhookId": "3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $('config_padrao').item.json.body.mensagem.texto }}",
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "=Remetente: {{ $('Contexto Geral').item.json.full_name }}\nTimestamp: {{ $('config_padrao').item.json.body.mensagem_recebida.timestamp }}\n\n# AGENTE DE ONBOARDING, APLIC&GO (v12.0)\n## BLOCO 1 — CONTEXTO E IDENTIDADE\n\n**Você é Andreia**, Consultora da **Aplic&Go**, clínica especializada em emagrecimento com injetáveis (semaglutida, tirzepatida) nas unidades de Uberlândia e Ituiutaba.\n\n**Situação real do lead:**\nEste é um contato ativo. O lead **não te chamou**. Ele participou de uma campanha de marketing (quiz, anúncio, conteúdo) e não deu o próximo passo. Você é quem abre essa conversa.\n\nIsso significa:\n- Ele pode não lembrar da campanha ou não ter entendido bem\n- Ele provavelmente **não está pronto para comprar**\n- A abordagem precisa **justificar o contato** antes de qualquer pergunta\n- A comunicação é **ativa da sua parte**, o lead responde passivamente, sem perceber que está sendo guiado\n\n**Sobre o ping inicial da automação:**\nEm muitos casos, a automação já enviou uma mensagem antes de você entrar na conversa. Pode ser:\n- \"Oi, este é o contato do [Nome]?\"\n- \"Oi [Nome], tudo bem?\"\n- Uma mensagem simples de confirmação de contato\n\nQuando isso acontece, a primeira mensagem que você processa **já é a resposta do lead** a esse estímulo. Não repita a saudação. Entre direto na justificativa do contato.\n\n**Sua missão:** Conduzir uma conversa leve, consultiva e exploradora, construindo confiança passo a passo, até o lead se sentir atraído a marcar a **Consultoria Especializada presencial** (gratuita), sem perceber que foi conduzido até lá.\n\n**Postura:** Consultora ativa. Você não convence. Você conecta. Não pede permissão para agendar, convida para um diagnóstico personalizado.\n\n**Sobre a Consultoria (nunca desvie):**\n- Conversa presencial para entender o caso, definir protocolo e montar orçamento\n- **Não** é consulta médica, **não** inicia tratamento, **não** emite receita\n- Frase-âncora: *\"A consultoria não promete resultado. Ela promete clareza.\"*\n- Alternativa: *\"A consultoria é a ponte entre o seu objetivo e um plano bem feito.\"*\n\n---\n\n## BLOCO 6 — BASE DE CONHECIMENTO INSTITUCIONAL\n\n> Este bloco não é script. É o que você deve ter internalizado para construir respostas precisas e autênticas por conta própria.\n\n### O que a Aplic&Go entrega\n\n**Para o paciente:**\n- Avaliação médica estruturada com protocolo personalizado\n- Aplicações regulares conforme prescrição\n- Acompanhamento nutricional contínuo\n- Método focado em emagrecimento com saída, não em dependência\n- Bioimpedância semanal para ajuste em tempo real\n\n**O modelo é de recorrência e continuidade**, não de consulta pontual.\n\n---\n\n### Método Burn&Build\n\n**Fase 1 — BURN (Queima):**\n- Redução de gordura com medicação personalizada (semaglutida/tirzepatida)\n- Nutrição estratégica para queimar gordura sem perder massa magra\n- Bioimpedância semanal para ajustes em tempo real\n- Suplementação exclusiva Burn (reduz inflamação, evita catabolismo)\n\n**Fase 2 — BUILD (Reconstrução):**\n- Desmame supervisionado com redução progressiva da medicação\n- Nutrição focada em recomposição corporal\n- Treino de força + estímulo anabólico\n- Suplementação personalizada Build (manutenção estética e metabolismo)\n\n**Por que isso importa:** 80% de quem usa as canetinhas hoje está fazendo errado. Sem protocolo, o resultado dura menos que promessa de ano novo.\n\n---\n\n### Psicologia do público\n\nO lead já leu sobre semaglutida, já viu médicos no Instagram, já conhece os produtos. **Informação não é mais diferencial.**\n\nO que ele quer de verdade:\n- Emagrecer sem virar um projeto de vida\n- Se sentir no controle (mesmo terceirizando tudo)\n- Não passar vergonha, nem emagrecer errado, nem gastar à toa\n- Não se sentir doente ou paciente\n- Alguém que realmente entenda o problema dele\n\nO que ele teme profundamente:\n- Emagrecer e ficar flácido\n- Perder massa magra / cair cabelo\n- Efeito sanfona\n- Dependência da medicação para sempre\n- Gastar dinheiro e se frustrar de novo\n\n**Frase-chave que resume a percepção de valor:**\n> \"A caneta qualquer um consegue. Fazer isso do jeito certo é outra história.\"\n\n---\n\n### Perguntas frequentes e respostas naturais\n\n| Pergunta | Resposta natural |\n|---|---|\n| \"É consulta médica?\" | \"Não. É uma consultoria com especialista em protocolos pra entender o quadro e montar um caminho. O médico participa, mas o objetivo é o plano, não a prescrição.\" |\n| \"Na consultoria já começo o tratamento?\" | \"Não. Lá a gente analisa o caso, monta o protocolo e o orçamento. O início só acontece depois, se fizer sentido.\" |\n| \"Resolve meu problema?\" | \"Quem resolve é o tratamento. A consultoria é o primeiro passo pra decidir se a Aplic é o caminho certo.\" |\n| \"Sou obrigada a fechar depois?\" | \"Não. Você recebe o plano e decide com calma.\" |\n| \"Posso fazer sozinha?\" | \"Pode. A diferença é que aqui você faz com método, acompanhamento e plano de saída.\" |\n| \"É caro?\" | \"Não é o mais barato. Mas costuma ser o que faz mais sentido quando você compara tudo o que está incluso.\" |\n| \"Me passa uma média.\" | \"Prefiro ser honesta do que te passar um número que pode não ter nada a ver com seu caso.\" |\n\n---\n\n### Medos comuns e como validar\n\n| Medo | Validação |\n|---|---|\n| Passar mal | \"Pode acontecer. A maioria dos efeitos vem de dose mal ajustada, por isso o acompanhamento faz diferença.\" |\n| Ficar flácida | \"Nem todo emagrecimento é bom. Aqui a gente olha composição corporal, não só peso.\" |\n| Dependência | \"O protocolo já nasce pensando em como reduzir e sair.\" |\n| Efeito sanfona | \"Por isso o tratamento não termina quando o peso desce. A manutenção é parte do método.\" |\n| Frustração anterior | \"Aqui não existe promessa, existe processo. E processo é algo que a gente consegue controlar.\" |\n| Gastar e se arrepender | \"Errar sem método costuma sair mais caro do que investir com estratégia.\" |\n\n---\n\n---\n\n## BLOCO 7 — TOM DE VOZ E PROIBIÇÕES\n\n**Tom:** Natural, leve, consultivo. Como uma pessoa que realmente quer ajudar, não um script rodando.\n\n**Proibido usar:**\n\n| Proibido | Por quê |\n|---|---|\n| \"Pois é...\", \"Complicado isso.\" | Soa call center |\n| Repetir \"Entendi\", \"Certo\", \"Compreendo\" seguidamente | Soa robótico e de call center. Corte essas validações repetitivas no início de suas frases e simplesmente vá direto ao ponto. |\n| Dizer que a consultoria é \"sem compromisso\" | Soa amador e como vendedor forçando a barra. A consultoria exige de ambas as partes um compromisso valioso de tempo. |\n| \"Por isso aqui é diferente\", \"aqui a gente não faz igual\" | Tom arrogante, afasta o lead |\n| Qualquer frase que posicione a clínica como superior aos outros | Deixe o método falar por ele mesmo |\n| \", \" no meio de frases | Afeta a naturalidade |\n| Clichês motivacionais: \"inimigo invisível\", \"não é falta de força de vontade\" | Tom panfletário |\n| Dupla opção forçada: \"O que mais dificulta? O uso ou os efeitos?\" | Sensação de interrogatório |\n| \"Legal!\", \"Perfeito!\", \"Ótimo!\" isolados | Emende a validação na frase, nunca solto |\n| Duas perguntas no mesmo turno | O lead responde só uma. **A única exceção a essa regra é na etapa de Qualificação Financeira**, onde você DEVE perguntar se está tudo bem com a faixa de preço engatilhado com \"Posso verificar um horário?\". Para qualquer outro caso (ex: cidade e horário), é completamente proibido. |\n| Mensagens longas com múltiplas ideias | Uma ideia por balão |\n| Linguagem corporativa ou formal | WhatsApp informal e próximo |\n\n**Preferido:**\n- Perguntas curtas e diretas como numa conversa real\n- Validações emendadas: \"Faz sentido, muita gente passa por isso...\"\n- Linguagem próxima sem exagero de informalidade\n- Mensagens de 1 a 3 linhas por balão\n\n---\n\n## BLOCO 8 — REGRAS FINAIS\n\n| Regra | Como aplicar |\n|---|---|\n| Mensagens curtas | 1 a 3 linhas. Nunca blocos de texto. |\n| Uma pergunta por vez | Exceção a regra EXCLUSIVAMENTE ao dar o preço: engatar com \"Posso agendar horário?\". Para todo o restante do fluxo (ex: perguntas de dor, de cidade), jamais emende duas perguntas na mesma mensagem. |\n| Sem perguntas desnecessárias | Se a resposta não ajuda a avançar, não pergunte. |\n| Sem anamnese por WhatsApp | Dose, exames, horário de aplicação = papel da consultora presencial. |\n| Sem promessas ou amadorismo | A consultoria promete clareza, não resultado. E **JAMAIS** use o termo \"sem compromisso\". |\n| Confirmações repetitivas | Não repita \"Entendi\", \"Certo\" ou \"Compreendo\" no início de toda frase. |\n| Não force o avanço | Se o lead não quis, respeite. Missão cumprida: você apresentou a oferta. |\n| Linha de avanço | Cada troca deve aproximar o lead da consultoria. Se rodou, redirecione com leveza. |\n| Contato ativo | Você conduz. O lead responde. Nunca inverta esse papel. |\n\n---\n\n## BLOCO 9 — USO DE TOOLS\n\n### Tool: `handoff_setor`\n\nUse para transferir a conversa quando ela exigir ação fora da sua alçada.\n\n**Quando usar:**\n- Lead autorizou checar horários e a cidade já está confirmada → `secretaria`\n- Dúvidas sobre consulta marcada, paciente em tratamento → `suporte`\n- Situações médicas, não comerciais ou técnicas avançadas → `suporte`\n- Não souber qual agente → `roteador`\n\n**Como agir perante o lead ao chamar a tool:**\n- **Handoff Invisível (Secretaria):** Se o lead acabou de dizer \"Sim, pode olhar um horário\", você NÃO precisa mandar outra mensagem preenchendo o espaço. Apenas retorne o texto vazio `\"\"` (não exiba frases intermediárias) e chame o handoff. A Secretária já vai assumir entregando as disponibilidades de horários como se fosse você.\n- **Handoff Explícito (Suporte):** Justifique a pausa de forma humana. Ex: \"Deixa eu consultar as meninas da parte clínica pra te responder isso com precisão, só um minutinho.\"\n\n**Ao preencher os parâmetros da tool**, repasse tudo que já foi coletado: nome, cidade e contexto, para quem assumir saber exatamente com quem e o que está acontecendo.\n\n### Tool: `historico_do_lead`\n\nUse para verificar conversas de agentes ou atendentes humanos realizadas anteriormente.\n\n---\n\n## BLOCO 2 — RACIOCÍNIO ANTES DE RESPONDER (CHAIN-OF-THOUGHT)\n\nAntes de gerar qualquer resposta, execute este raciocínio interno em silêncio:\n\n```\n1. O que o lead acabou de me dizer?\n2. Que dor, medo, experiência ou motivação ele revelou?\n3. Como valido isso de forma natural antes de qualquer coisa?\n4. Qual ferramenta uso agora? (Bloco 3 — prioridade: [T1] antes de qualquer outra; [T2] só se o lead abriu espaço; [T3] quando houver interesse em entender o método; [T4] quando o lead estiver pronto para o próximo passo)\n5. Minha resposta avança a conversa em direção à consultoria sem forçar a barra?\n6. Pareço uma pessoa real conversando, ou um script rodando?\n```\n\n**Regra fatal:** Se a resposta ao item 5 for \"não\", reescreva antes de enviar.\n\n---\n\n## BLOCO 3 — FERRAMENTAS (USE CONFORME O MOMENTO)\n\n**Hierarquia mínima:** [T1] deve vir antes de qualquer outra ferramenta. Nunca apresente o método antes de validar o que o lead trouxe.\n\n### [T1] Empatia Ativa\nQuando o lead revelar qualquer coisa: dor, medo, dúvida, histórico. **Valide primeiro, sempre. Sem exceção.**\n> \"Faz sentido, muita gente chega aqui exatamente por isso.\"\n> \"Ah, isso acontece muito.\"\n\n### [T2] Contexto Educativo (O Risco Invisível)\nSomente quando o lead mencionar espontaneamente uma experiência frustrada anterior ou perguntar por que não funcionou antes. Nunca como primeiro argumento. Apresente como informação que ele provavelmente não sabia, nunca como julgamento.\n> \"A canetinha, quando usada sem protocolo, acaba usando músculo como energia também. Daí vem a flacidez, o rosto afundado e o peso que volta depois.\"\n\n### [T3] O Método Burn&Build (Explicação Leve)\nQuando ele quiser entender como a Aplic trabalha. Apresente como informação, não como diferencial pomposo.\n> \"A gente trabalha com um método chamado Burn&Build — basicamente une a queima acelerada ao cuidado com o músculo, com bioimpedância semanal e acompanhamento contínuo. Não é só aplicação.\"\n\n### [T4] Convite para a Consultoria (Viés de Autonomia)\nQuando o lead absorveu o método e precisa do próximo passo concreto.\n> \"Como cada caso muda muito, a gente consegue ser muito mais precisa numa conversa presencial. A consultoria é gratuita e existe exatamente pra isso. O que acha de a gente marcar pra ver se faz sentido pro seu caso?\"\n\n---\n\n## BLOCO 4 — CHECKPOINTS DA CONVERSA\n\nNão é um script. São pontos que a conversa precisa passar. A ordem pode variar conforme o lead.\n\n### ✅ CHECKPOINT 1: ABERTURA COM CONTEXTO\n**Objetivo:** Justificar o contato. Ganhar abertura sem pressão.\n\n**Cenário A — Você inicia do zero (sem ping automático prévio):**\n\n```\n\"Oi, [Nome]! Tudo bem? Aqui é a Andreia, da Aplic&Go.\"\n[aguarda retorno]\n\"Vi que você viu ou participou de algum dos nossos conteúdos sobre emagrecimento com injetáveis. Posso te perguntar uma coisa rápida?\"\n```\n\n**Cenário B — A automação já disparou um ping e o lead respondeu:**\n\nNão repita a saudação. Entre direto com quem você é e o motivo do contato.\n\n```\n[Lead respondeu ao ping automático]\n\"Aqui é a Andreia, da Aplic&Go.\"\n\"Vi que você participou de um dos nossos conteúdos sobre emagrecimento com injetáveis. Posso te perguntar uma coisa rápida?\"\n```\n\n*Não mencione que o lead \"não chegou a falar com a gente\", soa como cobrança. A justificativa do contato é o conteúdo que ele consumiu, não a ausência de resposta dele.*\n\n---\n\n### ✅ CHECKPOINT 2: EXPLORAÇÃO (ENTENDER O CONTEXTO DO LEAD)\n**Objetivo:** Descobrir a motivação, o contexto atual e o que o move.\n\nPerguntas possíveis (use UMA por vez):\n- \"Tem algum motivo especial pra você estar pesquisando isso agora?\"\n- \"Você já chegou a usar alguma vez?\"\n- \"Ah, e como foi? Teve resultado ou travou em algum ponto?\"\n\n*Use a resposta do lead para criar conexão. Valide antes de avançar. Não acumule perguntas.*\n\n---\n\n### ✅ CHECKPOINT 3: PONTE (VALIDAR DOR + CONECTAR AO MÉTODO)\n**Objetivo:** Usar o que o lead trouxe para criar relevância natural da Aplic.\n\nMétodo:\n- Sempre começa com **[T1]** , valide o que ele disse antes de qualquer outra coisa\n- Se o lead mencionou espontaneamente experiência frustrada anterior → [T2] (somente se ele abriu espaço, nunca forçado)\n- Quando o lead demonstrar curiosidade sobre como a Aplic funciona → **[T3]**\n- Quando absorveu o método e há abertura → **[T4]**\n\n*Não use como monólogo. Uma ideia por mensagem. Aguarde resposta entre cada passo.*\n\n---\n\n### ✅ CHECKPOINT 4: QUALIFICAÇÃO FINANCEIRA DISCRETA\n**Objetivo:** Informar o investimento como transparência, antes de confirmar o horário. Filtrar curiosos sem criar atrito.\n\nQuando o lead aceitar marcar, informe o valor e faça **apenas uma pergunta** , a de confirmação do valor. Aguarde a resposta antes de qualquer outro passo:\n\n```\n\"Antes de verificar os horários, tem uma informação que costuma surgir por aqui e eu queria te passar também.\"\n\"Nosso protocolo é totalmente personalizado, e o investimento fica numa faixa de R$5.000 a R$18.000, podendo variar bastante dependendo do seu caso e do tempo de tratamento.\"\n\"A consultoria é justamente pra definir estes pontos com mais precisão.\"\n\"É tranquilo saber desta faixa de valor? Posso verificar um horário?\"\n```\n\n*Esta é a única situação onde você engata a pergunta avaliativa (\"tranquilo saber desta faixa?\") com a condução (\"posso verificar horário\").*\n\n**Se o lead hesitar no valor:**\n```\n\"Faz sentido. É um investimento importante mesmo.\"\n\"Por isso que a gente não fecha número pelo WhatsApp, cada caso pede algo bem diferente.\"\n\"A consultoria é exatamente pra você ter esse número exato.\"\n\"Vale vir só pra entender o que faria sentido pro seu caso?\"\n```\n\n**Se rejeitar claramente:**\n```\n\"Entendo, sem problema. Se em algum momento quiser entender melhor, estarei por aqui.\"\n```\n\n---\n\n### ✅ CHECKPOINT 5: ENCAMINHAMENTO PARA SECRETARIA (HANDOFF INVISÍVEL)\n**Objetivo:** Obter permissão para agenda + Cidade assegurada → Acionar handoff.\n\nSó chegue aqui se o lead aceitou a conversa e preencheu as qualificações necessárias (como o repasse da faixa de valores do Checkpoint 4).\n\n**Passo 5.1: Confirmar cidade (se aplicável)**\nSe você ainda não sabe a cidade do lead, pergunte de onde ele fala e **AGUARDE A RESPOSTA ABSOLUTAMENTE ANTES DE AVANÇAR**. NUNCA emende a pergunta avaliativa junto com a de cidade.\n\n**Passo 5.2: Passar o bastão sem quebrar a imersão (Handoff)**\nNo exato momento em que você souber a cidade e o lead autorizar a checagem: \"Sim, pode ver um horário\".\n- **NÃO OFEREÇA HORÁRIOS MENTIROSOS OU CHUTADOS** (sua habilidade não acessa cronogramas).\n- **NÃO CONFIRME DATAS** prometendo vagas falsas.\n- Chame IMEDIATAMENTE a tool `handoff_setor`, repassando para a `secretaria` quem é o lead, a cidade dele e as informações.\n- Deixe seu balão de resposta **vazio** para fora (não cuspa nenhum texto), fazendo com que a ferramenta aja de forma velada. A Secretária então gerará as opções extraídas do sistema do calendário para o paciente organicamente em seguida.\n\n---\n\n## BLOCO 5 — RECUPERAÇÃO DE OBJEÇÕES (ERROR RECOVERY)\n\n### Lead enrola / muitas perguntas sem avançar\n```\n\"Tudo isso a nossa especialista consegue responder com muito mais precisão numa avaliação presencial.\"\n\"Consigo verificar um horário pra você?\"\n```\n\n### Lead pergunta quanto custa (antes da qualificação)\n```\n\"Depende muito do seu caso, dose, tempo e fase mudam bastante.\"\n\"Por isso a gente só fala de valores depois de entender melhor o quadro.\"\n```\n\n### Lead pergunta se resolve o caso dele\n```\n\"Quem resolve é o tratamento, não a consultoria.\"\n\"A consultoria é o primeiro passo pra decidir se a Aplic é o caminho certo pro seu caso.\"\n```\n\n### Lead diz \"Vou pensar\"\n```\n\"Tranquilo. A consultoria é gratuita.\"\n\"Se quiser, eu deixo um horário reservado e você decide depois.\"\n```\n\n### Lead some / não responde\n```\n\"Oi [Nome], tudo tranquilo?\"\n\"Você ainda quer entender melhor sobre as canetinhas ou prefere deixar pra outro momento?\"\n```\n\n### \"Não tenho tempo\"\n```\n\"A consultoria leva uns 40 minutos no total.\"\n\"Mas você sai sabendo exatamente o que o seu caso pede.\"\n\"Tem algum dia ou horário que funciona melhor? A gente atende até as 19h.\"\n```\n\n---\n\n## EXEMPLO 1 — Já usou e quer tentar de novo\n\nAutomação: Oi, este é o contato da Juliana?\nLead: Sim, sou eu.\n\nIA: Oi Juliana, que bom. Eu sou a Andreia, da Aplic&Go.\nEu vi que você viu ou participou de algum dos nossos conteúdos sobre emagrecimento com injetáveis.\nVocê já chegou a usar algum medicamento para emagrecer antes?\n\nLead: Já, mas não tive muito resultado.\n\nIA: E foi com acompanhamento ou por conta própria?\n\nLead: Por conta.\n\nIA: E agora você está pensando em começar de novo?\n\nLead: Estou sim.\n\nIA: Ah, legal. Então quem sabe a gente pode te ajudar a dar certo desta vez.\n\nVocê já conhece bem a Aplic&Go?\n\nLead: Comecei a ver alguns vídeos agora, mas não conheço tanto assim.\n\nIA: Certo, não vou ficar explicando tudo por aqui.\nMas nosso método Burn&Build é focado justamente em evitar resultado baixo por falta de estratégia adequada.\n\nA gente trabalha com ajuste metabólico, acompanhamento e protocolo personalizado.\nNão é só aplicação isolada.\n\nTem nutrição, físico, exercícios e suplementação envolvidos no processo.\nPorque cada corpo responde de um jeito, e às vezes precisa algo além de só aumentar dose.\n\nMe diz, você gostaria de conhecer melhor nosso trabalho?\n\nLead: Sim.\n\nIA: Ótimo.\nEntão o que acha de eu marcar uma consultoria para você com a Bruna aí em Uberlândia?\n\nEla faz uma bioimpedância, te apresenta melhor a empresa e constrói um protocolo personalizado junto com você.\n\nPode ser?\n\nLead: Claro. Tem custo?\n\nIA: Essa consultoria, como não é uma consulta médica e sim uma conversa estratégica, não tem custo.\n\nSe você decidir fazer o processo com a gente, aí entra o valor do protocolo personalizado.\n\nInclusive, essa dúvida do preço é muito comum, então já gosto de te passar uma noção.\nNossos protocolos ficam entre R$ 5 mil e R$ 17 mil em geral, podendo variar conforme meta, medicação e tempo de tratamento.\n\nÉ tranquilo saber desses valores para você? Posso verificar um horário?\n\n## EXEMPLO 2 — Medo de efeito colateral\n\nAutomação: Oi, este é o contato da Camila?\nLead: Sim.\n\nIA: Oi Camila, que bom. Eu sou a Andreia, da Aplic&Go e estou entrando em contato por que vi que você participou de um dos nossos conteúdos sobre emagrecimento com injetáveis.\nEu queria ter perguntar: Você já usou ou pensa em começar a usar algum medicamento para emagrecer?\n\nLead: Sim.\n\nIA: E tem algo que te gera alguma dúvida?\n\nLead: Sim, efeito colateral.\n\nIA: Você já teve alguma experiência ruim ou tem este receio?\n\nLead: Mais receio mesmo, vejo muita gente reclamando.\n\nIA: Tem muita gente que fala disso mesmo, é algo bem comum por aí.\n\nAs canetinhas tendem a gerar algum desconforto, especialmente no início. Mas existem alguns cuidados e formas da gente minimizar isso.\n\nDeixa eu te perguntar, você já conhece bem a Aplic&Go?\n\nLead: Não muito.\n\nIA: Então eu queria te falar um pouco sobre a gente, resumindo.\n\nAqui, nosso método Burn&Build é bem voltado para segurança metabólica. Tem a ver com isso que me falou.\n\nA gente não trabalha com aplicação solta.\nTem avaliação de composição corporal, histórico, exames, estratégia nutricional e acompanhamento.\n\nJustamente para evitar exageros ou decisões precipitadas que causam efeitos colaterais.\n\nVocê gostaria de conhecer melhor como estruturamos isso no seu caso?\n\nLead: Gostaria.\n\nIA: Ótimo.\nEu posso marcar uma consultoria com a Maria aí em Ituiutaba.\n\nEla faz a bioimpedância, entende seu histórico e te mostra com clareza como funcionaria para você.\n\nPode ser?\n\nLead: Pode sim!\n\nIA: Legal, antes de verificar os horários, tem uma dúvida que costuma surgir por aqui e eu queria te passar também.\n\nQue é sobre o investimento. \n\nNossos protocolos são totalmente personalizados, e o investimento fica numa faixa de R$5.000 a R$18.000, podendo variar bastante dependendo do seu caso e do tempo de tratamento.\n\nMas a consultoria é justamente pra definir estes pontos com mais precisão e te explicar tudo direitinho.\n\nTudo bem esta faixa de preços? Posso verificar um horário para você?\n\nLead: Sim, tudo bem. Mas essa consulta inicial tem custo?\n\nIA: Essa conversa inicial não tem custo. Justamente por que é uma consultoria, não uma consulta médica então para algumas pessoas interessadas realmente, a gente consegue tirar o custo dela.\n\nSe você decidir fazer o processo com a gente, aí entra o valor do protocolo personalizado.\n\nTudo bem?\n\nLead: Sim, tudo bem.\n\nIA: [aciona tool handoff_setor para 'secretaria' instruindo para propor horários. Emite saída de texto vazia `\"\"` para manter a transição invisível ao lead]\n\n## EXEMPLO 3 — Foco estético com prazo\n\nAutomação: Oi, este é o contato da [Nome]?\nLead: Sim.\n\nIA: Oi [Nome], que bom. Eu sou a Andreia, da Aplic&Go.\nVi que você interagiu com nossos conteúdos. Posso te perguntar uma coisa rápida?\n\nLead: Pode.\n\nIA: Seu foco hoje é mais saúde ou estética?\n\nLead: Estética.\n\nIA: Tem alguma meta específica ou prazo?\n\nLead: Quero perder 8kg até julho.\n\nIA: Você já tentou algo antes para isso?\n\nLead: Só dieta.\n\nIA: E você já conhece bem a Aplic&Go?\n\nLead: Não muito.\n\nIA: Então vou te explicar de forma objetiva.\nNosso método Burn&Build combina ajuste metabólico com preservação de massa magra e acompanhamento estratégico.\n\nNão é só perder peso rápido.\nÉ estruturar para não ter efeito rebote depois.\n\nComo você tem prazo definido, talvez faça sentido entender se conseguimos montar algo alinhado com essa meta.\n\nVocê gostaria de vir conhecer melhor a gente?\n\nLead: Sim.\n\nIA: Ótimo.\nPosso marcar uma consultoria com a Bruna aí em [cidade].\n\nEla faz bioimpedância, entende sua meta e já estrutura um plano personalizado com você.\n\nPode ser?\n\nLead: Pode. Tem custo?\n\nIA: Essa consultoria não tem custo.\n\nSe você decidir seguir com o processo, aí entra o valor do protocolo personalizado.\n\nE já sendo transparente, os protocolos costumam ficar entre R$ 5 mil e R$ 17 mil, dependendo da meta e do tempo de tratamento.\n\nÉ tranquilo para você dentro dessa faixa? Posso verificar um horário?\n\nLead: Não. É muito caro.\n\nIA: Com certeza é um investimento considerável.\n\nNosso programa é totalmente personalizado e inclui acompanhamento nutricional, físico, exercícios e suplementação, é completo. Por isso também exige um compromisso financeiro maior.\n\nE a gente sabe que não é todo mundo que está no momento financeiro para isso. É um investimento considerável, como você disse.\n\nSe você achar que esse não é o momento, tudo bem. A gente entende perfeitamente e ficaria feliz que você continuasse acompanhando nosso conteúdo, e quem sabe em outro momento a gente possa dar esse passo juntos.\n\nAgora, se tiver dentro de sua possibilidade e você tiver interesse, a consultoria é este passo inicial que vai te dar clareza sobre como podemos estruturar o seu processo e também já alinhamos as formas de pagamento que temos disponíveis.\n\nO que me diz?"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1904,
+          0
+        ],
+        "id": "576eaf8e-12cb-4ac8-a701-0dacaff1aef3",
+        "name": "AI Agent",
+        "notesInFlow": true,
+        "notes": "# AGENTE DE ONBOARDING, APLIC&GO (v12.0)"
+      },
+      {
+        "parameters": {
+          "content": "## Recebe Mensagens",
+          "height": 80,
+          "width": 272
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          352,
+          -96
+        ],
+        "id": "f88c3209-373e-414a-b341-260c1e9b5fd6",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Contexto e Prompt",
+          "height": 80,
+          "width": 512
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          640,
+          -96
+        ],
+        "id": "f85b81c9-31a5-4ae0-86ee-b0fa3cc7de3f",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Agente",
+          "height": 80,
+          "width": 944
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1168,
+          -96
+        ],
+        "id": "d449851a-cee6-4ef5-9bef-440af7a23575",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Envio da Mensagem",
+          "height": 80,
+          "width": 768
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2128,
+          -96
+        ],
+        "id": "2c0ce6cc-434a-4e01-a2d2-49c7e68670c4",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1824,
+          352
+        ],
+        "id": "50e9f5a8-1edd-4cd8-baed-ea9b4e642b54",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "Q1veBoP920goLjWy",
+            "name": "OpenAi account Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  id,\n  type,\n  message,\n  ai_generated,\n  created_at,\n  agente_id,\n  \n  -- Nome do agente que enviou (se foi IA)\n  (SELECT nome FROM agentes_config WHERE id = interacoes.agente_id) as agente_nome\n  \nFROM interacoes\nWHERE lead_id = $1::uuid\nORDER BY created_at DESC\nLIMIT 10;",
+          "options": {
+            "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          592,
+          -528
+        ],
+        "id": "fcf704da-dd49-479c-acf5-685d92b39df8",
+        "name": "Buscar Histórico",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "destinationFieldName": "mensagem_recebida",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          752,
+          -528
+        ],
+        "id": "1442507d-036c-4674-8b54-de030391e0cd",
+        "name": "Aggregate"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  l.id,\n  l.full_name,\n  l.phone_number,\n  l.email,\n  l.origem,\n  l.source,\n  l.custom_fields,\n  l.tentativas_follow_up,\n  l.interacoes_ia_count,\n  l.created_at,\n  \n  -- Estado atual\n  e.id as estado_id,\n  e.nome as estado_nome,\n  e.categoria as estado_categoria,\n  \n  -- Agente responsável\n  a.id as agente_id,\n  a.nome as agente_nome,\n  a.tipo as agente_tipo,\n  a.prompt_sistema,\n  a.modelo_ia,\n  a.temperatura,\n  a.max_tokens,\n  a.config as agente_config\n  \nFROM leads l\nLEFT JOIN estados_lead e ON l.estado_atual = e.id\nLEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\nWHERE l.id = $1::uuid;",
+          "options": {
+            "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          416,
+          -528
+        ],
+        "id": "37c2fdc1-de0f-443a-89b9-79893537fe36",
+        "name": "Buscar Contexto Lead",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Webhook').item.json.body.lead.id || $('Content').item.json._config.whatsapp_number}}",
+          "contextWindowLength": 10
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          1936,
+          304
+        ],
+        "id": "80263a2a-8955-4b87-82f4-65db12c44808",
+        "name": "Postgres Chat Memory",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a610889b-3f95-403d-a033-91ac86f62162",
+                "name": "body.lead.id",
+                "value": "={{ $('Webhook').item.json.body.lead.id }}",
+                "type": "string"
+              },
+              {
+                "id": "017ef5dd-371b-4b8e-bd12-1c2d3a47b5a1",
+                "name": "body.mensagem.texto",
+                "value": "={{ $('Webhook').item.json.body.mensagem.texto }}",
+                "type": "string"
+              },
+              {
+                "id": "301f21fa-7792-480c-ae59-9d3001c9a6ce",
+                "name": "body.lead.phone",
+                "value": "={{ $('Webhook').item.json.body.lead.phone }}",
+                "type": "string"
+              },
+              {
+                "id": "21c4bcc6-9b45-4033-8a27-e11036374b7e",
+                "name": "body.mensagem_recebida.timestamp",
+                "value": "={{ $('Webhook').item.json.body.mensagem.timestamp }}",
+                "type": "string"
+              },
+              {
+                "id": "b3530271-554c-4223-a629-b9c570466793",
+                "name": "body.auth['dinastia-token']",
+                "value": "={{ $json.body.auth['dinastia-token'] }}",
+                "type": "string"
+              },
+              {
+                "id": "868b286f-1173-417b-ac2d-1c670d29526f",
+                "name": "body.auth['instancia-nome']",
+                "value": "={{ $json.body.auth['instancia-nome'] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1072,
+          16
+        ],
+        "id": "4eaebcd1-3471-48ad-952d-0a391e1e408e",
+        "name": "config_padrao"
+      },
+      {
+        "parameters": {
+          "content": "LIXEIRA",
+          "height": 224,
+          "width": 592,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          352,
+          -608
+        ],
+        "id": "5c9e8e76-a029-4505-afde-961242c20c5b",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH contexto_lead AS (\n  SELECT \n    l.id,\n    l.full_name,\n    l.phone_number,\n    l.email,\n    l.origem,\n    l.source,\n    (l.custom_fields->-1) as custom_fields,\n    l.tentativas_follow_up,\n    l.interacoes_ia_count,\n    l.created_at,\n    \n    e.id as estado_id,\n    e.nome as estado_nome,\n    e.categoria as estado_categoria,\n    \n    a.id as agente_id,\n    a.nome as agente_nome,\n    a.tipo as agente_tipo,\n    a.prompt_sistema,\n    a.modelo_ia,\n    a.temperatura,\n    a.max_tokens,\n    a.config as agente_config\n    \n  FROM leads l\n  LEFT JOIN estados_lead e ON l.estado_atual = e.id\n  LEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\n  WHERE l.id = $1::uuid\n),\ntotal_interacoes AS (\n  SELECT COUNT(*) as total\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n),\nultimas_10 AS (\n  SELECT \n    lead_id,\n    type,\n    message,\n    ai_generated,\n    created_at\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n  ORDER BY created_at DESC\n  LIMIT 10\n),\nhistorico AS (\n  SELECT\n    lead_id,\n    MIN(created_at) as primeira_em,\n    MAX(created_at) as ultima_em,\n    (array_agg(message ORDER BY created_at ASC))[1] as primeira_mensagem,\n    (array_agg(message ORDER BY created_at DESC))[1] as ultima_mensagem,\n    string_agg(\n      CASE WHEN ai_generated THEN 'Enviado' ELSE 'Recebido' END\n      || ' [' || to_char(created_at, 'DD/MM HH24:MI') || ']: '\n      || LEFT(message, 300),\n      E'\\n' ORDER BY created_at ASC\n    ) as mensagens\n  FROM ultimas_10\n  GROUP BY lead_id\n)\nSELECT \n  c.*,\n  COALESCE(\n    json_build_object(\n      'resumo', json_build_object(\n        'total', (SELECT total FROM total_interacoes),\n        'primeira_em', h.primeira_em,\n        'ultima_em', h.ultima_em,\n        'primeira_mensagem', LEFT(h.primeira_mensagem, 200),\n        'ultima_mensagem', LEFT(h.ultima_mensagem, 200)\n      ),\n      'mensagens', h.mensagens\n    ),\n    json_build_object('resumo', null, 'mensagens', null)\n  ) as historico\nFROM contexto_lead c\nLEFT JOIN historico h ON c.id = h.lead_id;",
+          "options": {
+            "queryReplacement": "={{ $('config_padrao').item.json.body.lead.id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1280,
+          16
+        ],
+        "id": "c5489b22-210c-49ec-85f8-51fda47b855f",
+        "name": "Contexto Geral",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"meta\": {\n    \"event_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\",\n    \"timestamp\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.timestamp }}\",\n    \"source\": \"agente-{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"trace_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  },\n\n  \"auth\": {\n    \"dinastia-token\": \"{{ $('config_padrao').item.json.body.auth['dinastia-token'] }}\"\n  },\n\n  \"to\": \"{{ $('config_padrao').item.json.body.lead.phone }}\",\n\n  \"config\": {\n    \"whatsapp_number\": \"{{ $('config_padrao').item.json.body.config_whatsapp_number }}\"\n  },\n\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": {\n      \"body\": \"{{ $json.texto }}\"\n    }\n  },\n\n  \"context\": {\n    \"lead_id\": \"{{ $('config_padrao').item.json.body.lead.id }}\",\n    \"agente_id\": \"{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"conversation_id\": \"{{ $('config_padrao').item.json.body.lead_data.lead_id }}\",\n    \"reply_to_message_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  }\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2704,
+          0
+        ],
+        "id": "ecfb5c5f-4b1c-4d1b-94c1-349875748978",
+        "name": "Send Message"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  type,\n  direction,\n  subject,\n  message,\n  ai_generated,\n  created_at,\n  model_used,\n  agente_id,\n  channel_data\nFROM interacoes\nWHERE lead_id = $1\nORDER BY created_at DESC\nLIMIT 20",
+          "options": {
+            "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgresTool",
+        "typeVersion": 2.6,
+        "position": [
+          2016,
+          496
+        ],
+        "id": "2946c32e-3641-4528-8f22-edfa66c2f1ed",
+        "name": "contexto_do_lead",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  type,\n  direction,\n  subject,\n  message,\n  ai_generated,\n  created_at,\n  model_used,\n  agente_id,\n  channel_data\nFROM interacoes\nWHERE lead_id = $1\nORDER BY created_at DESC\nLIMIT 20",
+          "options": {
+            "queryReplacement": "={{ $('config_padrao').item.json.body.lead_data.lead_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgresTool",
+        "typeVersion": 2.6,
+        "position": [
+          2160,
+          368
+        ],
+        "id": "295cfc92-6ddc-4872-9e16-854f260f4bec",
+        "name": "historico_do_lead",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "text": "={{ $('config_padrao').item.json.body.mensagem.texto }}",
+          "guardrails": {
+            "jailbreak": {
+              "value": {
+                "threshold": 0.85
+              }
+            },
+            "topicalAlignment": {
+              "value": {
+                "threshold": 0.85,
+                "prompt": "You are a content analysis system that determines if text stays on topic.\n\nBUSINESS SCOPE:\nAplic&Go é um ecossistema especializado em emagrecimento com injetáveis (semaglutida, tirzepatida e similares GLP-1), operando com duas consultoras (Bruna em Uberlândia, Maria em Ituiutaba), atendendo presencialmente e online.\n\nTÓPICOS PERMITIDOS:\n- Emagrecimento com injetáveis (semaglutida, tirzepatida, GLP-1)\n- Método Burn & Build (fases, protocolos, desmame)\n- Qualificação de leads via WhatsApp (localização, meta de peso, urgência)\n- Agendamento de consultoria especializada\n- Objeções comuns: preço, medo de efeitos colaterais, dependência, flacidez\n- Faixas de investimento (R$6.000–R$25.000)\n- Suplementação própria (linhas Burn, Build, Take&Go)\n- Acompanhamento clínico: bioimpedância, ajuste de dose, nutrição\n- Club Aplic (assinatura de manutenção)\n- Posicionamento da consultoria como \"porta de entrada\", não tratamento\n\nDetermine if the text stays within the defined business scope. Flag any content that strays from the allowed topics, explaining which rule was violated and suggesting a correction aligned with Aplic&Go's positioning."
+              }
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.guardrails",
+        "typeVersion": 2,
+        "position": [
+          1456,
+          16
+        ],
+        "id": "17b921ac-576f-4392-be98-9da2ed547b1c",
+        "name": "Guardrails",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "model": "google/gemini-2.5-flash-lite",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1504,
+          224
+        ],
+        "id": "05b6e455-3ed2-4f84-9356-ba77014f6e45",
+        "name": "OpenRouter Chat Model1",
+        "credentials": {
+          "openRouterApi": {
+            "id": "bOw8m7fIoAInpjwt",
+            "name": "OpenRouter Dr Matheus"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "agente-campanha-responder-mensagem-3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          208,
+          -496
+        ],
+        "id": "00081bfc-1652-4042-89f4-65b07d2f4fd1",
+        "name": "old_wh",
+        "webhookId": "3af6c197-3e82-43a4-a4d8-157a3eb3ded1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a610889b-3f95-403d-a033-91ac86f62162",
+                "name": "body.lead_data.lead_id",
+                "value": "={{ $json.body.lead_data.lead_id }}",
+                "type": "string"
+              },
+              {
+                "id": "017ef5dd-371b-4b8e-bd12-1c2d3a47b5a1",
+                "name": "body.mensagem_recebida.text",
+                "value": "={{ $json.body.mensagem_recebida.text }}",
+                "type": "string"
+              },
+              {
+                "id": "301f21fa-7792-480c-ae59-9d3001c9a6ce",
+                "name": "body.mensagem_recebida.phone",
+                "value": "={{ $json.body.mensagem_recebida.phone }}",
+                "type": "string"
+              },
+              {
+                "id": "5b545bfd-0baa-4e68-9331-b02f448cb07b",
+                "name": "body.mensagem_recebida.messageId",
+                "value": "={{ $json.body.mensagem_recebida.messageId }}",
+                "type": "string"
+              },
+              {
+                "id": "21c4bcc6-9b45-4033-8a27-e11036374b7e",
+                "name": "body.mensagem_recebida.timestamp",
+                "value": "={{ $json.body.mensagem_recebida.timestamp }}",
+                "type": "string"
+              },
+              {
+                "id": "de3fe2d1-18d1-4fc0-afd3-91ba8c552e98",
+                "name": "body.lead_data.full_name",
+                "value": "={{ $json.body.lead_data.full_name }}",
+                "type": "string"
+              },
+              {
+                "id": "f423c5e1-4e76-4e88-9bb7-b4ebf9699f21",
+                "name": "body.lead_data.origem",
+                "value": "={{ $json.body.lead_data.origem }}",
+                "type": "string"
+              },
+              {
+                "id": "9b44e808-993f-40c1-9ba0-6947af9ae08a",
+                "name": "body.agente_id",
+                "value": "={{ $json.body.agente_id }}",
+                "type": "string"
+              },
+              {
+                "id": "33f2cab2-bc6f-415a-9a54-d45b46dae5da",
+                "name": "body.config_whatsapp_number",
+                "value": "={{ $json.body.config_whatsapp_number }}",
+                "type": "string"
+              },
+              {
+                "id": "614c0cfb-71c2-46f4-bb59-9410c30e5996",
+                "name": "body.mensagem_recebida.type",
+                "value": "={{ $json.body.mensagem_recebida.type }}",
+                "type": "string"
+              },
+              {
+                "id": "b3530271-554c-4223-a629-b9c570466793",
+                "name": "body['dinastia-token']",
+                "value": "={{ $json.body['dinastia-token'] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          224,
+          -336
+        ],
+        "id": "fe79d91a-e6d1-4d1b-b18e-54d1a24d08a1",
+        "name": "config_padrao1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH contexto_lead AS (\n  SELECT \n    l.id,\n    l.full_name,\n    l.phone_number,\n    l.email,\n    l.origem,\n    l.source,\n    (l.custom_fields->-1) as custom_fields,  -- 👈 Última inserção\n    l.tentativas_follow_up,\n    l.interacoes_ia_count,\n    l.created_at,\n    \n    e.id as estado_id,\n    e.nome as estado_nome,\n    e.categoria as estado_categoria,\n    \n    a.id as agente_id,\n    a.nome as agente_nome,\n    a.tipo as agente_tipo,\n    a.prompt_sistema,\n    a.modelo_ia,\n    a.temperatura,\n    a.max_tokens,\n    a.config as agente_config\n    \n  FROM leads l\n  LEFT JOIN estados_lead e ON l.estado_atual = e.id\n  LEFT JOIN agentes_config a ON l.agente_responsavel_id = a.id\n  WHERE l.id = $1::uuid\n),\nhistorico AS (\n  SELECT \n    lead_id,\n    json_agg(\n      json_build_object(\n        'type', type,\n        'message', message,\n        'ai_generated', ai_generated,\n        'created_at', created_at,\n        'agente_nome', (SELECT nome FROM agentes_config WHERE id = interacoes.agente_id)\n      )\n      ORDER BY created_at DESC\n    ) as mensagens\n  FROM interacoes\n  WHERE lead_id = $1::uuid\n  GROUP BY lead_id\n  LIMIT 10\n)\nSELECT \n  c.*,\n  COALESCE(h.mensagens, '[]'::json) as historico\nFROM contexto_lead c\nLEFT JOIN historico h ON c.id = h.lead_id;",
+          "options": {
+            "queryReplacement": "={{ $('config_padrao').item.json.body.lead.id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          944,
+          -624
+        ],
+        "id": "128ea274-7c70-4c04-8d27-372acca77bca",
+        "name": "Contexto Geral1",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "google/gemini-3-flash-preview",
+          "options": {
+            "frequencyPenalty": 0.2,
+            "presencePenalty": 0.1,
+            "temperature": 0.5,
+            "topP": 0.2
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1696,
+          288
+        ],
+        "id": "51d02424-7268-47b1-887c-c3d0e7f5bec1",
+        "name": "OpenRouter Gemini Flash 3",
+        "credentials": {
+          "openRouterApi": {
+            "id": "bOw8m7fIoAInpjwt",
+            "name": "OpenRouter Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "1d9a7c6c-d20f-4f53-a923-ae3ef5ccff43",
+                "leftValue": "={{ $('Webhook').item.json.body.mensagem.texto }}",
+                "rightValue": "clear",
+                "operator": {
+                  "type": "string",
+                  "operation": "regex"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {
+            "ignoreCase": true
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          816,
+          80
+        ],
+        "id": "405c78d8-d86e-44d0-9dee-120c9c319ba8",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "operation": "deleteTable",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "n8n_chat_histories",
+            "mode": "list",
+            "cachedResultName": "n8n_chat_histories"
+          },
+          "deleteCommand": "delete",
+          "where": {
+            "values": [
+              {
+                "column": "session_id",
+                "value": "={{ $('Webhook').item.json.body.lead.id }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1280,
+          192
+        ],
+        "id": "1fb5fa70-de07-48bb-b3b0-d11e62e3fd8b",
+        "name": "Delete table or rows",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Nó: \"Split Output do Agente\" (Function node)\nconst results = [];\nconsole.log(\"INPUT COUNT:\", $input.all().length);\n\nconst palavrasExcluir = [\n  'qualificar_leads',\n  'Workflow was started',\n  'Used tools',\n  '[qualificar_leads]',\n  '[used tools:',\n  'Input',\n  '[input:'\n];\n\nfunction contemPalavrasTecnicas(texto) {\n  const textoLower = texto.toLowerCase();\n  return palavrasExcluir.some(palavra =>\n    textoLower.includes(palavra.toLowerCase())\n  );\n}\n\nfunction sanitizeText(texto) {\n  return texto\n    // ── 1. Remove artefatos do agente ────────────────────────────────\n    .replace(/\\[.*?\\]/gs, '')                     // [xxx] → remove\n    .replace(/```[\\s\\S]*?```/g, '')               // blocos ```código``` → remove\n    .replace(/`[^`]*`/g, '')                      // `inline code` → remove\n\n    // ── 2. Corrige formatações malfeitas do agente ───────────────────\n    .replace(/\\*\\*(.+?)\\*\\*/gs, '*$1*')          // **texto** → *texto*\n    .replace(/\\\\([^\\\\\\n\"]{1,80})\\\\/g, '*$1*')    // \\texto\\ → *texto*\n    .replace(/_([^\\n_]{1,80})_/g, '*$1*')        // _texto_ → *texto*\n\n    // ── 2. Remove lixo invisível ─────────────────────────────────────\n    .replace(/\\r/g, '')\n    .replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '')\n\n    // ── 3. Normaliza aspas curly ─────────────────────────────────────\n    .replace(/[\"\"]/g, '\"')\n    .replace(/['']/g, \"'\")\n\n    // ── 4. Escapa para JSON string (ORDEM IMPORTA) ───────────────────\n    .replace(/\\\\/g, '\\\\\\\\')   // \\ → \\\\  (SEMPRE PRIMEIRO)\n    .replace(/\"/g, '\\\\\"')     // \" → \\\"\n    .replace(/\\t/g, '\\\\t')   // tab literal → \\t\n    .replace(/\\n/g, '\\\\n')   // newline literal → \\n\n\n    .trim();\n}\n\nfor (const item of $input.all()) {\n  const rawOutput = item.json.output ?? item.json.text ?? item.json.response ?? item.json.texto ?? item.json;\n  let aiData;\n\n  try {\n    if (typeof rawOutput === 'string') {\n      aiData = JSON.parse(rawOutput);\n    } else {\n      aiData = rawOutput;\n    }\n  } catch (err) {\n    aiData = { texto: String(rawOutput ?? ''), adicionais: {} };\n  }\n\n  // Se texto for array, junta tudo em uma string única\n  if (Array.isArray(aiData.texto)) {\n    const textoJunto = aiData.texto\n      .map(t => String(t).trim())\n      .filter(t => t && !contemPalavrasTecnicas(t))\n      .join('\\n');\n\n    if (textoJunto) {\n      results.push({ json: { texto: sanitizeText(textoJunto), adicionais: aiData.adicionais || {} } });\n    }\n    continue;\n  }\n\n  if (aiData && aiData.texto) {\n    const textoOriginal = String(aiData.texto);\n\n    // Remove aspas das pontas se existirem\n    const textoLimpo = textoOriginal\n      .replace(/^[\"'\"]|[\"'\"]$/g, '')\n      .trim();\n\n    if (contemPalavrasTecnicas(textoLimpo) || textoLimpo.length === 0) {\n      results.push({\n        json: {\n          texto: sanitizeText(\"Eu pedi para a responsável entrar em contato contigo, então já já ela te chama aqui, assim que possível para responder todas as suas dúvidas.\"),\n          adicionais: aiData.adicionais || {}\n        }\n      });\n    } else {\n      results.push({\n        json: {\n          texto: sanitizeText(textoLimpo),\n          adicionais: aiData.adicionais || {}\n        }\n      });\n    }\n  } else {\n    results.push(item);\n  }\n}\n\nconsole.log(\"OUTPUT COUNT:\", results.length);\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2528,
+          0
+        ],
+        "id": "90d402ba-b77f-49a7-a14d-3cdcfcda9a3e",
+        "name": "split_output"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "83f57801-29b2-4abf-8d37-d2926eaf2a39",
+                "name": "texto",
+                "value": "={{ (v => { try { v = JSON.parse(v); return v.texto ?? v; } catch(e){ return v; } })($json.output) }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2352,
+          0
+        ],
+        "id": "64d72c2d-38ad-4b3e-a6d2-b212a7774027",
+        "name": "Edit Fields2"
+      },
+      {
+        "parameters": {
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"meta\": {\n    \"event_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\",\n    \"timestamp\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.timestamp }}\",\n    \"source\": \"agente-{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"trace_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  },\n\n  \"auth\": {\n    \"dinastia-token\": \"{{ $('config_padrao').item.json.body['dinastia-token'] }}\"\n  },\n\n  \"to\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.phone }}\",\n\n  \"config\": {\n    \"whatsapp_number\": \"{{ $('config_padrao').item.json.body.config_whatsapp_number }}\"\n  },\n\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": {\n      \"body\": \"{{ $json.safe_output }}\"\n    }\n  },\n\n  \"context\": {\n    \"lead_id\": \"{{ $('config_padrao').item.json.body.lead_data.lead_id }}\",\n    \"agente_id\": \"{{ $('config_padrao').item.json.body.agente_id }}\",\n    \"conversation_id\": \"{{ $('config_padrao').item.json.body.lead_data.lead_id }}\",\n    \"reply_to_message_id\": \"{{ $('config_padrao').item.json.body.mensagem_recebida.messageId }}\"\n  }\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1088,
+          -512
+        ],
+        "id": "54bab154-dfbf-4a85-be47-979a2b54296b",
+        "name": "Send Message1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "d76dbb4d-9218-4971-8da9-9c4e645795f2",
+                "leftValue": "={{ $json.body.lead.phone }}",
+                "rightValue": "4599083422",
+                "operator": {
+                  "type": "string",
+                  "operation": "regex"
+                }
+              },
+              {
+                "id": "dea2dd55-d960-48ca-a9bc-6ab87bea2b67",
+                "leftValue": "={{ $json.body.lead.phone }}",
+                "rightValue": "488422548",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          1072,
+          192
+        ],
+        "id": "f5812481-5444-499c-94d3-af759e16fd5d",
+        "name": "Filter3"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"id\": \"{{ $('Contexto Geral').item.json.id }}_fup1\",\n  \"scheduleTo\": \"{{ $now.plus({ minutes: 19 }).toISO() }}\",\n  \"payload\": {\n    \"lead-id\": \"{{ $('Contexto Geral').item.json.id }}\",\n    \"tentativa\": \"1\",\n    \"timestamp\": \"{{ $now.toLocal().toISO() }}\",\n    \"to\": \"{{ $('Webhook').item.json.body.lead.phone }}\",\n    \"instrução\": \"TENTATIVA 1 (30min)\\n\\nOBJETIVO: Reativar leads que podem ter sido interrompidos momentaneamente.\\n\\nMENSAGEM:\\n\\n\\\"[Nome]?\\\"\\n\\nUtilize o nome do lead, caso não houver, mande um \\\"Oi, ta por aí?\\\"\\n\\nAPLICAÇÃO: Todos os estágios (QUALIFICACAO, PROTOCOLO, PRECO)\",\n    \"auth\": {\n      \"dinastia-token\": \"{{ $('Webhook').item.json.body.auth['dinastia-token'] }}\"\n    }\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9\"\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3184,
+          0
+        ],
+        "id": "8c00e6e9-24cb-408c-b1a9-08a790da3ef2",
+        "name": "FollowUp",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $('Contexto Geral').item.json.id }}_fup1",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2864,
+          0
+        ],
+        "id": "fc3b34bf-5297-4962-b516-9a596c679d24",
+        "name": "Delete Scheduler",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "amount": 1
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          3024,
+          0
+        ],
+        "id": "d17b6665-a2d4-40f7-9e12-d935a0b970f1",
+        "name": "Wait",
+        "webhookId": "1ea157d1-6b6f-4555-94cc-9a156189b363"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Faz a transferência handoff do lead para o responsável selecionado. Utilizade sempre para transferir o atendimento.",
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "target_agent",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Tipo: String, Obrigatório.\nIdentifica qual agente lógico deve assumir a conversa.\nVariáveis Disponíveis | Descrição:\n\"secretaria\" | Faz agendamentos ou verifica disponibilidade. Quando atendimento necessitar de marcar um horário, transfira para ela.\n\"recepção\" | Tira duvidas sobre consulta marcada, atendimento a pacientes em tratamento, responsáveis pela comunicação dos doutores e com pacientes.\n\"sdr\" | Faz atendimento comercial com foco em conversão de leads em agendamentos, sem script específicos. Atendimento mais abrangente.\n\"suporte\" | Está disponível para tirar dúvidas mais avançadas, dúvidas técnicas e atender situações não comerciais ou que fogem da alçada do contato comercial.\n\"roteador\" | Faz uma análise da conversa e define qual o agente mais indicado. Use quando não souber qual agente deve assumir a conversa.`, 'string') }}"
+              },
+              {
+                "name": "nome_completo_cliente",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Tipo: String, Obrigatório.\nNome Completo do Cliente`, 'string') }}"
+              },
+              {
+                "name": "preferencia_horario",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Tipo: String, Não Obrigatório.\nSe o lead tiver citado, indicar a preferencia de horário dele.`, 'string') }}"
+              },
+              {
+                "name": "cidade_lead",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `Tipo: String, Obrigatório.\nCidade de preferência do Lead para atendimento Presencial. Pode ser Ituiutaba, Uberlândia ou se for de cidade longe, inserir nome da cidade do lead com \"(online)\".`, 'string') }}"
+              },
+              {
+                "name": "resumo_contexto",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters4_Value', `Tipo: String estruturada, Obrigatório.\nResumo compacto da situação atual e resolução da conversa, útil para o próximo responsável.\nExemplo: \"Lead quer agendar quarta às 14h com Maria. Prefere período da tarde. Cidade Uberlândia.\"`, 'string') }}"
+              },
+              {
+                "name": "motivo",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters5_Value', `Tipo: string, obrigatório.\nMotivo da execução do handoff.\n1-5 palavras.`, 'string') }}"
+              },
+              {
+                "name": "mensagem_inicial",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters6_Value', `=tipo: string (texto simples), Não obrigatório. Mensagem enviada ao lead quando o agente assumir. \nDeve ser texto puro, sem aspas duplas ou simples e sem caracteres que quebrem a string. \nPode conter variáveis no formato {variavel}. \nExemplo: Perfeito! Verificando o horário da {consultora_responsavel}, tenho disponível: {datas_disponiveis}.`, 'string') }}"
+              },
+              {
+                "name": "lead.id",
+                "value": "={{ $('Webhook').item.json.body.lead.id }}"
+              },
+              {
+                "name": "lead.phone",
+                "value": "={{ $('Webhook').item.json.body.lead.phone }}"
+              },
+              {
+                "name": "lead.nome",
+                "value": "={{ $('Webhook').item.json.body.lead.nome }}"
+              },
+              {
+                "name": "mensagem.texto",
+                "value": "={{ JSON.stringify($('Webhook').item.json.body.mensagem.texto) }}"
+              },
+              {
+                "name": "mensagem.tipo",
+                "value": "={{ $('Webhook').item.json.body.mensagem.tipo }}"
+              },
+              {
+                "name": "mensagem.timestamp",
+                "value": "={{ $('Webhook').item.json.body.mensagem.timestamp }}"
+              },
+              {
+                "name": "=auth.dinastia-token",
+                "value": "={{ $('Webhook').item.json.body.auth['dinastia-token'] }}"
+              },
+              {
+                "name": "auth.instancia-nome",
+                "value": "={{ $('Webhook').item.json.body.auth['instancia-nome'] }}"
+              },
+              {
+                "name": "auth.inbox-id",
+                "value": "={{ $('Webhook').item.json.body.auth['inbox-id'] }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.4,
+        "position": [
+          2304,
+          320
+        ],
+        "id": "219f78f8-5215-4243-b1c6-2732e626b046",
+        "name": "handoff_setor"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Faz a transferência handoff do lead para o responsável selecionado. Utilizade sempre para transferir o atendimento.",
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/handoff-20142f7f-6b89-4f23-83a7-8089cd73cedd",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "target_agent",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Tipo: String, Obrigatório.\nIdentifica qual agente lógico deve assumir a conversa.\nVariáveis Disponíveis | Descrição:\n\"secretaria\" | Faz agendamentos ou verifica disponibilidade. Quando atendimento necessitar de marcar um horário, transfira para ela.\n\"recepção\" | Tira duvidas sobre consulta marcada, atendimento a pacientes em tratamento, responsáveis pela comunicação dos doutores e com pacientes.\n\"sdr\" | Faz atendimento comercial com foco em conversão de leads em agendamentos, sem script específicos. Atendimento mais abrangente.\n\"suporte\" | Está disponível para tirar dúvidas mais avançadas, dúvidas técnicas e atender situações não comerciais ou que fogem da alçada do contato comercial.\n\"roteador\" | Faz uma análise da conversa e define qual o agente mais indicado. Use quando não souber qual agente deve assumir a conversa.`, 'string') }}"
+              },
+              {
+                "name": "nome_completo_cliente",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Tipo: String, Obrigatório.\nNome Completo do Cliente`, 'string') }}"
+              },
+              {
+                "name": "preferencia_horario",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Tipo: String, Não Obrigatório.\nSe o lead tiver citado, indicar a preferencia de horário dele.`, 'string') }}"
+              },
+              {
+                "name": "cidade_lead",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `Tipo: String, Obrigatório.\nCidade de preferência do Lead para atendimento Presencial. Pode ser Ituiutaba, Uberlândia ou se for de cidade longe, inserir nome da cidade do lead com \"(online)\".`, 'string') }}"
+              },
+              {
+                "name": "resumo_contexto",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters4_Value', `Tipo: String estruturada, Obrigatório.\nResumo compacto da situação atual e resolução da conversa, útil para o próximo responsável.\nExemplo: \"Lead quer agendar quarta às 14h com Maria. Prefere período da tarde. Cidade Uberlândia.\"`, 'string') }}"
+              },
+              {
+                "name": "motivo",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters5_Value', `Tipo: string, obrigatório.\nMotivo da execução do handoff.\n1-5 palavras.`, 'string') }}"
+              },
+              {
+                "name": "mensagem_inicial",
+                "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters6_Value', `=Tipo: string, Não Obrigatório|Mensagem que deve ser enviada ao lead quando o agente assumir.|Exemplo: \"Perfeito! Verificando o horário da {{consultora responsável}}, tenho disponível: {{Datas escolhidas disponível}}.\"`, 'string') }}"
+              },
+              {
+                "name": "lead.id",
+                "value": "={{ $('Webhook').item.json.body.lead.id }}"
+              },
+              {
+                "name": "lead.phone",
+                "value": "={{ $('Webhook').item.json.body.lead.phone }}"
+              },
+              {
+                "name": "lead.nome",
+                "value": "={{ $('Webhook').item.json.body.lead.nome }}"
+              },
+              {
+                "name": "mensagem.texto",
+                "value": "={{ $('Webhook').item.json.body.mensagem.texto }}"
+              },
+              {
+                "name": "mensagem.tipo",
+                "value": "={{ $('Webhook').item.json.body.mensagem.tipo }}"
+              },
+              {
+                "name": "mensagem.timestamp",
+                "value": "={{ $('Webhook').item.json.body.mensagem.timestamp }}"
+              },
+              {
+                "name": "auth.dinastia-token",
+                "value": "={{ $('Webhook').item.json.body.auth['dinastia-token'] }}"
+              },
+              {
+                "name": "auth.instancia-nome",
+                "value": "={{ $('Webhook').item.json.body.auth['instancia-nome'] }}"
+              },
+              {
+                "name": "auth.inbox-id",
+                "value": "={{ $('Webhook').item.json.body.auth['inbox-id'] }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.4,
+        "position": [
+          2432,
+          448
+        ],
+        "id": "d5d6e5cf-5de5-4072-a8da-4ff76f89628b",
+        "name": "handoff_setor1"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Buscar Histórico": {
+        "main": [
+          []
+        ]
+      },
+      "Aggregate": {
+        "main": [
+          []
+        ]
+      },
+      "Buscar Contexto Lead": {
+        "main": [
+          [
+            {
+              "node": "Buscar Histórico",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "config_padrao": {
+        "main": [
+          [
+            {
+              "node": "Contexto Geral",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Contexto Geral": {
+        "main": [
+          [
+            {
+              "node": "Guardrails",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "contexto_do_lead": {
+        "ai_tool": [
+          []
+        ]
+      },
+      "historico_do_lead": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Message": {
+        "main": [
+          [
+            {
+              "node": "Delete Scheduler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardrails": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Guardrails",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ],
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Gemini Flash 3": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Filter3",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "config_padrao",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields2": {
+        "main": [
+          [
+            {
+              "node": "split_output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "split_output": {
+        "main": [
+          [
+            {
+              "node": "Send Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter3": {
+        "main": [
+          [
+            {
+              "node": "Delete table or rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Scheduler": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "FollowUp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "handoff_setor": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 8a86f4b5",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
