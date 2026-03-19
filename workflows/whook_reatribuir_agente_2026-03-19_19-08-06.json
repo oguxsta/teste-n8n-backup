@@ -1,0 +1,1044 @@
+{
+  "updatedAt": "2026-01-26T20:05:14.284Z",
+  "createdAt": "2025-11-17T13:58:27.423Z",
+  "id": "r4O7PXUs6lJB4qln",
+  "name": "WHook Reatribuir Agente",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "757fb953-1492-4070-be53-e5ea71d64a3c-reatribuir-agente-sdr",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -96
+      ],
+      "id": "b499aab3-d89c-4dc4-9d2a-ed36e3dbc356",
+      "name": "Webhook",
+      "webhookId": "757fb953-1492-4070-be53-e5ea71d64a3c"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+              "name": "chatwoot.url",
+              "value": "https://chat.aplicgo.com",
+              "type": "string"
+            },
+            {
+              "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+              "name": "dina.url",
+              "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+              "type": "string"
+            },
+            {
+              "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+              "name": "dina.instancia",
+              "value": "Aplic_Comercial",
+              "type": "string"
+            },
+            {
+              "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+              "name": "dina.apikey",
+              "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+              "type": "string"
+            },
+            {
+              "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+              "name": "rabbit.fila.mensagens",
+              "value": "fila_processar_resposta",
+              "type": "string"
+            },
+            {
+              "id": "f701268c-e852-4806-a657-67848639ac46",
+              "name": "chatwoot.apikey",
+              "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+              "type": "string"
+            },
+            {
+              "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+              "name": "chatwoot.inboxid",
+              "value": "7",
+              "type": "string"
+            },
+            {
+              "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+              "name": "chatwoot.account",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+              "name": "testes.chatwootcontact",
+              "value": "4019",
+              "type": "string"
+            },
+            {
+              "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+              "name": "testes.chatwootconversation",
+              "value": "4063",
+              "type": "string"
+            },
+            {
+              "id": "f78f3c43-9a54-49ca-b2e0-848a30d797a1",
+              "name": "agente.idMaria",
+              "value": "10",
+              "type": "string"
+            },
+            {
+              "id": "b9b42c44-8bbe-412a-8a97-58f90b055777",
+              "name": "agente.idCamilla",
+              "value": "6",
+              "type": "string"
+            },
+            {
+              "id": "028964c3-9386-482a-9488-95b624cefa97",
+              "name": "agente.idOtavio",
+              "value": "7",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        -96
+      ],
+      "id": "051a5e7b-9b43-42be-8896-e957fe54c60a",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH updated AS (\n  UPDATE leads\n  SET atendimento_tipo = 'ia'\n  WHERE id = '{{ $('Evento Limpo').item.json.contato.leadid }}'\n  RETURNING id\n)\nSELECT\n  CASE\n    WHEN COUNT(*) = 0 THEN\n      (SELECT RAISE_EXCEPTION('Lead ID não encontrado'))\n    ELSE 1\n  END\nFROM updated;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        928,
+        -96
+      ],
+      "id": "392e1b39-67b8-4cfe-975d-cdd7ba90f410",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads\nSET atendimento_tipo = 'ia'\nWHERE id IN (\n    SELECT id FROM leads\n    WHERE\n        email = '{{ $('Evento Limpo').item.json.contato.email }}'\n        OR phone_number = '{{ $('Evento Limpo').item.json.contato.telefone }}'\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g')\n           = regexp_replace('{{ $('Evento Limpo').item.json.contato.telefone }}', '[^0-9]', '', 'g')\n    LIMIT 1\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1136,
+        32
+      ],
+      "id": "a0f8053b-d363-4104-b267-7ed9c82b9baa",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -112
+      ],
+      "id": "e127c0b9-a47f-48d1-a155-822f4fbb1f79",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.conversa.id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('config').item.json.chatwoot.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"*Houve um erro ao atualizar o banco de dados, por favor avisar Responsável pelo Agente*\",\n  \"private\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1616,
+        -112
+      ],
+      "id": "004b5e1b-8ed7-4fc9-9b64-24f56bd8e73b",
+      "name": "Enviar Mensagem Privada1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Recebimento e filtros",
+        "height": 96,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -240
+      ],
+      "id": "68499bf1-3762-4a46-b34c-c7baa60f043e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Config",
+        "height": 96,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -240
+      ],
+      "id": "f5deed20-82ce-46f2-954d-68d0c90b9796",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Atualização Banco de Dados\nHumano em atendimento",
+        "height": 96,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -240
+      ],
+      "id": "35c2e784-9dda-491e-9ab0-2ad039d91477",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Nota Privad\nErro ao atualizar",
+        "height": 96
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -240
+      ],
+      "id": "cebe128b-1665-470b-beb1-4c87d744a934",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Disclaimer\n\nEste fluxo é ativado quando alguém ativa a macro de reatribuir ao agente no chatwoot\n\nQuando alguém ativa a macro, automaticamente, atribui a conta do agente, remove Tag atendimento Humano e adiciona Tag atendimento ia.",
+        "height": 176,
+        "width": 720,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -448
+      ],
+      "id": "ad8ad2eb-d68d-42a2-b724-a4a32c912fc8",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e3223553-4fb5-44f1-928b-af56da67b2cb",
+              "name": "evento.channel",
+              "value": "={{ $json.body.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "ac414024-410e-40ea-8c7a-98755a1139c9",
+              "name": "conversa.id",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e66588df-562e-49d5-b53f-092b13cd3586",
+              "name": "conversa.inboxid",
+              "value": "={{ $json.body.inbox_id }}",
+              "type": "string"
+            },
+            {
+              "id": "db4673f5-e605-4ff6-825d-2f3913fcf7ee",
+              "name": "contato.id",
+              "value": "={{ $json.body.meta.sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "4092af23-5178-42ee-8ad6-653cb5b236f6",
+              "name": "contato.telefone",
+              "value": "={{ $json.body.meta.sender.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "3105cdd1-c181-4ff1-9bf1-3999e077626b",
+              "name": "contato.identificador",
+              "value": "={{ $json.body.meta.sender.identifier }}",
+              "type": "string"
+            },
+            {
+              "id": "30b813a7-370a-4083-ac71-b5fbb738436c",
+              "name": "contato.email",
+              "value": "={{ $json.body.meta.sender.email }}",
+              "type": "string"
+            },
+            {
+              "id": "276f5317-01ea-491d-978d-4a9dd057fdc8",
+              "name": "contato.leadid",
+              "value": "={{ $json.body.meta.sender.custom_attributes.lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0cb7276b-0678-4a6d-960c-30d74fb79104",
+              "name": "evento.event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        -96
+      ],
+      "id": "f1bfcc0b-dc3b-42d4-bc7d-2f2cf074b9c3",
+      "name": "Evento Limpo"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Evento Limpo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensagem Privada1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Limpo": {
+      "main": [
+        [
+          {
+            "node": "config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "aplic_tech-n8n-webhook.trcjj4.easypanel.host",
+            "user-agent": "rest-client/2.1.0 (linux-musl x86_64) ruby/3.4.4p34",
+            "content-length": "4669",
+            "accept": "application/json",
+            "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "aplic_tech-n8n-webhook.trcjj4.easypanel.host",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "additional_attributes": {},
+            "can_reply": true,
+            "channel": "Channel::Api",
+            "contact_inbox": {
+              "id": 8361,
+              "contact_id": 4014,
+              "inbox_id": 10,
+              "source_id": "dfd75dc5-da98-4a16-a82b-c0825a1e727f",
+              "created_at": "2025-12-04T13:28:43.215Z",
+              "updated_at": "2025-12-04T13:28:43.215Z",
+              "hmac_verified": false,
+              "pubsub_token": "78fRm9AMKwxqA8wfCMdhaLyM"
+            },
+            "id": 5742,
+            "inbox_id": 10,
+            "messages": [
+              {
+                "id": 89434,
+                "content": "oi vou estar em ituiuta semana que vem e gostaria de marcar la, é possível?",
+                "account_id": 1,
+                "inbox_id": 10,
+                "conversation_id": 5742,
+                "message_type": 0,
+                "created_at": 1764955518,
+                "updated_at": "2025-12-05T17:25:18.559Z",
+                "private": false,
+                "status": "sent",
+                "source_id": "WAID:3F291640D41455A07E5B",
+                "content_type": "text",
+                "content_attributes": {},
+                "sender_type": "Contact",
+                "sender_id": 4014,
+                "external_source_ids": {},
+                "additional_attributes": {},
+                "processed_message_content": "oi vou estar em ituiuta semana que vem e gostaria de marcar la, é possível?",
+                "sentiment": {},
+                "conversation": {
+                  "assignee_id": 1,
+                  "unread_count": 0,
+                  "last_activity_at": 1764955712,
+                  "contact_inbox": {
+                    "source_id": "dfd75dc5-da98-4a16-a82b-c0825a1e727f"
+                  }
+                },
+                "sender": {
+                  "additional_attributes": {
+                    "city": "",
+                    "country": "",
+                    "description": "",
+                    "company_name": "",
+                    "country_code": "",
+                    "avatar_url_hash": "225eafe5313a8227e4fe1dae733ecc22e6a66f5d9bd64b15c6c08c9f801dda66",
+                    "social_profiles": {
+                      "github": "",
+                      "twitter": "",
+                      "facebook": "",
+                      "linkedin": "",
+                      "instagram": ""
+                    },
+                    "last_avatar_sync_at": "2025-11-07T18:46:49Z"
+                  },
+                  "custom_attributes": {
+                    "lead_id": "1d7152bf-3695-4101-85a2-6ee9438eb227"
+                  },
+                  "email": "jesreeldavidhobusteste@gmail.com",
+                  "id": 4014,
+                  "identifier": "554599083422@s.whatsapp.net",
+                  "name": "Jesreel David Hobus",
+                  "phone_number": "+554599083422",
+                  "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc0FFIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--4233fce95856888e0b27e8dfca225ad4ef9ef2ff/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lKYW5CbFp3WTZCa1ZVT2hOeVpYTnBlbVZmZEc5ZlptbHNiRnNIYVFINk1BPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--2f70e2580cf4150f8212e56cd3c53e9ec1e34e73/190474811a1f080ebdbee1457580cee9.jpeg",
+                  "blocked": false,
+                  "type": "contact"
+                }
+              }
+            ],
+            "labels": [
+              "1-lead-novo",
+              "5-atendimento-ia"
+            ],
+            "meta": {
+              "sender": {
+                "additional_attributes": {
+                  "city": "",
+                  "country": "",
+                  "description": "",
+                  "company_name": "",
+                  "country_code": "",
+                  "avatar_url_hash": "225eafe5313a8227e4fe1dae733ecc22e6a66f5d9bd64b15c6c08c9f801dda66",
+                  "social_profiles": {
+                    "github": "",
+                    "twitter": "",
+                    "facebook": "",
+                    "linkedin": "",
+                    "instagram": ""
+                  },
+                  "last_avatar_sync_at": "2025-11-07T18:46:49Z"
+                },
+                "custom_attributes": {
+                  "lead_id": "1d7152bf-3695-4101-85a2-6ee9438eb227"
+                },
+                "email": "jesreeldavidhobusteste@gmail.com",
+                "id": 4014,
+                "identifier": "554599083422@s.whatsapp.net",
+                "name": "Jesreel David Hobus",
+                "phone_number": "+554599083422",
+                "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc0FFIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--4233fce95856888e0b27e8dfca225ad4ef9ef2ff/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lKYW5CbFp3WTZCa1ZVT2hOeVpYTnBlbVZmZEc5ZlptbHNiRnNIYVFINk1BPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--2f70e2580cf4150f8212e56cd3c53e9ec1e34e73/190474811a1f080ebdbee1457580cee9.jpeg",
+                "blocked": false,
+                "type": "contact"
+              },
+              "assignee": {
+                "id": 1,
+                "name": "Aplic&Go",
+                "available_name": "Agente Aplic",
+                "avatar_url": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg",
+                "type": "user",
+                "availability_status": null,
+                "thumbnail": "https://chat.aplicgo.com/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbnNCIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c378512699e4ec402bdb3e0ae963bbf5f4583913/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--0c83a1d92c01cbfff088fbcaaec8811e9924674e/491895448_17978524064831348_7639650953843940787_n.jpg"
+              },
+              "team": {
+                "id": 1,
+                "name": "comercial"
+              },
+              "hmac_verified": false
+            },
+            "status": "open",
+            "custom_attributes": {},
+            "snoozed_until": null,
+            "unread_count": 0,
+            "first_reply_created_at": "2025-12-04T19:46:47.511Z",
+            "priority": null,
+            "waiting_since": 1764954935,
+            "agent_last_seen_at": 1764955518,
+            "contact_last_seen_at": 0,
+            "last_activity_at": 1764955712,
+            "timestamp": 1764955712,
+            "created_at": 1764854923,
+            "updated_at": 1764955712.7720697,
+            "event": "macro.executed"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/757fb953-1492-4070-be53-e5ea71d64a3c-reatribuir-agente-sdr",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "2ec4bf76-1c91-44b5-98b1-2e432b2ff06c",
+  "activeVersionId": "2ec4bf76-1c91-44b5-98b1-2e432b2ff06c",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-17T13:58:27.423Z",
+      "createdAt": "2025-11-17T13:58:27.423Z",
+      "role": "workflow:owner",
+      "workflowId": "r4O7PXUs6lJB4qln",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-05T17:32:12.083Z",
+    "createdAt": "2025-12-05T17:32:12.083Z",
+    "versionId": "2ec4bf76-1c91-44b5-98b1-2e432b2ff06c",
+    "workflowId": "r4O7PXUs6lJB4qln",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "757fb953-1492-4070-be53-e5ea71d64a3c-reatribuir-agente-sdr",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          256,
+          -96
+        ],
+        "id": "b499aab3-d89c-4dc4-9d2a-ed36e3dbc356",
+        "name": "Webhook",
+        "webhookId": "757fb953-1492-4070-be53-e5ea71d64a3c"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "d65ff66f-f46f-4be4-9c16-dbd4f501bad1",
+                "name": "chatwoot.url",
+                "value": "https://chat.aplicgo.com",
+                "type": "string"
+              },
+              {
+                "id": "8ba16401-ce1c-4ca5-8c07-aa4ec7eb3da2",
+                "name": "dina.url",
+                "value": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/",
+                "type": "string"
+              },
+              {
+                "id": "0a557f0b-94b9-4148-a63a-8e9be5d91c9f",
+                "name": "dina.instancia",
+                "value": "Aplic_Comercial",
+                "type": "string"
+              },
+              {
+                "id": "6e6fd114-0cfb-47dd-aa61-7964659ef639",
+                "name": "dina.apikey",
+                "value": "abcbaac1-aef7-4ea3-ae34-9af61dca26bb",
+                "type": "string"
+              },
+              {
+                "id": "f96c24ce-a1c6-43a1-8607-49002e95c40f",
+                "name": "rabbit.fila.mensagens",
+                "value": "fila_processar_resposta",
+                "type": "string"
+              },
+              {
+                "id": "f701268c-e852-4806-a657-67848639ac46",
+                "name": "chatwoot.apikey",
+                "value": "fmURrfLvWrJbtkAu6RUtQLYn",
+                "type": "string"
+              },
+              {
+                "id": "e6ee8793-026d-4c15-84d7-c58b76f70fe9",
+                "name": "chatwoot.inboxid",
+                "value": "7",
+                "type": "string"
+              },
+              {
+                "id": "0694ff46-098a-429e-b5aa-ab2b5a863a4a",
+                "name": "chatwoot.account",
+                "value": "1",
+                "type": "string"
+              },
+              {
+                "id": "6de2c1cc-4a8c-4665-9dfa-ed3a56320185",
+                "name": "testes.chatwootcontact",
+                "value": "4019",
+                "type": "string"
+              },
+              {
+                "id": "46f9524a-a71b-4fc4-8ed8-3e325d075995",
+                "name": "testes.chatwootconversation",
+                "value": "4063",
+                "type": "string"
+              },
+              {
+                "id": "f78f3c43-9a54-49ca-b2e0-848a30d797a1",
+                "name": "agente.idMaria",
+                "value": "10",
+                "type": "string"
+              },
+              {
+                "id": "b9b42c44-8bbe-412a-8a97-58f90b055777",
+                "name": "agente.idCamilla",
+                "value": "6",
+                "type": "string"
+              },
+              {
+                "id": "028964c3-9386-482a-9488-95b624cefa97",
+                "name": "agente.idOtavio",
+                "value": "7",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          688,
+          -96
+        ],
+        "id": "051a5e7b-9b43-42be-8896-e957fe54c60a",
+        "name": "config"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH updated AS (\n  UPDATE leads\n  SET atendimento_tipo = 'ia'\n  WHERE id = '{{ $('Evento Limpo').item.json.contato.leadid }}'\n  RETURNING id\n)\nSELECT\n  CASE\n    WHEN COUNT(*) = 0 THEN\n      (SELECT RAISE_EXCEPTION('Lead ID não encontrado'))\n    ELSE 1\n  END\nFROM updated;\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          928,
+          -96
+        ],
+        "id": "392e1b39-67b8-4cfe-975d-cdd7ba90f410",
+        "name": "Execute a SQL query",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE leads\nSET atendimento_tipo = 'ia'\nWHERE id IN (\n    SELECT id FROM leads\n    WHERE\n        email = '{{ $('Evento Limpo').item.json.contato.email }}'\n        OR phone_number = '{{ $('Evento Limpo').item.json.contato.telefone }}'\n        OR regexp_replace(phone_number, '[^0-9]', '', 'g')\n           = regexp_replace('{{ $('Evento Limpo').item.json.contato.telefone }}', '[^0-9]', '', 'g')\n    LIMIT 1\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1136,
+          32
+        ],
+        "id": "a0f8053b-d363-4104-b267-7ed9c82b9baa",
+        "name": "Execute a SQL query1",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1360,
+          -112
+        ],
+        "id": "e127c0b9-a47f-48d1-a155-822f4fbb1f79",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('config').item.json.chatwoot.url }}/api/v1/accounts/{{ $('config').item.json.chatwoot.account }}/conversations/{{ $('Evento Limpo').item.json.conversa.id }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "={{ $('config').item.json.chatwoot.apikey }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"content\": \"*Houve um erro ao atualizar o banco de dados, por favor avisar Responsável pelo Agente*\",\n  \"private\": true\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1616,
+          -112
+        ],
+        "id": "004b5e1b-8ed7-4fc9-9b64-24f56bd8e73b",
+        "name": "Enviar Mensagem Privada1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Recebimento e filtros",
+          "height": 96,
+          "width": 272
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          144,
+          -240
+        ],
+        "id": "68499bf1-3762-4a46-b34c-c7baa60f043e",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Config",
+          "height": 96,
+          "width": 416
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          448,
+          -240
+        ],
+        "id": "f5deed20-82ce-46f2-954d-68d0c90b9796",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Atualização Banco de Dados\nHumano em atendimento",
+          "height": 96,
+          "width": 624
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          896,
+          -240
+        ],
+        "id": "35c2e784-9dda-491e-9ab0-2ad039d91477",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Nota Privad\nErro ao atualizar",
+          "height": 96
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1552,
+          -240
+        ],
+        "id": "cebe128b-1665-470b-beb1-4c87d744a934",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "content": "## Disclaimer\n\nEste fluxo é ativado quando alguém ativa a macro de reatribuir ao agente no chatwoot\n\nQuando alguém ativa a macro, automaticamente, atribui a conta do agente, remove Tag atendimento Humano e adiciona Tag atendimento ia.",
+          "height": 176,
+          "width": 720,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          144,
+          -448
+        ],
+        "id": "ad8ad2eb-d68d-42a2-b724-a4a32c912fc8",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "e3223553-4fb5-44f1-928b-af56da67b2cb",
+                "name": "evento.channel",
+                "value": "={{ $json.body.channel }}",
+                "type": "string"
+              },
+              {
+                "id": "ac414024-410e-40ea-8c7a-98755a1139c9",
+                "name": "conversa.id",
+                "value": "={{ $json.body.id }}",
+                "type": "string"
+              },
+              {
+                "id": "e66588df-562e-49d5-b53f-092b13cd3586",
+                "name": "conversa.inboxid",
+                "value": "={{ $json.body.inbox_id }}",
+                "type": "string"
+              },
+              {
+                "id": "db4673f5-e605-4ff6-825d-2f3913fcf7ee",
+                "name": "contato.id",
+                "value": "={{ $json.body.meta.sender.id }}",
+                "type": "string"
+              },
+              {
+                "id": "4092af23-5178-42ee-8ad6-653cb5b236f6",
+                "name": "contato.telefone",
+                "value": "={{ $json.body.meta.sender.phone_number }}",
+                "type": "string"
+              },
+              {
+                "id": "3105cdd1-c181-4ff1-9bf1-3999e077626b",
+                "name": "contato.identificador",
+                "value": "={{ $json.body.meta.sender.identifier }}",
+                "type": "string"
+              },
+              {
+                "id": "30b813a7-370a-4083-ac71-b5fbb738436c",
+                "name": "contato.email",
+                "value": "={{ $json.body.meta.sender.email }}",
+                "type": "string"
+              },
+              {
+                "id": "276f5317-01ea-491d-978d-4a9dd057fdc8",
+                "name": "contato.leadid",
+                "value": "={{ $json.body.meta.sender.custom_attributes.lead_id }}",
+                "type": "string"
+              },
+              {
+                "id": "0cb7276b-0678-4a6d-960c-30d74fb79104",
+                "name": "evento.event",
+                "value": "={{ $json.body.event }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          528,
+          -96
+        ],
+        "id": "f1bfcc0b-dc3b-42d4-bc7d-2f2cf074b9c3",
+        "name": "Evento Limpo"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Evento Limpo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "config": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execute a SQL query1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query1": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar Mensagem Privada1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evento Limpo": {
+        "main": [
+          [
+            {
+              "node": "config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
