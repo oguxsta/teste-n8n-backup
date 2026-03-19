@@ -1,0 +1,75 @@
+{
+  "updatedAt": "2026-02-28T02:35:24.070Z",
+  "createdAt": "2026-01-03T15:46:20.469Z",
+  "id": "giMDyIRHq3babRkm",
+  "name": "[Fup Parametrico] Campanhas Aplic",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fup-parametrico-239edccf-e2f9-4813-9448-9083a776f3f0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "81e8d576-9c59-49e5-8b5c-9d7f68e34999",
+      "name": "Webhook",
+      "webhookId": "239edccf-e2f9-4813-9448-9083a776f3f0"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "13f3fffb-0b7f-4d98-8a12-a11a5a412c1f",
+  "activeVersionId": "13f3fffb-0b7f-4d98-8a12-a11a5a412c1f",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-03T15:46:20.469Z",
+      "createdAt": "2026-01-03T15:46:20.469Z",
+      "role": "workflow:owner",
+      "workflowId": "giMDyIRHq3babRkm",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-04T15:44:22.985Z",
+    "createdAt": "2026-01-04T15:44:21.535Z",
+    "versionId": "13f3fffb-0b7f-4d98-8a12-a11a5a412c1f",
+    "workflowId": "giMDyIRHq3babRkm",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "fup-parametrico-239edccf-e2f9-4813-9448-9083a776f3f0",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "81e8d576-9c59-49e5-8b5c-9d7f68e34999",
+        "name": "Webhook",
+        "webhookId": "239edccf-e2f9-4813-9448-9083a776f3f0"
+      }
+    ],
+    "connections": {},
+    "authors": "Jesreel David Hobus",
+    "name": "Version 13f3fffb",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
