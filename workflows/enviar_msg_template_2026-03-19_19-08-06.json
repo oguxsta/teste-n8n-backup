@@ -1,0 +1,2718 @@
+{
+  "updatedAt": "2026-03-18T17:47:15.292Z",
+  "createdAt": "2026-01-15T00:58:05.795Z",
+  "id": "v8EfAKVv0yZ3PjXB_jaUE",
+  "name": "Enviar Msg Template",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "366f8652-fc71-43cb-bf54-f371eba66495",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -576,
+        64
+      ],
+      "id": "14b5d7d4-b662-4528-a45d-b9b0ecea6560",
+      "name": "Webhook",
+      "webhookId": "366f8652-fc71-43cb-bf54-f371eba66495"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE flow_step_executions\nSET \n  status = 'failed',\n  executed_at = now()\nWHERE id = $1::uuid\n  AND status = 'scheduled';",
+        "options": {
+          "queryReplacement": "={{ $('Loop Over Items').item.json.step_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        832,
+        192
+      ],
+      "id": "e5157325-61e0-44af-8e16-99c4943491fd",
+      "name": "MARCAR STEP COMO FAILED",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE flow_step_executions fse_cancel\nSET status = 'cancelled'\nFROM flow_step_executions fse_current\nJOIN flow_executions fe \n  ON fse_current.flow_execution_id = fe.id\nWHERE\n  fse_current.id = $1::uuid\n  AND fe.status <> 'active'\n  AND fse_cancel.flow_execution_id = fe.id\n  AND fse_cancel.status = 'scheduled'\nRETURNING fse_cancel.id, fse_cancel.step_order;",
+        "options": {
+          "queryReplacement": "={{ $json.step_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        48,
+        -32
+      ],
+      "id": "9984997f-401a-496a-a177-11fe1bb3b075",
+      "name": "MARCAR STEP COMO CANCELLED",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.flow_status }}",
+                    "rightValue": "active",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "80f9e670-53d1-4feb-aa7e-9a6cea87b93c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "210cfa6b-aee1-4c64-97ef-59b788df9311",
+                    "leftValue": "={{ $json.flow_status }}",
+                    "rightValue": "active",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        64
+      ],
+      "id": "9f2892c3-61cf-4cb2-9755-3f1c81e89cc8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "833df56b-08b0-4789-96f6-9bb0e6f84fef",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e6ad41ec-3a51-437c-a2e7-fc776e932630",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        704
+      ],
+      "id": "f11bd945-7642-44b4-98a3-b791f17121e0",
+      "name": "Webhook1",
+      "webhookId": "e6ad41ec-3a51-437c-a2e7-fc776e932630"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host{{ $('Endpoint').item.json.endpoint_suffix }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Endpoint').item.json.payload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        944,
+        2368
+      ],
+      "id": "e6c95e57-63e9-4fd1-9749-54a819364d0c",
+      "name": "Enviar",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H8NvFKb6Dl6uIRvF",
+          "name": "Dinastia Take SAC"
+        }
+      },
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "enviado",
+              "inputValue": "={{ $('Webhook1').item.json.body.message_type }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        1616,
+        2352
+      ],
+      "id": "68a15d94-f1a4-46ab-84cb-c579c46f06a0",
+      "name": "Evaluation",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/e6ad41ec-3a51-437c-a2e7-fc776e932630",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": {{ JSON.stringify($json.phone) }},\n  \"message_type\": {{ JSON.stringify($json.message_type || 'text') }},\n  \"message_text\": {{ JSON.stringify($json.message_text || '') }},\n  \"media_url\": {{ JSON.stringify($json.media_url || '') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        208
+      ],
+      "id": "2846d7bd-4a0e-409e-8a6e-ea9947930abf",
+      "name": "Enviar Mensagem WH",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Send TEXT | VIDEO | AUDIO\nParametrico ",
+        "height": 80,
+        "width": 1584
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        464
+      ],
+      "id": "9649ba70-08e0-4a43-ab1c-0b00b09be053",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1808,
+        2352
+      ],
+      "id": "70b53920-4ff8-49f8-83fa-5fd751d8deb1",
+      "name": "Respond to Webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        256,
+        144
+      ],
+      "id": "142e212a-b6fb-4d73-a3d1-6c8dece61cbd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "content": "### Se der erro no code, usar ia para receber e formatar",
+        "height": 176,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -624
+      ],
+      "id": "fa0e97fd-5c31-4627-b9e7-c72d87ff64f7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE flow_step_executions\nSET \n  status = 'executed',\n  executed_at = now()\nWHERE id = $1::uuid\n  AND status = 'scheduled';",
+        "options": {
+          "queryReplacement": "={{ $('Executor').item.json.step_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        800,
+        32
+      ],
+      "id": "e0bde7f9-cab7-47f1-9211-289bab4fffab",
+      "name": "MARCAR STEP COMO EXECUTED",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  fse.id as step_id,\n  fse.step_order,\n  fse.status as step_status,\n  fe.id as flow_id,\n  fe.flow_code,\n  fe.status as flow_status,\n  fe.context,  -- ← ADICIONAR\n  l.id as lead_id,\n  l.phone,\n  l.email,\n  l.first_name,\n  l.full_name,\n  fd.steps as flow_steps\nFROM flow_step_executions fse\nJOIN flow_executions fe ON fse.flow_execution_id = fe.id\nJOIN leads l ON fe.lead_id = l.id\nJOIN flow_definitions fd ON fe.flow_code = fd.flow_code\nWHERE fse.id = $1::uuid;",
+        "options": {
+          "queryReplacement": "={{ $json.body.execution_flow_step_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -384,
+        64
+      ],
+      "id": "7dfcca41-349d-4281-9bd9-697b09e5eaf5",
+      "name": "Busca Step e Info",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconst flowSteps = data.flow_steps;\nconst currentStep = flowSteps.find(s => s.order === data.step_order);\n\nif (!currentStep) {\n  throw new Error(`Step ${data.step_order} não encontrado`);\n}\n\nconst variables = data.context || {};\n\nvariables.first_name = variables.first_name || data.first_name || \"Cliente\";\nvariables.full_name = variables.full_name || data.full_name || \"\";\nvariables.email = variables.email || data.email || \"\";\n\nfunction replaceVariables(text, vars) {\n  if (!text) return '';\n  let result = text;\n  Object.keys(vars).forEach(key => {\n    const regex = new RegExp(`\\\\{\\\\{\\\\s*${key}\\\\s*\\\\}\\\\}`, 'g');\n    result = result.replace(regex, vars[key] || '');\n  });\n  return result;\n}\n\nif (!data.phone) throw new Error('Phone obrigatório');\n\nconst hasMultipleMessages = currentStep.messages && Array.isArray(currentStep.messages);\n\nif (hasMultipleMessages) {\n  const formattedMessages = currentStep.messages.map(msg => {\n    let messageText = '';\n    if (msg.type === 'text') {\n      messageText = replaceVariables(msg.content, variables);\n    } else {\n      messageText = replaceVariables(msg.caption || '', variables);\n    }\n    \n    return {\n      step_id: data.step_id,\n      flow_id: data.flow_id,\n      lead_id: data.lead_id,\n      phone: data.phone.replace(/\\D/g, ''),\n      message_type: msg.type,\n      message_text: messageText,\n      media_url: msg.media_url || null,\n      flow_code: data.flow_code,\n      step_order: data.step_order\n    };\n  });\n  \n  return formattedMessages.map(msg => ({ json: msg }));\n  \n} else {\n  let messageText = '';\n  if (currentStep.message_type === 'text') {\n    messageText = replaceVariables(currentStep.content, variables);\n  } else {\n    messageText = replaceVariables(currentStep.caption || '', variables);\n  }\n  \n  return {\n    json: {\n      step_id: data.step_id,\n      flow_id: data.flow_id,\n      lead_id: data.lead_id,\n      phone: data.phone.replace(/\\D/g, ''),\n      message_type: currentStep.message_type,\n      message_text: messageText,\n      media_url: currentStep.media_url || null,\n      flow_code: data.flow_code,\n      step_order: data.step_order\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        144
+      ],
+      "id": "5b5df51f-a26c-4e9e-b276-01cd074876de",
+      "name": "Executor"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        576,
+        32
+      ],
+      "id": "fec26fd1-a60d-4b82-ac6b-de186eba81c5",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "phoneNumbers": "={{ $json.payload.Phone }}"
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        2352
+      ],
+      "id": "d376eb5a-b1fb-4a11-9a99-26981e7b709c",
+      "name": "DinastiAPI User",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "3ZapuMQifinBUCyT",
+          "name": "Take&Go SAC"
+        }
+      },
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a0999b1c-092e-4b5a-b715-b8ffd5dc9398",
+              "leftValue": "={{ $json.data.Users[0].IsInWhatsapp }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        2288
+      ],
+      "id": "7e4951e0-8e00-4f53-9ed4-44195f8e59b7",
+      "name": "If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. CAPTURA DOS DADOS\nconst item = $input.item.json;\nconst zapResolved = item._whatsapp_resolved || {};\nconst rawData = item.body || item.data || item; \n\n// O nó anterior (\"Resolve Lid e Jid\") já fez o trabalho duro. Vamos confiar nele!\n// Ele já entrega o LID ou o número formatado perfeitamente.\nlet activeIdentifier = zapResolved.jid || zapResolved.lid || zapResolved.identificador_ativo || rawData.phone || \"\";\n\n// Garantia extra caso o número venha limpo sem o sufixo do WhatsApp\nif (!activeIdentifier.includes('@')) {\n    let cleanNumber = String(activeIdentifier).replace(/\\D/g, '');\n    if (cleanNumber && !cleanNumber.startsWith('55')) {\n        cleanNumber = '55' + cleanNumber;\n    }\n    activeIdentifier = cleanNumber; \n}\n\n// 2. CAPTURA DE TIPO E MÍDIA\nlet messageType = (rawData.message_type || \"text\").toLowerCase();\nlet mediaUrl = rawData.media_url || null;\nlet caption = rawData.message_text || \"\";\n\n// 🛡️ TRAVA DE SEGURANÇA 1: Se for envio de ficheiro/mídia mas a URL vier nula ou vazia, converte para texto!\nif (messageType !== 'text' && (!mediaUrl || mediaUrl.trim() === \"\")) {\n    messageType = 'text';\n}\n\n// 🛡️ TRAVA DE SEGURANÇA 2: Se for texto e estiver totalmente vazio, coloca um espaço invisível.\n// A API do WhatsApp bloqueia envios com \"Body\" vazio.\nif (messageType === 'text' && (!caption || caption.trim() === \"\")) {\n    caption = \" \"; \n}\n\n// 3. EXTRAÇÃO INTELIGENTE DE MIME TYPE (Mais robusta)\nconst getMimeType = (url, type) => {\n  if (!url) return type === 'audio' ? 'audio/ogg' : 'application/octet-stream';\n  \n  // 🛡️ TRAVA DE SEGURANÇA 3: Procura a extensão de forma segura. Se o link não tiver (ex: Google Drive), assume um padrão seguro.\n  const extMatch = url.match(/\\.([a-zA-Z0-9]+)(?:[\\?#]|$)/);\n  const ext = extMatch ? extMatch[1].toLowerCase() : null;\n  \n  const map = { \n    'mp3': 'audio/mpeg', 'ogg': 'audio/ogg', 'wav': 'audio/wav',\n    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',\n    'mp4': 'video/mp4', 'pdf': 'application/pdf'\n  };\n  \n  return map[ext] || (\n      type === 'image' ? 'image/jpeg' : \n      type === 'video' ? 'video/mp4' : \n      type === 'audio' ? 'audio/ogg' : 'application/octet-stream'\n  );\n};\n\n// 4. MONTAGEM DINÂMICA DO PAYLOAD (DinastiAPI)\nlet endpoint = `/chat/send/${messageType}`;\nlet payload = { \n    Phone: activeIdentifier,\n    NumberCheck: true\n};\n\nif (messageType === 'text') {\n    payload.Body = caption;\n} else if (messageType === 'audio') {\n    payload.Audio = mediaUrl;\n    payload.MimeType = getMimeType(mediaUrl, 'audio');\n} else {\n    // Formatação para Image, Video, Document\n    const typeKey = messageType.charAt(0).toUpperCase() + messageType.slice(1);\n    payload[typeKey] = mediaUrl;\n    \n    // Só envia legenda se ela realmente existir\n    if (caption.trim() !== \"\") {\n        payload.Caption = caption;\n    }\n    payload.MimeType = getMimeType(mediaUrl, messageType);\n}\n\n// 5. RESPOSTA COM METADADOS\nreturn {\n  json: {\n    endpoint_suffix: endpoint,\n    payload: payload,\n    _metadata: {\n        original_id: zapResolved.jid || zapResolved.lid || zapResolved.identificador_ativo || rawData.phone,\n        final_id: activeIdentifier,\n        message_type: messageType,\n        timestamp: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        704
+      ],
+      "id": "2745848c-579f-4d23-84b9-0b7761c527cf",
+      "name": "Endpoint"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recupera o número do input anterior\nconst phone = $('Endpoint').first().json.payload.Phone;\n\n// Remove qualquer caractere que não seja número (parênteses, espaços, traços)\nlet cleanPhone = phone.toString().replace(/\\D/g, '');\n\n// Verifica se o número começa com o DDI do Brasil (55)\n// Se não tiver, podemos assumir que é brasileiro para a lógica de normalização\nlet hasDDI = cleanPhone.startsWith('55');\nlet coreNumber = hasDDI ? cleanPhone.substring(2) : cleanPhone;\n\n// A lógica foca no coreNumber (DDD + Número)\n// No Brasil, o coreNumber tem 10 dígitos (sem o 9) ou 11 dígitos (com o 9)\nlet ddd = coreNumber.substring(0, 2);\nlet rest = coreNumber.substring(2);\n\nlet processedNumber = \"\";\n\nif (rest.length === 9 && rest.startsWith('9')) {\n    // Caso 1: Tem o 9 adicional -> REMOVER o 9\n    processedNumber = ddd + rest.substring(1);\n} else if (rest.length === 8) {\n    // Caso 2: Não tem o 9 adicional -> ADICIONAR o 9\n    processedNumber = ddd + '9' + rest;\n} else {\n    // Caso 3: Formato desconhecido (ex: fixo ou erro) -> Mantém o original limpo\n    processedNumber = coreNumber;\n}\n\n// Remonta com o DDI 55\nconst finalPhone = \"55\" + processedNumber;\n\nreturn {\n  normalizedPhone: finalPhone,\n  originalPhone: phone\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        2416
+      ],
+      "id": "64110337-c331-4d07-af02-00aef114df40",
+      "name": "Code in JavaScript",
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "phoneNumbers": "={{ $json.normalizedPhone }}"
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+      "typeVersion": 1,
+      "position": [
+        112,
+        2416
+      ],
+      "id": "6f411537-e57f-4f31-aa8c-1836e52a16df",
+      "name": "DinastiAPI User1",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "3ZapuMQifinBUCyT",
+          "name": "Take&Go SAC"
+        }
+      },
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a0999b1c-092e-4b5a-b715-b8ffd5dc9398",
+              "leftValue": "={{ $json.data.Users[0].IsInWhatsapp }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        2448
+      ],
+      "id": "87944d39-e051-4756-99f9-2508a1574e1d",
+      "name": "If1",
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host{{ $('Endpoint').item.json.endpoint_suffix }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"553499943618\",\n  \"Body\": \"{{\n  (\n    \"Erro ao enviar confirmação para Cliente: \" +\n    $('Endpoint').item.json.payload.Phone +\n    \"\\\\n\\\\nTexto: \" +\n    (\n      typeof $('Endpoint').item.json.payload.Body === 'string'\n        ? $('Endpoint').item.json.payload.Body\n        : JSON.stringify($('Endpoint').item.json.payload.Body)\n    )\n  )\n  .replace(/(\\r\\n|\\n|\\r)/g, ' ')\n}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1072,
+        2512
+      ],
+      "id": "3fe3e94f-9eb2-46eb-829b-634cc548c85f",
+      "name": "Enviar1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H8NvFKb6Dl6uIRvF",
+          "name": "Dinastia Take SAC"
+        }
+      },
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        656,
+        2288
+      ],
+      "id": "1eaf47cb-c6dc-47b9-988e-87da12b8d8ea",
+      "name": "Merge",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/send/text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"553497107493\",\n  \"Body\": \"⚠️ *Automações Take - Notificações*\\n\\nAlgo deu errado no envio de Mensagens.\\n\\nNúmero pode ter sido inserido errado ou erro de conexão.\\n\\n\\n\\nNúmero:{{ $('Webhook1').item.json.body.phone }}\\n\\n\\n\\nMensagem:\\n\\n{{ $('Webhook1').item.json.body.message_text.replace(/\\n/g, '\\\\n') }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1392,
+        2672
+      ],
+      "id": "a426e186-3395-436f-b5a7-e86d35f4e161",
+      "name": "Enviar2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H8NvFKb6Dl6uIRvF",
+          "name": "Dinastia Take SAC"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "enviado",
+              "inputValue": "=erro no envio"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        1616,
+        2544
+      ],
+      "id": "6954a836-b890-4c99-bbe6-aed47fa65d6c",
+      "name": "Evaluation1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 503,
+          "responseKey": "WHATSAPP_SEND_FAILED"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1808,
+        2544
+      ],
+      "id": "e0b1f05a-13b6-4692-a0ae-f4bbecef70d0",
+      "name": "Respond to Webhook1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "phoneNumbers": "={{ $('Endpoint').item.json.payload.Phone }}"
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        2512
+      ],
+      "id": "8d3f325c-2532-48ae-bdd3-782c8811c7c1",
+      "name": "Check Instancia 2",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "RQyBM7vHbnEA0BMO",
+          "name": "Take&Go Comercial II"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "phoneNumbers": "={{ $('Code in JavaScript').item.json.normalizedPhone }}"
+      },
+      "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+      "typeVersion": 1,
+      "position": [
+        160,
+        2656
+      ],
+      "id": "c33fa7db-d52e-4e3b-87f2-e525b9ec04f5",
+      "name": "Check Instancia II",
+      "credentials": {
+        "dinastiapiApi": {
+          "id": "RQyBM7vHbnEA0BMO",
+          "name": "Take&Go Comercial II"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host{{ $('Endpoint').item.json.endpoint_suffix }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -352,
+        1216
+      ],
+      "id": "ec83c63a-abe9-40ae-9123-574934477952",
+      "name": "Enviar3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H8NvFKb6Dl6uIRvF",
+          "name": "Dinastia Take SAC"
+        }
+      },
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/send/text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"553497107493\",\n  \"Body\": \"⚠️ *Automações Take - Notificações*\\n\\nAlgo deu errado no envio de Mensagens.\\n\\n\\n\\nNúmero:{{ $('Webhook1').item.json.body.phone }}\\n\\n\\n\\nMensagem:\\n\\n{{ $('Webhook1').item.json.body.message_text.replace(/\\n/g, '\\\\n') }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        464,
+        784
+      ],
+      "id": "7e811ad1-221f-495f-bdbe-6ec4849ae547",
+      "name": "Enviar4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H8NvFKb6Dl6uIRvF",
+          "name": "Dinastia Take SAC"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "enviado",
+              "inputValue": "={{ $('Webhook1').item.json.body.message_type }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        448,
+        624
+      ],
+      "id": "15e36635-b801-45d5-9cb5-2c07a73e6f2e",
+      "name": "Evaluation2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        624
+      ],
+      "id": "3675556f-d678-4764-8231-87ec00e09d98",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "enviado",
+              "inputValue": "=erro no envio"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        832,
+        784
+      ],
+      "id": "91311cf5-2d00-446b-b634-b03ea4224d03",
+      "name": "Evaluation3"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 503,
+          "responseKey": "WHATSAPP_SEND_FAILED"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1024,
+        784
+      ],
+      "id": "a356fdc1-e9c6-4fc6-9e06-fd0d5f74b7c0",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "content": "## FLUXO ANTIGO\n",
+        "height": 944,
+        "width": 3088
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        2080
+      ],
+      "id": "043c7a02-2f4b-46d3-8c9a-1cde3e62012a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// CONFIGURAÇÃO\nconst CONFIG = {\n  api_url: 'https://aplic_tech-dinastiapi.trcjj4.easypanel.host',\n  tokens: [\n    'abcbaac1-aef7-4ea3-ae34-9af61dca26bb',\n    'fb29784a-0b59-41fd-8b24-9ff551999e07',\n    'b9e1ca87387d023ef42678b1a1cdd2a6b6aac173ed576ef56375bca7712a36bb'\n  ],\n  timeout: 3000\n};\n\nconst resultados = [];\nconst items = $input.all();\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const body = item.json.body;\n  \n  // 1. Limpeza do Telefone\n  let telefoneRaw = body.phone ? String(body.phone).replace(/\\D/g, '') : null;\n  \n  if (!telefoneRaw) {\n    resultados.push({ json: { ...item.json, _erro: \"Telefone ausente no body\" } });\n    continue;\n  }\n  if (!telefoneRaw.startsWith('55')) telefoneRaw = \"55\" + telefoneRaw;\n\n  let lidEncontrado = null;\n  let sucessoLid = false;\n  let status_logs = [];\n\n  // 2. Loop de Fallback usando a função nativa de request do n8n\n  for (const token of CONFIG.tokens) {\n    try {\n      const options = {\n        method: 'POST',\n        uri: `${CONFIG.api_url}/user/lid/get`,\n        body: { phone: telefoneRaw },\n        headers: {\n          'token': token,\n          'Content-Type': 'application/json'\n        },\n        json: true,\n        timeout: CONFIG.timeout\n      };\n\n      // No Code Node, usamos o helper de request direto\n      const response = await this.helpers.request(options);\n\n      const apiResult = Array.isArray(response) ? response[0] : response;\n\n      if (apiResult && apiResult.success) {\n        lidEncontrado = apiResult.data.lid;\n        sucessoLid = true;\n        break; \n      }\n    } catch (e) {\n      status_logs.push({ \n        erro: e.message, \n        token_parcial: token.substring(0, 5) \n      });\n    }\n  }\n\n  // 3. Output formatado para o próximo nó\n  resultados.push({\n    json: {\n      ...item.json,\n      _whatsapp_resolved: {\n        identificador_ativo: lidEncontrado || (telefoneRaw + \"@s.whatsapp.net\"),\n        lid: lidEncontrado,\n        jid: telefoneRaw + \"@s.whatsapp.net\",\n        via_lid: sucessoLid,\n        status_logs: status_logs\n      }\n    }\n  });\n}\n\nreturn resultados;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        704
+      ],
+      "id": "b700546d-d41f-4b31-8f4e-b095f6ddb4c5",
+      "name": "Resolve Lid e Jid"
+    },
+    {
+      "parameters": {
+        "errorMessage": "WHATSAPP_SEND_FAILED"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        784
+      ],
+      "id": "7330b971-ec6e-4611-a7a1-74cb381f7920",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Dados vindos do nó \"Endpoint\"\nconst endpointData = $input.item.json;\nconst endpoint = endpointData.endpoint_suffix;\nconst payload = { ...endpointData.payload };\n\n// Pega LID e JID do nó de resolução (para ter os dois disponíveis)\nconst resolved = $('Resolve Lid e Jid').item.json._whatsapp_resolved || {};\nconst lid = resolved.lid;\nconst jid = resolved.jid;\n\nconst API_URL = 'https://aplic_tech-dinastiapi.trcjj4.easypanel.host';\nconst TOKEN = 'c368bd2c-5ecc-48dc-a8b8-b597180eb8ae';\n\nconst tentar = async (phone) => {\n  const res = await this.helpers.request({\n    method: 'POST',\n    uri: `${API_URL}${endpoint}`,\n    headers: { 'token': TOKEN, 'Content-Type': 'application/json' },\n    body: { ...payload, Phone: phone },\n    json: true\n  });\n\n  // 🛡️ API retorna 200 mas com success: false em caso de erro — trata como falha\n  if (!res || res.success === false) {\n    throw new Error(res?.error || 'Resposta inválida da API');\n  }\n\n  return res;\n};\n\nlet resultado = null;\nlet usou = null;\nlet erroLid = null;\nlet erroJid = null;\n\n// Tentativa 1: LID\nif (lid) {\n  try {\n    resultado = await tentar(lid);\n    usou = 'lid';\n  } catch (e) {\n    erroLid = e.message;\n  }\n}\n\n// Tentativa 2: JID (se LID falhou ou não existe)\nif (!resultado && jid) {\n  try {\n    resultado = await tentar(jid);\n    usou = 'jid';\n  } catch (e) {\n    erroJid = e.message;\n  }\n}\n\n// Se ambos falharam → joga erro pro output de erro\nif (!resultado) {\n  throw new Error(`Falha LID: ${erroLid} | Falha JID: ${erroJid}`);\n}\n\nreturn {\n  json: {\n    ...endpointData,\n    _send_result: resultado,\n    _used_identifier: usou\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        704
+      ],
+      "id": "fef221a5-1f69-4c6d-a765-81d8f8bda2d7",
+      "name": "Enviar Mensagem",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 4500,
+      "maxTries": 2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/send/text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"{{ ($('Endpoint').item.json.payload.Phone || '').split('@')[0] }}\",\n  \"Body\": \"{{ $('Endpoint').item.json.payload.Body.replace(/\\n/g, '\\\\n')  }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        1200
+      ],
+      "id": "e4d0a40d-d8bd-4b11-a181-8f4468e354f8",
+      "name": "Enviar5",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 4500,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H8NvFKb6Dl6uIRvF",
+          "name": "Dinastia Take SAC"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Busca Step e Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "MARCAR STEP COMO CANCELLED",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Executor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MARCAR STEP COMO CANCELLED": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Resolve Lid e Jid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar": {
+      "main": [
+        [
+          {
+            "node": "Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem WH": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MARCAR STEP COMO FAILED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensagem WH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MARCAR STEP COMO FAILED": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MARCAR STEP COMO EXECUTED": {
+      "main": [
+        []
+      ]
+    },
+    "Busca Step e Info": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executor": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "MARCAR STEP COMO EXECUTED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DinastiAPI User": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Instancia 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "DinastiAPI User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DinastiAPI User1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Instancia II",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Enviar1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar1": {
+      "main": [
+        [
+          {
+            "node": "Evaluation1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar2": {
+      "main": [
+        [
+          {
+            "node": "Evaluation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Instancia 2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Instancia II": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar3": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Evaluation2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar4": {
+      "main": [
+        [
+          {
+            "node": "Evaluation3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Lid e Jid": {
+      "main": [
+        [
+          {
+            "node": "Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Evaluation2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar5": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "DinastiAPI User": [
+      {
+        "json": {
+          "code": 200,
+          "data": {
+            "Users": [
+              {
+                "IsInWhatsapp": false,
+                "JID": "551193013484@s.whatsapp.net",
+                "Query": "551193013484",
+                "VerifiedName": ""
+              }
+            ]
+          },
+          "success": true
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "python-requests/2.31.0",
+            "content-length": "66",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "execution_flow_step_id": "a0e889d1-1040-47a5-9c92-956bac68cd42"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/366f8652-fc71-43cb-bf54-f371eba66495",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Enviar3": [
+      {
+        "json": {
+          "endpoint_suffix": "/chat/send/text",
+          "payload": {
+            "Phone": "219219492884628@lid",
+            "NumberCheck": true,
+            "Body": "Antes de enviar, preciso confirmar uma informação rápida.\n\nEsse é o endereço correto para entrega do seu pedido?\n*Rua Bernardo Guimarães, 2523 - Belo Horizonte/MG - CEP: 30140082*\n\nSe estiver tudo certo, é só me confirmar.\nCaso precise ajustar algo, me avise agora."
+          },
+          "_metadata": {
+            "original_id": "219219492884628@lid",
+            "final_id": "219219492884628@lid",
+            "message_type": "text",
+            "timestamp": "2026-03-13T15:09:05.144Z"
+          },
+          "error": {
+            "message": "400 - \"{\\\"code\\\":400,\\\"error\\\":\\\"no response from WhatsApp check\\\",\\\"success\\\":false}\\n\"",
+            "name": "AxiosError",
+            "stack": "AxiosError: Request failed with status code 400\n    at settle (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/axios@1.13.5/node_modules/axios/lib/core/settle.js:19:12)\n    at RedirectableRequest.handleResponse (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/axios@1.13.5/node_modules/axios/lib/adapters/http.js:746:9)\n    at RedirectableRequest.emit (node:events:520:35)\n    at RedirectableRequest._processResponse (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/follow-redirects@1.15.11/node_modules/follow-redirects/index.js:409:10)\n    at ClientRequest.RedirectableRequest._onNativeResponse (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/follow-redirects@1.15.11/node_modules/follow-redirects/index.js:102:12)\n    at Object.onceWrapper (node:events:623:26)\n    at ClientRequest.emit (node:events:508:28)\n    at HTTPParser.parserOnIncomingClient (node:_http_client:780:27)\n    at HTTPParser.parserOnHeadersComplete (node:_http_common:125:17)\n    at TLSSocket.socketOnData (node:_http_client:615:22)\n    at Axios.request (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/axios@1.13.5/node_modules/axios/lib/core/Axios.js:46:41)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at invokeAxios (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/node-execution-context/utils/request-helper-functions.ts:303:10)\n    at proxyRequestToAxios (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/node-execution-context/utils/request-helper-functions.ts:684:20)\n    at Object.request (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/node-execution-context/utils/request-helper-functions.ts:1841:4)",
+            "code": "ERR_BAD_REQUEST",
+            "status": 400
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.5",
+            "content-length": "383",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "phone": "553499720413",
+            "message_type": "text",
+            "message_text": "Olá, Romeu.\n\nSeu pedido já foi enviado 🚚:\n*🔸 *1x Take&Go Start   GLP-1 Support**\n\nA partir de agora, você pode acompanhar a entrega pelo código de rastreio abaixo:\n*ME2625RV555BR*\n\nPara acompanhar o status da entrega, é só acessar o link da transportadora:\n{{track_url}}ME2625RV555BR",
+            "media_url": ""
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/e6ad41ec-3a51-437c-a2e7-fc776e932630",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "8b6ec0da-73ea-4239-82b8-357e8b4483a5",
+  "activeVersionId": "4644d53c-1d77-463f-a417-93f8f0a791e5",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-15T00:58:05.795Z",
+      "createdAt": "2026-01-15T00:58:05.795Z",
+      "role": "workflow:owner",
+      "workflowId": "v8EfAKVv0yZ3PjXB_jaUE",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-18T17:47:09.357Z",
+    "createdAt": "2026-03-18T17:44:02.370Z",
+    "versionId": "4644d53c-1d77-463f-a417-93f8f0a791e5",
+    "workflowId": "v8EfAKVv0yZ3PjXB_jaUE",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "366f8652-fc71-43cb-bf54-f371eba66495",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -576,
+          64
+        ],
+        "id": "14b5d7d4-b662-4528-a45d-b9b0ecea6560",
+        "name": "Webhook",
+        "webhookId": "366f8652-fc71-43cb-bf54-f371eba66495"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE flow_step_executions\nSET \n  status = 'failed',\n  executed_at = now()\nWHERE id = $1::uuid\n  AND status = 'scheduled';",
+          "options": {
+            "queryReplacement": "={{ $('Loop Over Items').item.json.step_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          832,
+          192
+        ],
+        "id": "e5157325-61e0-44af-8e16-99c4943491fd",
+        "name": "MARCAR STEP COMO FAILED",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE flow_step_executions fse_cancel\nSET status = 'cancelled'\nFROM flow_step_executions fse_current\nJOIN flow_executions fe \n  ON fse_current.flow_execution_id = fe.id\nWHERE\n  fse_current.id = $1::uuid\n  AND fe.status <> 'active'\n  AND fse_cancel.flow_execution_id = fe.id\n  AND fse_cancel.status = 'scheduled'\nRETURNING fse_cancel.id, fse_cancel.step_order;",
+          "options": {
+            "queryReplacement": "={{ $json.step_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          48,
+          -32
+        ],
+        "id": "9984997f-401a-496a-a177-11fe1bb3b075",
+        "name": "MARCAR STEP COMO CANCELLED",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.flow_status }}",
+                      "rightValue": "active",
+                      "operator": {
+                        "type": "string",
+                        "operation": "notEquals"
+                      },
+                      "id": "80f9e670-53d1-4feb-aa7e-9a6cea87b93c"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "210cfa6b-aee1-4c64-97ef-59b788df9311",
+                      "leftValue": "={{ $json.flow_status }}",
+                      "rightValue": "active",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          -192,
+          64
+        ],
+        "id": "9f2892c3-61cf-4cb2-9755-3f1c81e89cc8",
+        "name": "Switch"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          256,
+          -32
+        ],
+        "id": "833df56b-08b0-4789-96f6-9bb0e6f84fef",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "e6ad41ec-3a51-437c-a2e7-fc776e932630",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -384,
+          704
+        ],
+        "id": "f11bd945-7642-44b4-98a3-b791f17121e0",
+        "name": "Webhook1",
+        "webhookId": "e6ad41ec-3a51-437c-a2e7-fc776e932630"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host{{ $('Endpoint').item.json.endpoint_suffix }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $('Endpoint').item.json.payload }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          944,
+          2368
+        ],
+        "id": "e6c95e57-63e9-4fd1-9749-54a819364d0c",
+        "name": "Enviar",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "H8NvFKb6Dl6uIRvF",
+            "name": "Dinastia Take SAC"
+          }
+        },
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "enviado",
+                "inputValue": "={{ $('Webhook1').item.json.body.message_type }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          1616,
+          2352
+        ],
+        "id": "68a15d94-f1a4-46ab-84cb-c579c46f06a0",
+        "name": "Evaluation",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/e6ad41ec-3a51-437c-a2e7-fc776e932630",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"phone\": {{ JSON.stringify($json.phone) }},\n  \"message_type\": {{ JSON.stringify($json.message_type || 'text') }},\n  \"message_text\": {{ JSON.stringify($json.message_text || '') }},\n  \"media_url\": {{ JSON.stringify($json.media_url || '') }}\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          608,
+          208
+        ],
+        "id": "2846d7bd-4a0e-409e-8a6e-ea9947930abf",
+        "name": "Enviar Mensagem WH",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "content": "## Send TEXT | VIDEO | AUDIO\nParametrico ",
+          "height": 80,
+          "width": 1584
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          464
+        ],
+        "id": "9649ba70-08e0-4a43-ab1c-0b00b09be053",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1808,
+          2352
+        ],
+        "id": "70b53920-4ff8-49f8-83fa-5fd751d8deb1",
+        "name": "Respond to Webhook",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          256,
+          144
+        ],
+        "id": "142e212a-b6fb-4d73-a3d1-6c8dece61cbd",
+        "name": "Loop Over Items"
+      },
+      {
+        "parameters": {
+          "content": "### Se der erro no code, usar ia para receber e formatar",
+          "height": 176,
+          "width": 496
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          496,
+          -624
+        ],
+        "id": "fa0e97fd-5c31-4627-b9e7-c72d87ff64f7",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE flow_step_executions\nSET \n  status = 'executed',\n  executed_at = now()\nWHERE id = $1::uuid\n  AND status = 'scheduled';",
+          "options": {
+            "queryReplacement": "={{ $('Executor').item.json.step_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          800,
+          32
+        ],
+        "id": "e0bde7f9-cab7-47f1-9211-289bab4fffab",
+        "name": "MARCAR STEP COMO EXECUTED",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  fse.id as step_id,\n  fse.step_order,\n  fse.status as step_status,\n  fe.id as flow_id,\n  fe.flow_code,\n  fe.status as flow_status,\n  fe.context,  -- ← ADICIONAR\n  l.id as lead_id,\n  l.phone,\n  l.email,\n  l.first_name,\n  l.full_name,\n  fd.steps as flow_steps\nFROM flow_step_executions fse\nJOIN flow_executions fe ON fse.flow_execution_id = fe.id\nJOIN leads l ON fe.lead_id = l.id\nJOIN flow_definitions fd ON fe.flow_code = fd.flow_code\nWHERE fse.id = $1::uuid;",
+          "options": {
+            "queryReplacement": "={{ $json.body.execution_flow_step_id }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          -384,
+          64
+        ],
+        "id": "7dfcca41-349d-4281-9bd9-697b09e5eaf5",
+        "name": "Busca Step e Info",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.item.json;\nconst flowSteps = data.flow_steps;\nconst currentStep = flowSteps.find(s => s.order === data.step_order);\n\nif (!currentStep) {\n  throw new Error(`Step ${data.step_order} não encontrado`);\n}\n\nconst variables = data.context || {};\n\nvariables.first_name = variables.first_name || data.first_name || \"Cliente\";\nvariables.full_name = variables.full_name || data.full_name || \"\";\nvariables.email = variables.email || data.email || \"\";\n\nfunction replaceVariables(text, vars) {\n  if (!text) return '';\n  let result = text;\n  Object.keys(vars).forEach(key => {\n    const regex = new RegExp(`\\\\{\\\\{\\\\s*${key}\\\\s*\\\\}\\\\}`, 'g');\n    result = result.replace(regex, vars[key] || '');\n  });\n  return result;\n}\n\nif (!data.phone) throw new Error('Phone obrigatório');\n\nconst hasMultipleMessages = currentStep.messages && Array.isArray(currentStep.messages);\n\nif (hasMultipleMessages) {\n  const formattedMessages = currentStep.messages.map(msg => {\n    let messageText = '';\n    if (msg.type === 'text') {\n      messageText = replaceVariables(msg.content, variables);\n    } else {\n      messageText = replaceVariables(msg.caption || '', variables);\n    }\n    \n    return {\n      step_id: data.step_id,\n      flow_id: data.flow_id,\n      lead_id: data.lead_id,\n      phone: data.phone.replace(/\\D/g, ''),\n      message_type: msg.type,\n      message_text: messageText,\n      media_url: msg.media_url || null,\n      flow_code: data.flow_code,\n      step_order: data.step_order\n    };\n  });\n  \n  return formattedMessages.map(msg => ({ json: msg }));\n  \n} else {\n  let messageText = '';\n  if (currentStep.message_type === 'text') {\n    messageText = replaceVariables(currentStep.content, variables);\n  } else {\n    messageText = replaceVariables(currentStep.caption || '', variables);\n  }\n  \n  return {\n    json: {\n      step_id: data.step_id,\n      flow_id: data.flow_id,\n      lead_id: data.lead_id,\n      phone: data.phone.replace(/\\D/g, ''),\n      message_type: currentStep.message_type,\n      message_text: messageText,\n      media_url: currentStep.media_url || null,\n      flow_code: data.flow_code,\n      step_order: data.step_order\n    }\n  };\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          48,
+          144
+        ],
+        "id": "5b5df51f-a26c-4e9e-b276-01cd074876de",
+        "name": "Executor"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          576,
+          32
+        ],
+        "id": "fec26fd1-a60d-4b82-ac6b-de186eba81c5",
+        "name": "Limit"
+      },
+      {
+        "parameters": {
+          "phoneNumbers": "={{ $json.payload.Phone }}"
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+        "typeVersion": 1,
+        "position": [
+          -656,
+          2352
+        ],
+        "id": "d376eb5a-b1fb-4a11-9a99-26981e7b709c",
+        "name": "DinastiAPI User",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "3ZapuMQifinBUCyT",
+            "name": "Take&Go SAC"
+          }
+        },
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "a0999b1c-092e-4b5a-b715-b8ffd5dc9398",
+                "leftValue": "={{ $json.data.Users[0].IsInWhatsapp }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -240,
+          2288
+        ],
+        "id": "7e4951e0-8e00-4f53-9ed4-44195f8e59b7",
+        "name": "If",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. CAPTURA DOS DADOS\nconst item = $input.item.json;\nconst zapResolved = item._whatsapp_resolved || {};\nconst rawData = item.body || item.data || item; \n\n// O nó anterior (\"Resolve Lid e Jid\") já fez o trabalho duro. Vamos confiar nele!\n// Ele já entrega o LID ou o número formatado perfeitamente.\nlet activeIdentifier = zapResolved.jid || zapResolved.lid || zapResolved.identificador_ativo || rawData.phone || \"\";\n\n// Garantia extra caso o número venha limpo sem o sufixo do WhatsApp\nif (!activeIdentifier.includes('@')) {\n    let cleanNumber = String(activeIdentifier).replace(/\\D/g, '');\n    if (cleanNumber && !cleanNumber.startsWith('55')) {\n        cleanNumber = '55' + cleanNumber;\n    }\n    activeIdentifier = cleanNumber; \n}\n\n// 2. CAPTURA DE TIPO E MÍDIA\nlet messageType = (rawData.message_type || \"text\").toLowerCase();\nlet mediaUrl = rawData.media_url || null;\nlet caption = rawData.message_text || \"\";\n\n// 🛡️ TRAVA DE SEGURANÇA 1: Se for envio de ficheiro/mídia mas a URL vier nula ou vazia, converte para texto!\nif (messageType !== 'text' && (!mediaUrl || mediaUrl.trim() === \"\")) {\n    messageType = 'text';\n}\n\n// 🛡️ TRAVA DE SEGURANÇA 2: Se for texto e estiver totalmente vazio, coloca um espaço invisível.\n// A API do WhatsApp bloqueia envios com \"Body\" vazio.\nif (messageType === 'text' && (!caption || caption.trim() === \"\")) {\n    caption = \" \"; \n}\n\n// 3. EXTRAÇÃO INTELIGENTE DE MIME TYPE (Mais robusta)\nconst getMimeType = (url, type) => {\n  if (!url) return type === 'audio' ? 'audio/ogg' : 'application/octet-stream';\n  \n  // 🛡️ TRAVA DE SEGURANÇA 3: Procura a extensão de forma segura. Se o link não tiver (ex: Google Drive), assume um padrão seguro.\n  const extMatch = url.match(/\\.([a-zA-Z0-9]+)(?:[\\?#]|$)/);\n  const ext = extMatch ? extMatch[1].toLowerCase() : null;\n  \n  const map = { \n    'mp3': 'audio/mpeg', 'ogg': 'audio/ogg', 'wav': 'audio/wav',\n    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',\n    'mp4': 'video/mp4', 'pdf': 'application/pdf'\n  };\n  \n  return map[ext] || (\n      type === 'image' ? 'image/jpeg' : \n      type === 'video' ? 'video/mp4' : \n      type === 'audio' ? 'audio/ogg' : 'application/octet-stream'\n  );\n};\n\n// 4. MONTAGEM DINÂMICA DO PAYLOAD (DinastiAPI)\nlet endpoint = `/chat/send/${messageType}`;\nlet payload = { \n    Phone: activeIdentifier,\n    NumberCheck: true\n};\n\nif (messageType === 'text') {\n    payload.Body = caption;\n} else if (messageType === 'audio') {\n    payload.Audio = mediaUrl;\n    payload.MimeType = getMimeType(mediaUrl, 'audio');\n} else {\n    // Formatação para Image, Video, Document\n    const typeKey = messageType.charAt(0).toUpperCase() + messageType.slice(1);\n    payload[typeKey] = mediaUrl;\n    \n    // Só envia legenda se ela realmente existir\n    if (caption.trim() !== \"\") {\n        payload.Caption = caption;\n    }\n    payload.MimeType = getMimeType(mediaUrl, messageType);\n}\n\n// 5. RESPOSTA COM METADADOS\nreturn {\n  json: {\n    endpoint_suffix: endpoint,\n    payload: payload,\n    _metadata: {\n        original_id: zapResolved.jid || zapResolved.lid || zapResolved.identificador_ativo || rawData.phone,\n        final_id: activeIdentifier,\n        message_type: messageType,\n        timestamp: new Date().toISOString()\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -16,
+          704
+        ],
+        "id": "2745848c-579f-4d23-84b9-0b7761c527cf",
+        "name": "Endpoint"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Recupera o número do input anterior\nconst phone = $('Endpoint').first().json.payload.Phone;\n\n// Remove qualquer caractere que não seja número (parênteses, espaços, traços)\nlet cleanPhone = phone.toString().replace(/\\D/g, '');\n\n// Verifica se o número começa com o DDI do Brasil (55)\n// Se não tiver, podemos assumir que é brasileiro para a lógica de normalização\nlet hasDDI = cleanPhone.startsWith('55');\nlet coreNumber = hasDDI ? cleanPhone.substring(2) : cleanPhone;\n\n// A lógica foca no coreNumber (DDD + Número)\n// No Brasil, o coreNumber tem 10 dígitos (sem o 9) ou 11 dígitos (com o 9)\nlet ddd = coreNumber.substring(0, 2);\nlet rest = coreNumber.substring(2);\n\nlet processedNumber = \"\";\n\nif (rest.length === 9 && rest.startsWith('9')) {\n    // Caso 1: Tem o 9 adicional -> REMOVER o 9\n    processedNumber = ddd + rest.substring(1);\n} else if (rest.length === 8) {\n    // Caso 2: Não tem o 9 adicional -> ADICIONAR o 9\n    processedNumber = ddd + '9' + rest;\n} else {\n    // Caso 3: Formato desconhecido (ex: fixo ou erro) -> Mantém o original limpo\n    processedNumber = coreNumber;\n}\n\n// Remonta com o DDI 55\nconst finalPhone = \"55\" + processedNumber;\n\nreturn {\n  normalizedPhone: finalPhone,\n  originalPhone: phone\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -64,
+          2416
+        ],
+        "id": "64110337-c331-4d07-af02-00aef114df40",
+        "name": "Code in JavaScript",
+        "disabled": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "phoneNumbers": "={{ $json.normalizedPhone }}"
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+        "typeVersion": 1,
+        "position": [
+          112,
+          2416
+        ],
+        "id": "6f411537-e57f-4f31-aa8c-1836e52a16df",
+        "name": "DinastiAPI User1",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "3ZapuMQifinBUCyT",
+            "name": "Take&Go SAC"
+          }
+        },
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "a0999b1c-092e-4b5a-b715-b8ffd5dc9398",
+                "leftValue": "={{ $json.data.Users[0].IsInWhatsapp }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          464,
+          2448
+        ],
+        "id": "87944d39-e051-4756-99f9-2508a1574e1d",
+        "name": "If1",
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host{{ $('Endpoint').item.json.endpoint_suffix }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"553499943618\",\n  \"Body\": \"{{\n  (\n    \"Erro ao enviar confirmação para Cliente: \" +\n    $('Endpoint').item.json.payload.Phone +\n    \"\\\\n\\\\nTexto: \" +\n    (\n      typeof $('Endpoint').item.json.payload.Body === 'string'\n        ? $('Endpoint').item.json.payload.Body\n        : JSON.stringify($('Endpoint').item.json.payload.Body)\n    )\n  )\n  .replace(/(\\r\\n|\\n|\\r)/g, ' ')\n}}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1072,
+          2512
+        ],
+        "id": "3fe3e94f-9eb2-46eb-829b-634cc548c85f",
+        "name": "Enviar1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "H8NvFKb6Dl6uIRvF",
+            "name": "Dinastia Take SAC"
+          }
+        },
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          656,
+          2288
+        ],
+        "id": "1eaf47cb-c6dc-47b9-988e-87da12b8d8ea",
+        "name": "Merge",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/send/text",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"553497107493\",\n  \"Body\": \"⚠️ *Automações Take - Notificações*\\n\\nAlgo deu errado no envio de Mensagens.\\n\\nNúmero pode ter sido inserido errado ou erro de conexão.\\n\\n\\n\\nNúmero:{{ $('Webhook1').item.json.body.phone }}\\n\\n\\n\\nMensagem:\\n\\n{{ $('Webhook1').item.json.body.message_text.replace(/\\n/g, '\\\\n') }}\"}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1392,
+          2672
+        ],
+        "id": "a426e186-3395-436f-b5a7-e86d35f4e161",
+        "name": "Enviar2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "H8NvFKb6Dl6uIRvF",
+            "name": "Dinastia Take SAC"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "enviado",
+                "inputValue": "=erro no envio"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          1616,
+          2544
+        ],
+        "id": "6954a836-b890-4c99-bbe6-aed47fa65d6c",
+        "name": "Evaluation1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "options": {
+            "responseCode": 503,
+            "responseKey": "WHATSAPP_SEND_FAILED"
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1808,
+          2544
+        ],
+        "id": "e0b1f05a-13b6-4692-a0ae-f4bbecef70d0",
+        "name": "Respond to Webhook1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "phoneNumbers": "={{ $('Endpoint').item.json.payload.Phone }}"
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+        "typeVersion": 1,
+        "position": [
+          -512,
+          2512
+        ],
+        "id": "8d3f325c-2532-48ae-bdd3-782c8811c7c1",
+        "name": "Check Instancia 2",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "RQyBM7vHbnEA0BMO",
+            "name": "Take&Go Comercial II"
+          }
+        },
+        "disabled": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "phoneNumbers": "={{ $('Code in JavaScript').item.json.normalizedPhone }}"
+        },
+        "type": "n8n-nodes-dinastiapi.dinastiapiUser",
+        "typeVersion": 1,
+        "position": [
+          160,
+          2656
+        ],
+        "id": "c33fa7db-d52e-4e3b-87f2-e525b9ec04f5",
+        "name": "Check Instancia II",
+        "credentials": {
+          "dinastiapiApi": {
+            "id": "RQyBM7vHbnEA0BMO",
+            "name": "Take&Go Comercial II"
+          }
+        },
+        "disabled": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host{{ $('Endpoint').item.json.endpoint_suffix }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.payload }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -352,
+          1216
+        ],
+        "id": "ec83c63a-abe9-40ae-9123-574934477952",
+        "name": "Enviar3",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "H8NvFKb6Dl6uIRvF",
+            "name": "Dinastia Take SAC"
+          }
+        },
+        "disabled": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/send/text",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"553497107493\",\n  \"Body\": \"⚠️ *Automações Take - Notificações*\\n\\nAlgo deu errado no envio de Mensagens.\\n\\n\\n\\nNúmero:{{ $('Webhook1').item.json.body.phone }}\\n\\n\\n\\nMensagem:\\n\\n{{ $('Webhook1').item.json.body.message_text.replace(/\\n/g, '\\\\n') }}\"}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          464,
+          784
+        ],
+        "id": "7e811ad1-221f-495f-bdbe-6ec4849ae547",
+        "name": "Enviar4",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "H8NvFKb6Dl6uIRvF",
+            "name": "Dinastia Take SAC"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "enviado",
+                "inputValue": "={{ $('Webhook1').item.json.body.message_type }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          448,
+          624
+        ],
+        "id": "15e36635-b801-45d5-9cb5-2c07a73e6f2e",
+        "name": "Evaluation2"
+      },
+      {
+        "parameters": {
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          640,
+          624
+        ],
+        "id": "3675556f-d678-4764-8231-87ec00e09d98",
+        "name": "Respond to Webhook2"
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "enviado",
+                "inputValue": "=erro no envio"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          832,
+          784
+        ],
+        "id": "91311cf5-2d00-446b-b634-b03ea4224d03",
+        "name": "Evaluation3"
+      },
+      {
+        "parameters": {
+          "options": {
+            "responseCode": 503,
+            "responseKey": "WHATSAPP_SEND_FAILED"
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1024,
+          784
+        ],
+        "id": "a356fdc1-e9c6-4fc6-9e06-fd0d5f74b7c0",
+        "name": "Respond to Webhook3"
+      },
+      {
+        "parameters": {
+          "content": "## FLUXO ANTIGO\n",
+          "height": 944,
+          "width": 3088
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1184,
+          2080
+        ],
+        "id": "043c7a02-2f4b-46d3-8c9a-1cde3e62012a",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// CONFIGURAÇÃO\nconst CONFIG = {\n  api_url: 'https://aplic_tech-dinastiapi.trcjj4.easypanel.host',\n  tokens: [\n    'abcbaac1-aef7-4ea3-ae34-9af61dca26bb',\n    'fb29784a-0b59-41fd-8b24-9ff551999e07',\n    'b9e1ca87387d023ef42678b1a1cdd2a6b6aac173ed576ef56375bca7712a36bb'\n  ],\n  timeout: 3000\n};\n\nconst resultados = [];\nconst items = $input.all();\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const body = item.json.body;\n  \n  // 1. Limpeza do Telefone\n  let telefoneRaw = body.phone ? String(body.phone).replace(/\\D/g, '') : null;\n  \n  if (!telefoneRaw) {\n    resultados.push({ json: { ...item.json, _erro: \"Telefone ausente no body\" } });\n    continue;\n  }\n  if (!telefoneRaw.startsWith('55')) telefoneRaw = \"55\" + telefoneRaw;\n\n  let lidEncontrado = null;\n  let sucessoLid = false;\n  let status_logs = [];\n\n  // 2. Loop de Fallback usando a função nativa de request do n8n\n  for (const token of CONFIG.tokens) {\n    try {\n      const options = {\n        method: 'POST',\n        uri: `${CONFIG.api_url}/user/lid/get`,\n        body: { phone: telefoneRaw },\n        headers: {\n          'token': token,\n          'Content-Type': 'application/json'\n        },\n        json: true,\n        timeout: CONFIG.timeout\n      };\n\n      // No Code Node, usamos o helper de request direto\n      const response = await this.helpers.request(options);\n\n      const apiResult = Array.isArray(response) ? response[0] : response;\n\n      if (apiResult && apiResult.success) {\n        lidEncontrado = apiResult.data.lid;\n        sucessoLid = true;\n        break; \n      }\n    } catch (e) {\n      status_logs.push({ \n        erro: e.message, \n        token_parcial: token.substring(0, 5) \n      });\n    }\n  }\n\n  // 3. Output formatado para o próximo nó\n  resultados.push({\n    json: {\n      ...item.json,\n      _whatsapp_resolved: {\n        identificador_ativo: lidEncontrado || (telefoneRaw + \"@s.whatsapp.net\"),\n        lid: lidEncontrado,\n        jid: telefoneRaw + \"@s.whatsapp.net\",\n        via_lid: sucessoLid,\n        status_logs: status_logs\n      }\n    }\n  });\n}\n\nreturn resultados;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -192,
+          704
+        ],
+        "id": "b700546d-d41f-4b31-8f4e-b095f6ddb4c5",
+        "name": "Resolve Lid e Jid"
+      },
+      {
+        "parameters": {
+          "errorMessage": "WHATSAPP_SEND_FAILED"
+        },
+        "type": "n8n-nodes-base.stopAndError",
+        "typeVersion": 1,
+        "position": [
+          1216,
+          784
+        ],
+        "id": "7330b971-ec6e-4611-a7a1-74cb381f7920",
+        "name": "Stop and Error"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Dados vindos do nó \"Endpoint\"\nconst endpointData = $input.item.json;\nconst endpoint = endpointData.endpoint_suffix;\nconst payload = { ...endpointData.payload };\n\n// Pega LID e JID do nó de resolução (para ter os dois disponíveis)\nconst resolved = $('Resolve Lid e Jid').item.json._whatsapp_resolved || {};\nconst lid = resolved.lid;\nconst jid = resolved.jid;\n\nconst API_URL = 'https://aplic_tech-dinastiapi.trcjj4.easypanel.host';\nconst TOKEN = 'c368bd2c-5ecc-48dc-a8b8-b597180eb8ae';\n\nconst tentar = async (phone) => {\n  const res = await this.helpers.request({\n    method: 'POST',\n    uri: `${API_URL}${endpoint}`,\n    headers: { 'token': TOKEN, 'Content-Type': 'application/json' },\n    body: { ...payload, Phone: phone },\n    json: true\n  });\n\n  // 🛡️ API retorna 200 mas com success: false em caso de erro — trata como falha\n  if (!res || res.success === false) {\n    throw new Error(res?.error || 'Resposta inválida da API');\n  }\n\n  return res;\n};\n\nlet resultado = null;\nlet usou = null;\nlet erroLid = null;\nlet erroJid = null;\n\n// Tentativa 1: LID\nif (lid) {\n  try {\n    resultado = await tentar(lid);\n    usou = 'lid';\n  } catch (e) {\n    erroLid = e.message;\n  }\n}\n\n// Tentativa 2: JID (se LID falhou ou não existe)\nif (!resultado && jid) {\n  try {\n    resultado = await tentar(jid);\n    usou = 'jid';\n  } catch (e) {\n    erroJid = e.message;\n  }\n}\n\n// Se ambos falharam → joga erro pro output de erro\nif (!resultado) {\n  throw new Error(`Falha LID: ${erroLid} | Falha JID: ${erroJid}`);\n}\n\nreturn {\n  json: {\n    ...endpointData,\n    _send_result: resultado,\n    _used_identifier: usou\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          176,
+          704
+        ],
+        "id": "fef221a5-1f69-4c6d-a765-81d8f8bda2d7",
+        "name": "Enviar Mensagem",
+        "alwaysOutputData": false,
+        "retryOnFail": true,
+        "waitBetweenTries": 4500,
+        "maxTries": 2,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/send/text",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"{{ ($('Endpoint').item.json.payload.Phone || '').split('@')[0] }}\",\n  \"Body\": \"{{ $('Endpoint').item.json.payload.Body.replace(/\\n/g, '\\\\n')  }}\"}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          336,
+          1264
+        ],
+        "id": "e4d0a40d-d8bd-4b11-a181-8f4468e354f8",
+        "name": "Enviar5",
+        "retryOnFail": true,
+        "maxTries": 2,
+        "waitBetweenTries": 4500,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "H8NvFKb6Dl6uIRvF",
+            "name": "Dinastia Take SAC"
+          }
+        },
+        "disabled": true
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Busca Step e Info",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "MARCAR STEP COMO CANCELLED",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Executor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MARCAR STEP COMO CANCELLED": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook1": {
+        "main": [
+          [
+            {
+              "node": "Resolve Lid e Jid",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar": {
+        "main": [
+          [
+            {
+              "node": "Evaluation",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem WH": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "MARCAR STEP COMO FAILED",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evaluation": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar Mensagem WH",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MARCAR STEP COMO FAILED": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MARCAR STEP COMO EXECUTED": {
+        "main": [
+          []
+        ]
+      },
+      "Busca Step e Info": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Executor": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "MARCAR STEP COMO EXECUTED",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DinastiAPI User": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Check Instancia 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Endpoint": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "DinastiAPI User1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DinastiAPI User1": {
+        "main": [
+          [
+            {
+              "node": "If1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Check Instancia II",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If1": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ],
+          [
+            {
+              "node": "Enviar1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Enviar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar1": {
+        "main": [
+          [
+            {
+              "node": "Evaluation1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar2": {
+        "main": [
+          [
+            {
+              "node": "Evaluation1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evaluation1": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Instancia 2": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Instancia II": {
+        "main": [
+          [
+            {
+              "node": "If1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar3": {
+        "main": [
+          [],
+          []
+        ]
+      },
+      "Evaluation2": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar4": {
+        "main": [
+          [
+            {
+              "node": "Evaluation3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evaluation3": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Resolve Lid e Jid": {
+        "main": [
+          [
+            {
+              "node": "Endpoint",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Webhook3": {
+        "main": [
+          [
+            {
+              "node": "Stop and Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem": {
+        "main": [
+          [
+            {
+              "node": "Evaluation2",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar5": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 4644d53c",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
