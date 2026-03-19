@@ -1,0 +1,607 @@
+{
+  "updatedAt": "2026-03-09T17:44:55.095Z",
+  "createdAt": "2026-03-06T16:23:41.550Z",
+  "id": "txoV7Z0MyyZFj9fo",
+  "name": "My workflow 7",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "45626e48-ac6e-4650-8772-acf21d59ed8e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        -176
+      ],
+      "id": "01d95dd0-b462-441e-9921-bbdf6a890ec3",
+      "name": "Webhook",
+      "webhookId": "45626e48-ac6e-4650-8772-acf21d59ed8e"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nconst raw = (body.contact_phone || '').replace(/\\D/g, '');\n\n// Variante sem o 9 extra: 13 dígitos e 5º dígito = '9'\nlet phone_sem9 = null;\nif (raw.length === 13 && raw[4] === '9') {\n  phone_sem9 = raw.slice(0, 4) + raw.slice(5);\n}\n\n// Variante com 9 adicionado: 12 dígitos e DDD >= 28\nconst ddd = raw.length === 12 ? parseInt(raw.slice(2, 4), 10) : null;\nlet phone_com9 = null;\nif (raw.length === 12 && ddd >= 28) {\n  phone_com9 = raw.slice(0, 4) + '9' + raw.slice(4);\n}\n\nreturn [{\n  json: {\n    contact_name:   body.contact_name  || null,\n    contact_email:  body.contact_email || null,\n    contact_phone:  body.contact_phone || null,\n    phone_clean:    raw,\n    phone_sem9,\n    phone_com9,\n    deal_stage:     body.deal_stage    || null,\n    deal_status:    body.deal_status   || null,\n    deal_user:      body.deal_user     || null,\n    raw_payload:    body\n  }\n}];"
+      },
+      "id": "fd4b0e83-8005-462a-90a8-4a239c83f74f",
+      "name": "Normaliza Telefone",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM leads\nWHERE\n  regexp_replace(phone_number, '[^0-9]', '', 'g') = $1\n  OR ($2 IS NOT NULL AND regexp_replace(phone_number, '[^0-9]', '', 'g') = $2)\n  OR ($3 IS NOT NULL AND regexp_replace(phone_number, '[^0-9]', '', 'g') = $3)\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $json.phone_clean }},{{ $json.phone_sem9 }},{{ $json.phone_com9 }}"
+        }
+      },
+      "id": "0be56813-3270-47e5-9f9a-7d495ac5edd7",
+      "name": "Busca Lead por Telefone",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "consultoria_leads",
+          "mode": "list",
+          "cachedResultName": "consultoria_leads"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "lead_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "column": "contact_name",
+              "value": "={{ $('Webhook').item.json.body.contact_name }}"
+            },
+            {
+              "column": "contact_email",
+              "value": "={{ $('Webhook').item.json.body.contact_email }}"
+            },
+            {
+              "column": "contact_phone",
+              "value": "={{ $('Webhook').item.json.body.contact_phone }}"
+            },
+            {
+              "column": "deal_status",
+              "value": "={{ $('Webhook').item.json.body.deal_status }}"
+            },
+            {
+              "column": "deal_user",
+              "value": "={{ $('Webhook').item.json.body.deal_user }}"
+            },
+            {
+              "column": "deal_stage",
+              "value": "={{ $('Webhook').item.json.body.deal_stage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3012ba31-a8c8-43ea-9672-a317574072eb",
+      "name": "Registra consultoria_leads",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1fQ1AB1UpFOJqSe_9DIW9lnFAzJKAoheeRn99FzHS6o4",
+          "mode": "list",
+          "cachedResultName": "consultoria_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fQ1AB1UpFOJqSe_9DIW9lnFAzJKAoheeRn99FzHS6o4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fQ1AB1UpFOJqSe_9DIW9lnFAzJKAoheeRn99FzHS6o4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "checkpoint": "={{ $('Webhook').item.json.body.deal_stage }}",
+            "contact_name": "={{ $('Webhook').item.json.body.contact_name }}",
+            "contact_phone": "={{ $('Webhook').item.json.body.contact_phone }}",
+            "status_negocio": "={{ $('Webhook').item.json.body.deal_status }}",
+            "lead_id": "={{ $('Busca Lead por Telefone').item.json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "checkpoint",
+              "displayName": "checkpoint",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_name",
+              "displayName": "contact_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_phone",
+              "displayName": "contact_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status_negocio",
+              "displayName": "status_negocio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        -176
+      ],
+      "id": "7cce4e8c-ab80-41b3-b780-538fb059a988",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZXH2RFZPB2m2smPb",
+          "name": "Automaçoes Planinha JESREEL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normaliza Telefone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliza Telefone": {
+      "main": [
+        [
+          {
+            "node": "Busca Lead por Telefone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Lead por Telefone": {
+      "main": [
+        [
+          {
+            "node": "Registra consultoria_leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registra consultoria_leads": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.4",
+            "content-length": "171",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "baggage": "sentry-trace_id=be0e697565064bb8969fdd10c4220bae,sentry-sample_rate=0,sentry-transaction=queue-process,sentry-public_key=943206222a3db90a292f22d119bec999,sentry-org_id=214542,sentry-environment=production,sentry-sampled=false,sentry-sample_rand=0.098017,sentry-release=c684bcc0a01a070287329c276c76fb7a75214f87,bubblegroup.http.route=workflow%2Fstart,bubblegroup.http.host=app.escoladeimoveis.com.br,bubblegroup.workflow.appname=escoladeimoveis,bubblegroup.workflow.app_version=live,bubblegroup.workflow.situation=page_wf,bubblegroup.workflow.id=bTdNR,bubblegroup.workflow.event.type=ButtonClicked,bubblegroup.workflow.action.id=bTdNk,bubblegroup.workflow.action.type=apiconnector2-bTbRX.bTbSe,origin=3,name=flows,loc=app.tasks.flows.batch_evaluate_flow_action_evaluations_webhook_send_multibroker__r2,source=klaviyo,bubblegroup.client.version=19dd5d29f893e7b7c5a33ffca171dfe8ef030c0c,bubblegroup.client.commit_timestamp=1771454152000,actorType=user,userId=01CA6WF3X9PYM1ATVXAMJ1ARMA,rootTimestamp=1762200809102,userToken=01K95B70NAFJ04DK4KBVYHGHXN,rootTraceId=b70dac89ed93664fda60d1783e6b30e3,user_agent.origin=web,com.fivetran.utils.static_context_factory.MultiTenantStaticContextFactory_CONTEXT=00592e35-eb6b-4e3f-8be0-5521e868228e",
+            "content-type": "application/json",
+            "traceparent": "00-69aef96c000000002daa096e98732295-62f325e8e472d153-00",
+            "tracestate": "dd=t.tid:69aef96c00000000;t.dm:-12;s:-1;p:62f325e8e472d153",
+            "x-datadog-parent-id": "7130084317252997459",
+            "x-datadog-sampling-priority": "-1",
+            "x-datadog-tags": "_dd.p.tid=69aef96c00000000",
+            "x-datadog-trace-id": "3290452848356303509",
+            "x-forwarded-for": "52.200.254.28",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "52.200.254.28"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "contact_name": "Antelmo Poletto - COFCO",
+            "contact_email": "",
+            "contact_phone": "+5563999555476",
+            "deal_stage": "Agendada",
+            "deal_user": "",
+            "deal_status": "OPEN",
+            "deal_leadid": ""
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/45626e48-ac6e-4650-8772-acf21d59ed8e",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "45194775-b9a3-4734-9b82-c7aa1bea95ba",
+  "activeVersionId": "45194775-b9a3-4734-9b82-c7aa1bea95ba",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-06T16:23:41.550Z",
+      "createdAt": "2026-03-06T16:23:41.550Z",
+      "role": "workflow:owner",
+      "workflowId": "txoV7Z0MyyZFj9fo",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-09T17:58:12.254Z",
+    "createdAt": "2026-03-09T17:44:55.097Z",
+    "versionId": "45194775-b9a3-4734-9b82-c7aa1bea95ba",
+    "workflowId": "txoV7Z0MyyZFj9fo",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "45626e48-ac6e-4650-8772-acf21d59ed8e",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          64,
+          -176
+        ],
+        "id": "01d95dd0-b462-441e-9921-bbdf6a890ec3",
+        "name": "Webhook",
+        "webhookId": "45626e48-ac6e-4650-8772-acf21d59ed8e"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\n\nconst raw = (body.contact_phone || '').replace(/\\D/g, '');\n\n// Variante sem o 9 extra: 13 dígitos e 5º dígito = '9'\nlet phone_sem9 = null;\nif (raw.length === 13 && raw[4] === '9') {\n  phone_sem9 = raw.slice(0, 4) + raw.slice(5);\n}\n\n// Variante com 9 adicionado: 12 dígitos e DDD >= 28\nconst ddd = raw.length === 12 ? parseInt(raw.slice(2, 4), 10) : null;\nlet phone_com9 = null;\nif (raw.length === 12 && ddd >= 28) {\n  phone_com9 = raw.slice(0, 4) + '9' + raw.slice(4);\n}\n\nreturn [{\n  json: {\n    contact_name:   body.contact_name  || null,\n    contact_email:  body.contact_email || null,\n    contact_phone:  body.contact_phone || null,\n    phone_clean:    raw,\n    phone_sem9,\n    phone_com9,\n    deal_stage:     body.deal_stage    || null,\n    deal_status:    body.deal_status   || null,\n    deal_user:      body.deal_user     || null,\n    raw_payload:    body\n  }\n}];"
+        },
+        "id": "fd4b0e83-8005-462a-90a8-4a239c83f74f",
+        "name": "Normaliza Telefone",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          -176
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT id FROM leads\nWHERE\n  regexp_replace(phone_number, '[^0-9]', '', 'g') = $1\n  OR ($2 IS NOT NULL AND regexp_replace(phone_number, '[^0-9]', '', 'g') = $2)\n  OR ($3 IS NOT NULL AND regexp_replace(phone_number, '[^0-9]', '', 'g') = $3)\nLIMIT 1;",
+          "options": {
+            "queryReplacement": "={{ $json.phone_clean }},{{ $json.phone_sem9 }},{{ $json.phone_com9 }}"
+          }
+        },
+        "id": "0be56813-3270-47e5-9f9a-7d495ac5edd7",
+        "name": "Busca Lead por Telefone",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2,
+        "position": [
+          400,
+          -176
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "schema": {
+            "__rl": true,
+            "value": "public",
+            "mode": "list",
+            "cachedResultName": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "consultoria_leads",
+            "mode": "list",
+            "cachedResultName": "consultoria_leads"
+          },
+          "dataMode": "defineBelow",
+          "valuesToSend": {
+            "values": [
+              {
+                "column": "lead_id",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "column": "contact_name",
+                "value": "={{ $('Webhook').item.json.body.contact_name }}"
+              },
+              {
+                "column": "contact_email",
+                "value": "={{ $('Webhook').item.json.body.contact_email }}"
+              },
+              {
+                "column": "contact_phone",
+                "value": "={{ $('Webhook').item.json.body.contact_phone }}"
+              },
+              {
+                "column": "deal_status",
+                "value": "={{ $('Webhook').item.json.body.deal_status }}"
+              },
+              {
+                "column": "deal_user",
+                "value": "={{ $('Webhook').item.json.body.deal_user }}"
+              },
+              {
+                "column": "deal_stage",
+                "value": "={{ $('Webhook').item.json.body.deal_stage }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "3012ba31-a8c8-43ea-9672-a317574072eb",
+        "name": "Registra consultoria_leads",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2,
+        "position": [
+          560,
+          -176
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1fQ1AB1UpFOJqSe_9DIW9lnFAzJKAoheeRn99FzHS6o4",
+            "mode": "list",
+            "cachedResultName": "consultoria_leads",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fQ1AB1UpFOJqSe_9DIW9lnFAzJKAoheeRn99FzHS6o4/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Página1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fQ1AB1UpFOJqSe_9DIW9lnFAzJKAoheeRn99FzHS6o4/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "checkpoint": "={{ $('Webhook').item.json.body.deal_stage }}",
+              "contact_name": "={{ $('Webhook').item.json.body.contact_name }}",
+              "contact_phone": "={{ $('Webhook').item.json.body.contact_phone }}",
+              "status_negocio": "={{ $('Webhook').item.json.body.deal_status }}",
+              "lead_id": "={{ $('Busca Lead por Telefone').item.json.id }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "lead_id",
+                "displayName": "lead_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "checkpoint",
+                "displayName": "checkpoint",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "contact_name",
+                "displayName": "contact_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "contact_phone",
+                "displayName": "contact_phone",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status_negocio",
+                "displayName": "status_negocio",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          720,
+          -176
+        ],
+        "id": "7cce4e8c-ab80-41b3-b780-538fb059a988",
+        "name": "Append row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ZXH2RFZPB2m2smPb",
+            "name": "Automaçoes Planinha JESREEL"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Normaliza Telefone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normaliza Telefone": {
+        "main": [
+          [
+            {
+              "node": "Busca Lead por Telefone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca Lead por Telefone": {
+        "main": [
+          [
+            {
+              "node": "Registra consultoria_leads",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Registra consultoria_leads": {
+        "main": [
+          [
+            {
+              "node": "Append row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 45194775",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
