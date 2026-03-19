@@ -1,0 +1,379 @@
+{
+  "updatedAt": "2025-12-03T02:40:06.504Z",
+  "createdAt": "2025-12-02T17:58:05.120Z",
+  "id": "5elBDtUiKqeLwvUp",
+  "name": "AGENTE",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.mensagem }}",
+        "options": {
+          "systemMessage": "=Busque as informações do usuário cujo id seja igual a {{ $json.body.id }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        816,
+        -96
+      ],
+      "id": "fd8b06fb-1415-4292-9483-82cdfc8ee12c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        96
+      ],
+      "id": "dc32f217-0973-4de6-ae92-21897604f278",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "gLTl7OUEi5vxLQEw",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.id }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        224
+      ],
+      "id": "f94592ec-6c14-4279-9afd-d32fc5ad14b4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "entrada-mg",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        512,
+        -96
+      ],
+      "id": "1bf57a95-7d92-47fd-b22b-8661ac4566d5",
+      "name": "Webhook",
+      "webhookId": "13820bf7-2d0b-4c76-babd-7b1c7057cfd6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "c42a4ea2-3edb-45e7-97fb-7695a1b07d58",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Busque o paciente cujo _id seja igual a {{ $json.body.id }}",
+        "operation": "getAll",
+        "typeName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Type_Name', ``, 'string') }}",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.bubbleTool",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        112
+      ],
+      "id": "792ce40b-b343-437c-8d52-20e8ab07c746",
+      "name": "Get many objects in Bubble",
+      "credentials": {
+        "bubbleApi": {
+          "id": "Kb9V0bCALCFP4g0L",
+          "name": "Bubble account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many objects in Bubble": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7ee80aaf-c969-47b3-9c33-fa179f5f9dea",
+  "activeVersionId": "7ee80aaf-c969-47b3-9c33-fa179f5f9dea",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-02T17:58:05.120Z",
+      "createdAt": "2025-12-02T17:58:05.120Z",
+      "role": "workflow:owner",
+      "workflowId": "5elBDtUiKqeLwvUp",
+      "projectId": "PHQ6JdZeGqv05lDT"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-03T02:40:06.487Z",
+    "createdAt": "2025-12-03T02:40:06.487Z",
+    "versionId": "7ee80aaf-c969-47b3-9c33-fa179f5f9dea",
+    "workflowId": "5elBDtUiKqeLwvUp",
+    "nodes": [
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.body.mensagem }}",
+          "options": {
+            "systemMessage": "=Busque as informações do usuário cujo id seja igual a {{ $json.body.id }}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          816,
+          -96
+        ],
+        "id": "fd8b06fb-1415-4292-9483-82cdfc8ee12c",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          720,
+          96
+        ],
+        "id": "dc32f217-0973-4de6-ae92-21897604f278",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "gLTl7OUEi5vxLQEw",
+            "name": "OpenAi account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.body.id }}",
+          "contextWindowLength": 15
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          880,
+          224
+        ],
+        "id": "f94592ec-6c14-4279-9afd-d32fc5ad14b4",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "entrada-mg",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          512,
+          -96
+        ],
+        "id": "1bf57a95-7d92-47fd-b22b-8661ac4566d5",
+        "name": "Webhook",
+        "webhookId": "13820bf7-2d0b-4c76-babd-7b1c7057cfd6"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          1248,
+          -96
+        ],
+        "id": "c42a4ea2-3edb-45e7-97fb-7695a1b07d58",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "=Busque o paciente cujo _id seja igual a {{ $json.body.id }}",
+          "operation": "getAll",
+          "typeName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Type_Name', ``, 'string') }}",
+          "returnAll": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.bubbleTool",
+        "typeVersion": 1,
+        "position": [
+          1056,
+          112
+        ],
+        "id": "792ce40b-b343-437c-8d52-20e8ab07c746",
+        "name": "Get many objects in Bubble",
+        "credentials": {
+          "bubbleApi": {
+            "id": "Kb9V0bCALCFP4g0L",
+            "name": "Bubble account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get many objects in Bubble": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
