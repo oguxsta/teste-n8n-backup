@@ -1,0 +1,925 @@
+{
+  "updatedAt": "2026-03-19T17:33:00.998Z",
+  "createdAt": "2026-01-30T13:49:05.330Z",
+  "id": "okrOyxglvF6R_6S3gUObn",
+  "name": "[SDR] Chamar Supervisão",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "11e1ce49-54ed-4bcc-a5cb-ce077d3cdaa4",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "b18370b9-2d47-47b5-9750-d83f24843a16",
+      "name": "Webhook",
+      "webhookId": "11e1ce49-54ed-4bcc-a5cb-ce077d3cdaa4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -80,
+        368
+      ],
+      "id": "d5367389-a6ea-4d1f-a638-ca3ed71f11dc",
+      "name": "HTTP Request",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3419b39f-ebde-49aa-aaec-3cbf3e99e41e",
+              "name": "hora_atual",
+              "value": "={{ $now.format('H') }}",
+              "type": "number"
+            },
+            {
+              "id": "a77dfa94-da89-4b75-82ef-17dbe1d6b844",
+              "name": "dia_semana",
+              "value": "={{ $now.setZone('America/Sao_Paulo').weekday }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        32
+      ],
+      "id": "eb7a7b97-52f2-4d5d-8add-e44dc2d3453f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "27b4c701-fa3d-4c3d-8d4f-d2efaa89bc68",
+              "leftValue": "={{ $json.hora_atual }}",
+              "rightValue": 8,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "b3085b83-a278-47e3-8fb8-44e7c5efd128",
+              "leftValue": "={{ $json.hora_atual }}",
+              "rightValue": 18,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1376,
+        32
+      ],
+      "id": "9021a422-d62f-4fe7-b595-b47768a30320",
+      "name": "Horario"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Acesso correto ao body do n8n\nconst body = items[0].json.body || {};\n\n// O campo correto enviado pelo seu webhook é \"Resumo\"\nconst content = body.Resumo || \"\"; \n\nconst extract = (regex) => {\n    if (!content) return null;\n    const match = content.match(regex);\n    return match ? match[1].trim() : null;\n};\n\n// 2. Extração dos dados baseada no padrão do texto enviado\nconst tipo = extract(/Tipo:\\s*(.*)/);\nconst leadRaw = extract(/Lead:\\s*(.*)/);\nconst telefoneRaw = extract(/Telefone:\\s*(.*)/);\nconst cidadeRaw = extract(/Cidade:\\s*(.*)/) || \"\";\n// Ajuste na regex de Situação para capturar até o fim ou até Contexto\nconst situacao = extract(/Situação:\\s*([\\s\\S]*?)(?=\\nContexto:|$)/) || \"\";\nconst contexto = extract(/Contexto:\\s*([\\s\\S]*)/) || \"\";\n\n// 3. Padronização do Telefone (Usa o campo Phone direto do body se o Regex falhar)\nconst phoneSource = body.Phone || telefoneRaw || \"\";\nconst digitsOnly = phoneSource.replace(/\\D/g, '');\nconst phoneClean = digitsOnly ? `+${digitsOnly}` : null;\n\n// 4. Lógica de Roteamento Inteligente\nlet whatsapp_destino = \"553498912728\"; // Fallback\nlet responsavel_nome = \"Suporte Central\";\n\nconst textoBusca = (situacao + \" \" + contexto).toLowerCase();\nconst cidadeNormalizada = cidadeRaw.toLowerCase().normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\");\n\nif (textoBusca.includes(\"bruna\") || cidadeNormalizada.includes(\"uberlandia\")) {\n    whatsapp_destino = \"553498912728\"; \n    responsavel_nome = \"Bruna\";\n} else if (textoBusca.includes(\"maria\") || cidadeNormalizada.includes(\"ituiutaba\") || body.Responsavel === \"Maria\") {\n    whatsapp_destino = \"553497065870\"; \n    responsavel_nome = \"Maria\";\n}\n\n// 5. Tratamento para SQL\nconst resumoBruto = `MOTIVO: ${tipo} | SITUAÇÃO: ${situacao} | CONTEXTO: ${contexto}`;\nconst resumoSQL = resumoBruto.replace(/'/g, \"''\"); \n\nreturn [{\n    json: {\n        tipo,\n        lead_nome: leadRaw,\n        phone_db: phoneClean,\n        cidade: cidadeRaw,\n        situacao,\n        contexto,\n        whatsapp_destino,\n        responsavel_nome,\n        resumo_final: resumoSQL\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        0
+      ],
+      "id": "54f6035a-6547-460e-9280-bff03d7750a6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f475936e-2ba7-42e1-97a9-f90fb9369817",
+              "name": "mensagem_final",
+              "value": "=🚨 *NOVO LEAD PARA ASSUMIR*\n\nOlá *{{ $('Code in JavaScript').item.json.responsavel_nome }}*, intervenção solicitada:\n\n👤 *Lead:* {{ $('Code in JavaScript').first().json.lead_nome }}\n📍 *Cidade:* {{ $('Code in JavaScript').first().json.cidade }}\n\n💬 *Situação:* {{ $('Code in JavaScript').first().json.situacao.replace(/\\n/g, ' ') }}\n\n📝 *Contexto:* {{ $('Code in JavaScript').first().json.contexto.replace(/\\n/g, ' ') }}\n\n\n🔗 *Falar com o Lead:*\nhttps://wa.me/{{ $('Code in JavaScript').first().json.phone_db.replace('+', '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ],
+      "id": "1c874871-4264-4887-9eb4-feff21c1066b",
+      "name": "Edit Fields1",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Phone",
+              "value": "={{ $('Code in JavaScript').item.json.whatsapp_destino }}"
+            },
+            {
+              "name": "Body",
+              "value": "={{ $json.mensagem_final }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "845b765a-79cd-4a53-beb3-318054e32055",
+      "name": "Enviar Mensagem2",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 4500,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0d6bce34-16b6-4d12-ad0e-8e8d63bb67f5",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        -272
+      ],
+      "id": "a81819fa-d2f0-4c9c-8161-41f031ef039a",
+      "name": "Webhook1",
+      "webhookId": "0d6bce34-16b6-4d12-ad0e-8e8d63bb67f5",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Acesso correto ao body do n8n\nconst body = items[0].json.body || {};\n\n// 2. Extração dos dados diretamente dos campos\nconst tipo = body.Tipo || \"Não classificado\";\nconst leadRaw = body.Nome || \"Desconhecido\";\nconst situacao = body.Resumo || \"\";\nconst contexto = body.Contexto || \"\";\nconst cidadeRaw = body.Cidade || \"Não informada\";\n\n// 3. Padronização do Telefone\nconst phoneSource = body.Phone || \"\";\nconst digitsOnly = phoneSource.replace(/\\D/g, '');\nconst phoneClean = digitsOnly ? `+${digitsOnly}` : \"Não informado\";\nconst linkWhatsApp = digitsOnly ? `https://wa.me/55${digitsOnly.replace(/^55/, '')}` : \"\";\n\n// 4. Montagem da Mensagem para o Grupo\nconst mensagemGrupo = `🚨 *NOVO ACIONAMENTO - EQUIPE SUPORTE* 🚨\\n\\n` +\n                      `*Tipo:* ${tipo}\\n` +\n                      `*Nome:* ${leadRaw}\\n` +\n                      `*Cidade:* ${cidadeRaw}\\n` +\n                      `*Contato:* ${phoneClean}\\n\\n` +\n                      `*Situação:*\\n_${situacao}_\\n\\n` +\n                      `*Contexto Interno:*\\n_${contexto}_\\n\\n` +\n                      `*Link Rápido para Atendimento:*\\n👉 ${linkWhatsApp}`;\n\n// 5. Tratamento para SQL\nconst resumoBruto = `MOTIVO: ${tipo} | SITUAÇÃO: ${situacao} | CONTEXTO: ${contexto}`;\nconst resumoSQL = resumoBruto.replace(/'/g, \"''\");\n\n// 6. Destino\nconst destino_grupo = \"ID_DO_SEU_GRUPO@g.us\";\n\nreturn [{\n    json: {\n        tipo,\n        lead_nome: leadRaw,\n        phone_db: phoneClean,\n        cidade: cidadeRaw,\n        situacao,\n        contexto,\n        mensagem_whatsapp: mensagemGrupo,\n        whatsapp_destino: destino_grupo,\n        resumo_final: resumoSQL\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -272
+      ],
+      "id": "2ae0bc10-d369-422d-a016-cb2a26a757a0",
+      "name": "Extracao"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE \"public\".\"leads\"\nSET \n  \"atendimento_tipo\" = 'humano',\n  \"status\" = 'NOVO',\n  \"handoff_em\" = NOW(),\n  \"resumo_ia_origem\" = 'Suporte: {{ $json.tipo }}',\n  \"updated_at\" = NOW()\nWHERE \"phone_number\" LIKE '%{{ $json.phone_lead }}%'\n   OR \"whatsapp_phone\" LIKE '%{{ $json.phone_lead }}%';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -592
+      ],
+      "id": "dc8566a3-292b-4b06-baf0-08a01622d62b",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Phone",
+              "value": "=120363423676236419@g.us"
+            },
+            {
+              "name": "Body",
+              "value": "={{ $json.mensagem_whatsapp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        256,
+        -272
+      ],
+      "id": "c237840f-5b2b-48dd-aba1-7ddcdd4408af",
+      "name": "Enviar Mensagem",
+      "retryOnFail": true,
+      "waitBetweenTries": 4500,
+      "maxTries": 2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lYQX3lJnNxxdjbPh",
+          "name": "Aplic_comercial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE \"public\".\"leads\"\nSET \n  \"atendimento_tipo\" = 'humano',\n  \"status\" = 'NOVO',\n  \"handoff_em\" = NOW(),\n  \"resumo_ia_origem\" = '{{ $json.resumo_final }}',\n  \"updated_at\" = NOW()\nWHERE \"phone_number\" LIKE '%{{ $json.phone_db.replace(\"+\", \"\") }}%'\n   OR \"whatsapp_phone\" LIKE '%{{ $json.phone_db.replace(\"+\", \"\") }}%';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        304,
+        0
+      ],
+      "id": "aedceb6d-5130-4d3b-b922-7a59e601813d",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horario": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Extracao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extracao": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        []
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "HTTP Request": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.12.0",
+            "content-length": "588",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "aplic_tech_n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "content": "Tipo: Solicitação humano\n\nLead: Ana (sobrenome não informado)\nTelefone: +55 43 9193-8878\nCidade: Uberlândia\n\nSituação: Lead perguntou se atendimento é humano ou IA e solicitou falar com alguém.\n\nContexto: Lead veio do Instagram do Dr. Matheus. Quer avaliação/consultoria, pediu média de valores, parcelamento, tempo de tratamento. Demonstrou preocupação por não ter consulta médica e pediu a formação da Bruna. Precisa retorno humano para esclarecer formação da Bruna e fluxo com supervisão médica e possivelmente agendar consultoria presencial."
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/11e1ce49-54ed-4bcc-a5cb-ce077d3cdaa4",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "user-agent": "axios/1.12.0",
+            "content-length": "662",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "aplic_tech_n8n_webhook:5678",
+            "connection": "close"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Phone": "+553491360093",
+            "Resumo": "Tipo: Erro técnico\n\nLead: Nathália Ribeiro Muniz Souza\nTelefone: +55 34 91360-0093\nCidade: Ituiutaba\nData/Hora: 2026-02-23T07:30:46.167-03:00\n\nSituação: Lead quer antecipar consultoria para HOJE 23/02 às 10h com Maria. SECRETARIA mostrou que 23/02 10h está disponível, mas ao tentar reagendar de 24/02 10:15 para 23/02 10:00 ocorreu erro e não concluiu automaticamente.\nContexto: Agendamento atual ativo: 24/02/2026 10:15 (EventId k30leovhp75tdlnuj6l88n54k8). Lead pediu mudança para hoje às 10h. Necessário regularizar reagendamento manualmente e confirmar com a lead o quanto antes.",
+            "Responsavel": "Maria"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/11e1ce49-54ed-4bcc-a5cb-ce077d3cdaa4",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.5",
+            "content-length": "616",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "authorization": "TFjP6VEQXq5ThMr2",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Phone": "+554599746605",
+            "Resumo": "Luiz Gustavo - Dúvida clínica pós protocolo",
+            "Tipo": "Suporte Clínico",
+            "Nome": "Luiz Gustavo",
+            "Contexto": "Solicita suporte clínico urgente: após protocolo de infusão abdominal em paciente, observou pápula mais persistente que o comum mesmo com pressão calibrada para 4mm. Pergunta se densidade da mescla de lipolíticos do último lote exige alteração na angulação da caneta ou se deve fazer massagem de dispersão imediata para evitar edemas. Disse que enviará fotos da reação cutânea e quer orientação para conduzir a paciente com segurança.",
+            "Cidade": "Toledo"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/0d6bce34-16b6-4d12-ad0e-8e8d63bb67f5",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "eddda420-aea7-495c-a82e-16e6f8b17185",
+  "activeVersionId": "86353bfb-9e79-4d2c-bbc2-b5935f0bc319",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-30T13:49:05.330Z",
+      "createdAt": "2026-01-30T13:49:05.330Z",
+      "role": "workflow:owner",
+      "workflowId": "okrOyxglvF6R_6S3gUObn",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-18T18:09:57.420Z",
+    "createdAt": "2026-03-18T18:09:54.995Z",
+    "versionId": "86353bfb-9e79-4d2c-bbc2-b5935f0bc319",
+    "workflowId": "okrOyxglvF6R_6S3gUObn",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "11e1ce49-54ed-4bcc-a5cb-ce077d3cdaa4",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -112,
+          0
+        ],
+        "id": "b18370b9-2d47-47b5-9750-d83f24843a16",
+        "name": "Webhook",
+        "webhookId": "11e1ce49-54ed-4bcc-a5cb-ce077d3cdaa4",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -80,
+          368
+        ],
+        "id": "d5367389-a6ea-4d1f-a638-ca3ed71f11dc",
+        "name": "HTTP Request",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3419b39f-ebde-49aa-aaec-3cbf3e99e41e",
+                "name": "hora_atual",
+                "value": "={{ $now.format('H') }}",
+                "type": "number"
+              },
+              {
+                "id": "a77dfa94-da89-4b75-82ef-17dbe1d6b844",
+                "name": "dia_semana",
+                "value": "={{ $now.setZone('America/Sao_Paulo').weekday }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1232,
+          32
+        ],
+        "id": "eb7a7b97-52f2-4d5d-8add-e44dc2d3453f",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "27b4c701-fa3d-4c3d-8d4f-d2efaa89bc68",
+                "leftValue": "={{ $json.hora_atual }}",
+                "rightValue": 8,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "b3085b83-a278-47e3-8fb8-44e7c5efd128",
+                "leftValue": "={{ $json.hora_atual }}",
+                "rightValue": 18,
+                "operator": {
+                  "type": "number",
+                  "operation": "lt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1376,
+          32
+        ],
+        "id": "9021a422-d62f-4fe7-b595-b47768a30320",
+        "name": "Horario"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Acesso correto ao body do n8n\nconst body = items[0].json.body || {};\n\n// O campo correto enviado pelo seu webhook é \"Resumo\"\nconst content = body.Resumo || \"\"; \n\nconst extract = (regex) => {\n    if (!content) return null;\n    const match = content.match(regex);\n    return match ? match[1].trim() : null;\n};\n\n// 2. Extração dos dados baseada no padrão do texto enviado\nconst tipo = extract(/Tipo:\\s*(.*)/);\nconst leadRaw = extract(/Lead:\\s*(.*)/);\nconst telefoneRaw = extract(/Telefone:\\s*(.*)/);\nconst cidadeRaw = extract(/Cidade:\\s*(.*)/) || \"\";\n// Ajuste na regex de Situação para capturar até o fim ou até Contexto\nconst situacao = extract(/Situação:\\s*([\\s\\S]*?)(?=\\nContexto:|$)/) || \"\";\nconst contexto = extract(/Contexto:\\s*([\\s\\S]*)/) || \"\";\n\n// 3. Padronização do Telefone (Usa o campo Phone direto do body se o Regex falhar)\nconst phoneSource = body.Phone || telefoneRaw || \"\";\nconst digitsOnly = phoneSource.replace(/\\D/g, '');\nconst phoneClean = digitsOnly ? `+${digitsOnly}` : null;\n\n// 4. Lógica de Roteamento Inteligente\nlet whatsapp_destino = \"553498912728\"; // Fallback\nlet responsavel_nome = \"Suporte Central\";\n\nconst textoBusca = (situacao + \" \" + contexto).toLowerCase();\nconst cidadeNormalizada = cidadeRaw.toLowerCase().normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\");\n\nif (textoBusca.includes(\"bruna\") || cidadeNormalizada.includes(\"uberlandia\")) {\n    whatsapp_destino = \"553498912728\"; \n    responsavel_nome = \"Bruna\";\n} else if (textoBusca.includes(\"maria\") || cidadeNormalizada.includes(\"ituiutaba\") || body.Responsavel === \"Maria\") {\n    whatsapp_destino = \"553497065870\"; \n    responsavel_nome = \"Maria\";\n}\n\n// 5. Tratamento para SQL\nconst resumoBruto = `MOTIVO: ${tipo} | SITUAÇÃO: ${situacao} | CONTEXTO: ${contexto}`;\nconst resumoSQL = resumoBruto.replace(/'/g, \"''\"); \n\nreturn [{\n    json: {\n        tipo,\n        lead_nome: leadRaw,\n        phone_db: phoneClean,\n        cidade: cidadeRaw,\n        situacao,\n        contexto,\n        whatsapp_destino,\n        responsavel_nome,\n        resumo_final: resumoSQL\n    }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          112,
+          0
+        ],
+        "id": "54f6035a-6547-460e-9280-bff03d7750a6",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f475936e-2ba7-42e1-97a9-f90fb9369817",
+                "name": "mensagem_final",
+                "value": "=🚨 *NOVO LEAD PARA ASSUMIR*\n\nOlá *{{ $('Code in JavaScript').item.json.responsavel_nome }}*, intervenção solicitada:\n\n👤 *Lead:* {{ $('Code in JavaScript').first().json.lead_nome }}\n📍 *Cidade:* {{ $('Code in JavaScript').first().json.cidade }}\n\n💬 *Situação:* {{ $('Code in JavaScript').first().json.situacao.replace(/\\n/g, ' ') }}\n\n📝 *Contexto:* {{ $('Code in JavaScript').first().json.contexto.replace(/\\n/g, ' ') }}\n\n\n🔗 *Falar com o Lead:*\nhttps://wa.me/{{ $('Code in JavaScript').first().json.phone_db.replace('+', '') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          480,
+          0
+        ],
+        "id": "1c874871-4264-4887-9eb4-feff21c1066b",
+        "name": "Edit Fields1",
+        "alwaysOutputData": false,
+        "executeOnce": false
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Phone",
+                "value": "={{ $('Code in JavaScript').item.json.whatsapp_destino }}"
+              },
+              {
+                "name": "Body",
+                "value": "={{ $json.mensagem_final }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          672,
+          0
+        ],
+        "id": "845b765a-79cd-4a53-beb3-318054e32055",
+        "name": "Enviar Mensagem2",
+        "retryOnFail": true,
+        "maxTries": 2,
+        "waitBetweenTries": 4500,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "0d6bce34-16b6-4d12-ad0e-8e8d63bb67f5",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -112,
+          -256
+        ],
+        "id": "a81819fa-d2f0-4c9c-8161-41f031ef039a",
+        "name": "Webhook1",
+        "webhookId": "0d6bce34-16b6-4d12-ad0e-8e8d63bb67f5",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Acesso correto ao body do n8n\nconst body = items[0].json.body || {};\n\n// 2. Extração dos dados diretamente dos campos\nconst tipo = body.Tipo || \"Não classificado\";\nconst leadRaw = body.Nome || \"Desconhecido\";\nconst situacao = body.Resumo || \"\";\nconst contexto = body.Contexto || \"\";\nconst cidadeRaw = body.Cidade || \"Não informada\";\n\n// 3. Padronização do Telefone\nconst phoneSource = body.Phone || \"\";\nconst digitsOnly = phoneSource.replace(/\\D/g, '');\nconst phoneClean = digitsOnly ? `+${digitsOnly}` : \"Não informado\";\nconst linkWhatsApp = digitsOnly ? `https://wa.me/55${digitsOnly.replace(/^55/, '')}` : \"\";\n\n// 4. Montagem da Mensagem para o Grupo\nconst mensagemGrupo = `🚨 *NOVO ACIONAMENTO - EQUIPE SUPORTE* 🚨\\n\\n` +\n                      `*Tipo:* ${tipo}\\n` +\n                      `*Nome:* ${leadRaw}\\n` +\n                      `*Cidade:* ${cidadeRaw}\\n` +\n                      `*Contato:* ${phoneClean}\\n\\n` +\n                      `*Situação:*\\n_${situacao}_\\n\\n` +\n                      `*Contexto Interno:*\\n_${contexto}_\\n\\n` +\n                      `*Link Rápido para Atendimento:*\\n👉 ${linkWhatsApp}`;\n\n// 5. Tratamento para SQL\nconst resumoBruto = `MOTIVO: ${tipo} | SITUAÇÃO: ${situacao} | CONTEXTO: ${contexto}`;\nconst resumoSQL = resumoBruto.replace(/'/g, \"''\");\n\n// 6. Destino\nconst destino_grupo = \"ID_DO_SEU_GRUPO@g.us\";\n\nreturn [{\n    json: {\n        tipo,\n        lead_nome: leadRaw,\n        phone_db: phoneClean,\n        cidade: cidadeRaw,\n        situacao,\n        contexto,\n        mensagem_whatsapp: mensagemGrupo,\n        whatsapp_destino: destino_grupo,\n        resumo_final: resumoSQL\n    }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          96,
+          -256
+        ],
+        "id": "2ae0bc10-d369-422d-a016-cb2a26a757a0",
+        "name": "Extracao"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE \"public\".\"leads\"\nSET \n  \"atendimento_tipo\" = 'humano',\n  \"status\" = 'NOVO',\n  \"handoff_em\" = NOW(),\n  \"resumo_ia_origem\" = 'Suporte: {{ $json.tipo }}',\n  \"updated_at\" = NOW()\nWHERE \"phone_number\" LIKE '%{{ $json.phone_lead }}%'\n   OR \"whatsapp_phone\" LIKE '%{{ $json.phone_lead }}%';",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          752,
+          -592
+        ],
+        "id": "dc8566a3-292b-4b06-baf0-08a01622d62b",
+        "name": "Execute a SQL query1",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Phone",
+                "value": "=120363423676236419@g.us"
+              },
+              {
+                "name": "Body",
+                "value": "={{ $json.mensagem_whatsapp }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          272,
+          -256
+        ],
+        "id": "c237840f-5b2b-48dd-aba1-7ddcdd4408af",
+        "name": "Enviar Mensagem",
+        "retryOnFail": true,
+        "waitBetweenTries": 4500,
+        "maxTries": 2,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "lYQX3lJnNxxdjbPh",
+            "name": "Aplic_comercial"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE \"public\".\"leads\"\nSET \n  \"atendimento_tipo\" = 'humano',\n  \"status\" = 'NOVO',\n  \"handoff_em\" = NOW(),\n  \"resumo_ia_origem\" = '{{ $json.resumo_final }}',\n  \"updated_at\" = NOW()\nWHERE \"phone_number\" LIKE '%{{ $json.phone_db.replace(\"+\", \"\") }}%'\n   OR \"whatsapp_phone\" LIKE '%{{ $json.phone_db.replace(\"+\", \"\") }}%';",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          304,
+          0
+        ],
+        "id": "aedceb6d-5130-4d3b-b922-7a59e601813d",
+        "name": "Execute a SQL query",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Horario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Horario": {
+        "main": [
+          []
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields1": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          []
+        ]
+      },
+      "Webhook1": {
+        "main": [
+          [
+            {
+              "node": "Extracao",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extracao": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query1": {
+        "main": [
+          []
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 86353bfb",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
