@@ -1,0 +1,286 @@
+{
+  "updatedAt": "2026-02-25T21:30:06.492Z",
+  "createdAt": "2026-02-25T21:28:44.763Z",
+  "id": "o32Jaofy9Ay8prux",
+  "name": "WH Hubchat | Dinastia",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e5b5d0fe-f385-4411-b820-9243bfbf3703",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "7719d65a-0e49-4856-b728-c59ef213a1a7",
+      "name": "Aplic Comercial II Eventos",
+      "webhookId": "e5b5d0fe-f385-4411-b820-9243bfbf3703"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "type",
+              "value": "={{ $json.body.data.type }}"
+            },
+            {
+              "key": "PushName",
+              "value": "={{ $json.body.data.event.Info.PushName }}"
+            },
+            {
+              "key": "conversation",
+              "value": "={{ $json.body.data.event.RawMessage.conversation }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -96
+      ],
+      "id": "77d28468-04c7-4ebf-9cec-bda6a0445d7c",
+      "name": "Execution Data"
+    }
+  ],
+  "connections": {
+    "Aplic Comercial II Eventos": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Aplic Comercial II Eventos": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.13.5",
+            "content-length": "2186",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "data": {
+              "type": "Message",
+              "event": {
+                "Info": {
+                  "ID": "3EB0A48738AFECBECAE897",
+                  "Chat": "554599083422@s.whatsapp.net",
+                  "Edit": "",
+                  "Type": "text",
+                  "Sender": "554599083422:21@s.whatsapp.net",
+                  "IsGroup": false,
+                  "Category": "",
+                  "IsFromMe": false,
+                  "PushName": "Jesreel David Hobus",
+                  "ServerID": 0,
+                  "MediaType": "",
+                  "Multicast": false,
+                  "SenderAlt": "208391981035586:21@lid",
+                  "Timestamp": "2026-02-25T18:29:08-03:00",
+                  "MsgBotInfo": {
+                    "EditType": "",
+                    "EditTargetID": "",
+                    "EditSenderTimestampMS": "0001-01-01T00:00:00Z"
+                  },
+                  "MsgMetaInfo": {
+                    "TargetID": "",
+                    "TargetChat": "",
+                    "TargetSender": "",
+                    "ThreadMessageID": "",
+                    "DeprecatedLIDSession": null,
+                    "ThreadMessageSenderJID": ""
+                  },
+                  "RecipientAlt": "",
+                  "VerifiedName": null,
+                  "AddressingMode": "",
+                  "DeviceSentMeta": null,
+                  "BroadcastListOwner": "",
+                  "BroadcastRecipients": null
+                },
+                "IsEdit": false,
+                "Message": {
+                  "conversation": "peso alto",
+                  "messageContextInfo": {
+                    "messageSecret": "9wYP/Cv7pVU7FdRZ1h3cEI3pyMaK9wqte/oQJKgWQfI=",
+                    "limitSharingV2": {
+                      "trigger": 0,
+                      "initiatedByMe": false
+                    },
+                    "deviceListMetadata": {
+                      "senderKeyHash": "b9318794cg8cKA==",
+                      "senderTimestamp": 1770843551,
+                      "recipientKeyHash": "cKOvNbmM04OwgA==",
+                      "senderAccountType": 0,
+                      "recipientTimestamp": 1770119016,
+                      "receiverAccountType": 0
+                    },
+                    "deviceListMetadataVersion": 2
+                  }
+                },
+                "IsViewOnce": false,
+                "RawMessage": {
+                  "conversation": "peso alto",
+                  "messageContextInfo": {
+                    "messageSecret": "9wYP/Cv7pVU7FdRZ1h3cEI3pyMaK9wqte/oQJKgWQfI=",
+                    "limitSharingV2": {
+                      "trigger": 0,
+                      "initiatedByMe": false
+                    },
+                    "deviceListMetadata": {
+                      "senderKeyHash": "b9318794cg8cKA==",
+                      "senderTimestamp": 1770843551,
+                      "recipientKeyHash": "cKOvNbmM04OwgA==",
+                      "senderAccountType": 0,
+                      "recipientTimestamp": 1770119016,
+                      "receiverAccountType": 0
+                    },
+                    "deviceListMetadataVersion": 2
+                  }
+                },
+                "RetryCount": 0,
+                "IsBotInvoke": false,
+                "IsEphemeral": false,
+                "IsViewOnceV2": false,
+                "SourceWebMsg": null,
+                "NewsletterMeta": null,
+                "IsLottieSticker": false,
+                "UnavailableRequestID": "",
+                "IsDocumentWithCaption": false,
+                "IsViewOnceV2Extension": false
+              }
+            },
+            "token": "fb29784a-0b59-41fd-8b24-9ff551999e07",
+            "userID": "b8fb35a7e54346d82644ddf33418293a",
+            "baseURL": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host",
+            "userJID": "553498268523:1@s.whatsapp.net",
+            "pushName": "Aplic&Go Comercial 2",
+            "userName": "DrMatheusComercialSDRIA",
+            "eventType": "Message",
+            "timestamp": 1772054949,
+            "businessName": "Aplic&Go Comercial 2"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/e5b5d0fe-f385-4411-b820-9243bfbf3703",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "764f19bf-2c82-47db-b941-f699530d0df9",
+  "activeVersionId": "764f19bf-2c82-47db-b941-f699530d0df9",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-25T21:28:44.763Z",
+      "createdAt": "2026-02-25T21:28:44.763Z",
+      "role": "workflow:owner",
+      "workflowId": "o32Jaofy9Ay8prux",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-25T21:30:59.973Z",
+    "createdAt": "2026-02-25T21:30:06.494Z",
+    "versionId": "764f19bf-2c82-47db-b941-f699530d0df9",
+    "workflowId": "o32Jaofy9Ay8prux",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "e5b5d0fe-f385-4411-b820-9243bfbf3703",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -16,
+          -96
+        ],
+        "id": "7719d65a-0e49-4856-b728-c59ef213a1a7",
+        "name": "Aplic Comercial II Eventos",
+        "webhookId": "e5b5d0fe-f385-4411-b820-9243bfbf3703"
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "type",
+                "value": "={{ $json.body.data.type }}"
+              },
+              {
+                "key": "PushName",
+                "value": "={{ $json.body.data.event.Info.PushName }}"
+              },
+              {
+                "key": "conversation",
+                "value": "={{ $json.body.data.event.RawMessage.conversation }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          192,
+          -96
+        ],
+        "id": "77d28468-04c7-4ebf-9cec-bda6a0445d7c",
+        "name": "Execution Data"
+      }
+    ],
+    "connections": {
+      "Aplic Comercial II Eventos": {
+        "main": [
+          [
+            {
+              "node": "Execution Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 764f19bf",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
