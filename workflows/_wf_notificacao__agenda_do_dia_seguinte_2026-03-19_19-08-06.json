@@ -1,0 +1,512 @@
+{
+  "updatedAt": "2026-02-25T14:15:26.561Z",
+  "createdAt": "2026-02-05T22:26:57.732Z",
+  "id": "Qy8cEPLGOW4gbmZgwvNvk",
+  "name": "[wf_notificação] AGENDA DO DIA SEGUINTE",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        -48
+      ],
+      "id": "2ce4edfb-978d-477f-b394-f95f754f487d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pega a data atual\nconst agora = new Date();\n\n// 2. Força o ajuste de fuso (UTC-3 para Brasil) \nconst offsetBrasil = -3;\nconst dataLocal = new Date(agora.getTime() + (offsetBrasil * 60 * 60 * 1000));\n\n// --- ADICIONADO: BLOQUEIO DE SÁBADO ---\n// 0 = Domingo, 1 = Segunda, ..., 6 = Sábado\nconst diaSemanaHoje = dataLocal.getUTCDay();\n\nif (diaSemanaHoje === 6) {\n  // Se hoje for sábado, retorna vazio e o n8n para o fluxo aqui\n  return []; \n}\n// --------------------------------------\n\n// 3. Define amanhã baseado na data local corrigida\nconst amanha = new Date(dataLocal);\namanha.setDate(dataLocal.getUTCDate() + 1); \n\n// 4. Formata Strings (Mantive exatamente como seu original)\nconst ano = amanha.getUTCFullYear();\nconst mes = String(amanha.getUTCMonth() + 1).padStart(2, '0');\nconst dia = String(amanha.getUTCDate()).padStart(2, '0');\n\nconst dataFormatada = `${dia}/${mes}/${ano}`;\nconst inicio = `${ano}-${mes}-${dia}T00:00:00.000`;\nconst fim = `${ano}-${mes}-${dia}T23:59:59.999`;\n\nreturn {\n  inicio,\n  fim,\n  dataFormatada,\n  debug_info: {\n    servidor_agora: agora.toISOString(),\n    ajustado_brasil: dataLocal.toISOString(),\n    dia_semana_hoje: diaSemanaHoje // Adicionei isso aqui para te ajudar no debug\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "634c0fcb-29bd-43ef-a0b0-99d439be17c0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "bruna.luisa018@gmail.com",
+          "mode": "list",
+          "cachedResultName": "Bruna - Aplic Uberlândia"
+        },
+        "timeMin": "={{ $json.inicio }}",
+        "timeMax": "={{ $json.fim }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        -144
+      ],
+      "id": "4004b6c3-d30a-4425-820e-c4b0e01e2830",
+      "name": "Agenda-Bruna",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "consultoramaria.aplic@gmail.com",
+          "mode": "list",
+          "cachedResultName": "Maria - Aplic Ituiutaba"
+        },
+        "timeMin": "={{ $json.inicio }}",
+        "timeMax": "={{ $json.fim }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        16
+      ],
+      "id": "d6de16b1-3606-42cd-90c6-532616d21496",
+      "name": "Agenda-Maria",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "39173be3-7747-4113-8755-dc949748e738",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const todosEventos = items;\n\n// 1. Pega a data formatada corretamente do primeiro nó de código\nlet dataAmanha = \"\";\ntry {\n    dataAmanha = $('Code in JavaScript').first().json.dataFormatada;\n} catch (e) {\n    const d = new Date();\n    d.setDate(d.getDate() + 1);\n    dataAmanha = d.toLocaleDateString('pt-BR');\n}\n\n// Se não houver eventos válidos\nif (todosEventos.length === 0 || (todosEventos.length === 1 && !todosEventos[0].json.id)) {\n  return [{ json: { mensagem: `*RESUMO DA AGENDA - ${dataAmanha}* 📅\\n\\n_Nenhum agendamento encontrado para amanhã._` } }];\n}\n\nlet agendaBruna = [];\nlet agendaMaria = [];\n\ntodosEventos.forEach(e => {\n  const evento = e.json;\n  if (!evento.start || !evento.start.dateTime) return; \n\n  const summary = evento.summary || \"Sem título\";\n\n  // --- FILTRO: REMOVE AGENDAS BLOQUEADAS ---\n  // Verifica se o título contém \"agenda bloqueada\" antes de processar o restante\n  if (summary.toLowerCase().includes(\"agenda bloqueada\")) {\n    return; // Pula este item e vai para o próximo do loop\n  }\n  // ------------------------------------------\n\n  const hora = new Date(evento.start.dateTime).toLocaleTimeString('pt-BR', { \n    timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' \n  });\n  \n  // Mantém sua lógica de extrair o nome do paciente entre <>\n  const paciente = summary.includes(\"<>\") ? summary.split(\"<>\")[1].split(\"(\")[0].trim() : summary;\n  \n  const item = { hora, paciente, timestamp: new Date(evento.start.dateTime).getTime() };\n  const emailOrg = (evento.organizer && evento.organizer.email) ? evento.organizer.email.toLowerCase() : \"\";\n  \n  if (emailOrg.includes(\"bruna\")) {\n    agendaBruna.push(item);\n  } else {\n    agendaMaria.push(item);\n  }\n});\n\n// Ordenação por horário\nconst ordenar = (a, b) => a.timestamp - b.timestamp;\nagendaBruna.sort(ordenar);\nagendaMaria.sort(ordenar);\n\n// --- MONTAGEM DO TEXTO (EXATAMENTE COMO O ORIGINAL) ---\nlet texto = `*RESUMO DA AGENDA - ${dataAmanha}* 📅\\n\\n`;\n\ntexto += `*AGENDA BRUNA* 👩🏻‍⚕️\\n`;\ntexto += (agendaBruna.length > 0 ? agendaBruna.map(i => `⏰ ${i.hora} - ${i.paciente}`).join('\\n') : `_Sem compromissos_`) + `\\n\\n`;\n\ntexto += `*AGENDA MARIA* 👩🏽‍⚕️\\n`;\ntexto += (agendaMaria.length > 0 ? agendaMaria.map(i => `⏰ ${i.hora} - ${i.paciente}`).join('\\n') : `_Sem compromissos_`) + `\\n\\n`;\n\n// Adição dos totais refletindo apenas os atendimentos reais\nconst totalGeral = agendaBruna.length + agendaMaria.length;\ntexto += `📊 *Total de atendimentos:* ${totalGeral}`;\n\nreturn [{ json: { mensagem: texto } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -64
+      ],
+      "id": "144c3286-1b23-4d8a-9853-82292848ba50",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Phone",
+              "value": "5517981204296"
+            },
+            {
+              "name": "Body",
+              "value": "={{ $json.mensagem }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        832,
+        -64
+      ],
+      "id": "0c870b62-7129-4ed3-9a4d-24fe49b7e1d8",
+      "name": "Enviar Mensagem2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Agenda-Bruna",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Agenda-Maria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agenda-Maria": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Agenda-Bruna": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2026-02-11T21:00:17.013-03:00",
+          "Readable date": "February 11th 2026, 9:00:17 pm",
+          "Readable time": "9:00:17 pm",
+          "Day of week": "Wednesday",
+          "Year": "2026",
+          "Month": "February",
+          "Day of month": "11",
+          "Hour": "21",
+          "Minute": "00",
+          "Second": "17",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "6ca088e9-4327-49a1-9be4-97ad519c23a2",
+  "activeVersionId": "6ca088e9-4327-49a1-9be4-97ad519c23a2",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-05T22:26:57.732Z",
+      "createdAt": "2026-02-05T22:26:57.732Z",
+      "role": "workflow:owner",
+      "workflowId": "Qy8cEPLGOW4gbmZgwvNvk",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-23T17:36:01.532Z",
+    "createdAt": "2026-02-23T17:35:36.529Z",
+    "versionId": "6ca088e9-4327-49a1-9be4-97ad519c23a2",
+    "workflowId": "Qy8cEPLGOW4gbmZgwvNvk",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 21
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -160,
+          -48
+        ],
+        "id": "2ce4edfb-978d-477f-b394-f95f754f487d",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Pega a data atual\nconst agora = new Date();\n\n// 2. Força o ajuste de fuso (UTC-3 para Brasil) \nconst offsetBrasil = -3;\nconst dataLocal = new Date(agora.getTime() + (offsetBrasil * 60 * 60 * 1000));\n\n// --- ADICIONADO: BLOQUEIO DE SÁBADO ---\n// 0 = Domingo, 1 = Segunda, ..., 6 = Sábado\nconst diaSemanaHoje = dataLocal.getUTCDay();\n\nif (diaSemanaHoje === 6) {\n  // Se hoje for sábado, retorna vazio e o n8n para o fluxo aqui\n  return []; \n}\n// --------------------------------------\n\n// 3. Define amanhã baseado na data local corrigida\nconst amanha = new Date(dataLocal);\namanha.setDate(dataLocal.getUTCDate() + 1); \n\n// 4. Formata Strings (Mantive exatamente como seu original)\nconst ano = amanha.getUTCFullYear();\nconst mes = String(amanha.getUTCMonth() + 1).padStart(2, '0');\nconst dia = String(amanha.getUTCDate()).padStart(2, '0');\n\nconst dataFormatada = `${dia}/${mes}/${ano}`;\nconst inicio = `${ano}-${mes}-${dia}T00:00:00.000`;\nconst fim = `${ano}-${mes}-${dia}T23:59:59.999`;\n\nreturn {\n  inicio,\n  fim,\n  dataFormatada,\n  debug_info: {\n    servidor_agora: agora.toISOString(),\n    ajustado_brasil: dataLocal.toISOString(),\n    dia_semana_hoje: diaSemanaHoje // Adicionei isso aqui para te ajudar no debug\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          32,
+          -48
+        ],
+        "id": "634c0fcb-29bd-43ef-a0b0-99d439be17c0",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "bruna.luisa018@gmail.com",
+            "mode": "list",
+            "cachedResultName": "Bruna - Aplic Uberlândia"
+          },
+          "timeMin": "={{ $json.inicio }}",
+          "timeMax": "={{ $json.fim }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          240,
+          -144
+        ],
+        "id": "4004b6c3-d30a-4425-820e-c4b0e01e2830",
+        "name": "Agenda-Bruna",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "consultoramaria.aplic@gmail.com",
+            "mode": "list",
+            "cachedResultName": "Maria - Aplic Ituiutaba"
+          },
+          "timeMin": "={{ $json.inicio }}",
+          "timeMax": "={{ $json.fim }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          240,
+          16
+        ],
+        "id": "d6de16b1-3606-42cd-90c6-532616d21496",
+        "name": "Agenda-Maria",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          448,
+          -64
+        ],
+        "id": "39173be3-7747-4113-8755-dc949748e738",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "jsCode": "const todosEventos = items;\n\n// 1. Pega a data formatada corretamente do primeiro nó de código\nlet dataAmanha = \"\";\ntry {\n    dataAmanha = $('Code in JavaScript').first().json.dataFormatada;\n} catch (e) {\n    const d = new Date();\n    d.setDate(d.getDate() + 1);\n    dataAmanha = d.toLocaleDateString('pt-BR');\n}\n\n// Se não houver eventos válidos\nif (todosEventos.length === 0 || (todosEventos.length === 1 && !todosEventos[0].json.id)) {\n  return [{ json: { mensagem: `*RESUMO DA AGENDA - ${dataAmanha}* 📅\\n\\n_Nenhum agendamento encontrado para amanhã._` } }];\n}\n\nlet agendaBruna = [];\nlet agendaMaria = [];\n\ntodosEventos.forEach(e => {\n  const evento = e.json;\n  if (!evento.start || !evento.start.dateTime) return; \n\n  const summary = evento.summary || \"Sem título\";\n\n  // --- FILTRO: REMOVE AGENDAS BLOQUEADAS ---\n  // Verifica se o título contém \"agenda bloqueada\" antes de processar o restante\n  if (summary.toLowerCase().includes(\"agenda bloqueada\")) {\n    return; // Pula este item e vai para o próximo do loop\n  }\n  // ------------------------------------------\n\n  const hora = new Date(evento.start.dateTime).toLocaleTimeString('pt-BR', { \n    timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' \n  });\n  \n  // Mantém sua lógica de extrair o nome do paciente entre <>\n  const paciente = summary.includes(\"<>\") ? summary.split(\"<>\")[1].split(\"(\")[0].trim() : summary;\n  \n  const item = { hora, paciente, timestamp: new Date(evento.start.dateTime).getTime() };\n  const emailOrg = (evento.organizer && evento.organizer.email) ? evento.organizer.email.toLowerCase() : \"\";\n  \n  if (emailOrg.includes(\"bruna\")) {\n    agendaBruna.push(item);\n  } else {\n    agendaMaria.push(item);\n  }\n});\n\n// Ordenação por horário\nconst ordenar = (a, b) => a.timestamp - b.timestamp;\nagendaBruna.sort(ordenar);\nagendaMaria.sort(ordenar);\n\n// --- MONTAGEM DO TEXTO (EXATAMENTE COMO O ORIGINAL) ---\nlet texto = `*RESUMO DA AGENDA - ${dataAmanha}* 📅\\n\\n`;\n\ntexto += `*AGENDA BRUNA* 👩🏻‍⚕️\\n`;\ntexto += (agendaBruna.length > 0 ? agendaBruna.map(i => `⏰ ${i.hora} - ${i.paciente}`).join('\\n') : `_Sem compromissos_`) + `\\n\\n`;\n\ntexto += `*AGENDA MARIA* 👩🏽‍⚕️\\n`;\ntexto += (agendaMaria.length > 0 ? agendaMaria.map(i => `⏰ ${i.hora} - ${i.paciente}`).join('\\n') : `_Sem compromissos_`) + `\\n\\n`;\n\n// Adição dos totais refletindo apenas os atendimentos reais\nconst totalGeral = agendaBruna.length + agendaMaria.length;\ntexto += `📊 *Total de atendimentos:* ${totalGeral}`;\n\nreturn [{ json: { mensagem: texto } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          624,
+          -64
+        ],
+        "id": "144c3286-1b23-4d8a-9853-82292848ba50",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Phone",
+                "value": "5517981204296"
+              },
+              {
+                "name": "Body",
+                "value": "={{ $json.mensagem }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          832,
+          -64
+        ],
+        "id": "0c870b62-7129-4ed3-9a4d-24fe49b7e1d8",
+        "name": "Enviar Mensagem2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Agenda-Bruna",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Agenda-Maria",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agenda-Maria": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Agenda-Bruna": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 6ca088e9",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
