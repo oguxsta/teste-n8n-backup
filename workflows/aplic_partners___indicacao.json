@@ -1,0 +1,1430 @@
+{
+  "updatedAt": "2026-01-26T20:07:36.814Z",
+  "createdAt": "2025-12-17T16:45:09.861Z",
+  "id": "x3K7PzFXohOgUL7i",
+  "name": "Aplic Partners - Indicação",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const input = items[0].json.body;\n\n// 1. Lógica de Sorteio de Agente (IDs: 10, 9 ou 6)\nconst agentes = [10, 9, 6];\nconst agenteSorteado = agentes[Math.floor(Math.random() * agentes.length)];\n\nconst cleanName = (n) => n ? n.trim().toLowerCase().replace(/(^\\w|\\s\\w)/g, m => m.toUpperCase()) : \"\";\n\n// 2. MÉTODO DE NORMALIZAÇÃO EFICAZ (Garante +55DDD9XXXXXXXX)\nconst normalizeToFullFormat = (p) => {\n  if (!p) return \"\";\n  let c = p.replace(/\\D/g, \"\").replace(/^0+/, \"\");\n  if (c.length === 10 || c.length === 11) {\n    c = \"55\" + c;\n  }\n  if (c.startsWith(\"55\") && c.length === 12) {\n    c = c.substring(0, 4) + \"9\" + c.substring(4);\n  }\n  return \"+\" + c;\n};\n\n// 3. Execução\nconst telIndicado = normalizeToFullFormat(input[\"phone1\"]);\nconst telIndicador = normalizeToFullFormat(input[\"phone\"]);\n\nconst agora = new Date();\nconst dataFormatada = agora.toLocaleString('pt-BR', {\n  timeZone: 'America/Sao_Paulo',\n  day: '2-digit', month: '2-digit', year: 'numeric',\n  hour: '2-digit', minute: '2-digit', second: '2-digit'\n});\n\nconst dados = {\n  indicador_nome: cleanName(input[\"name\"]),\n  indicador_whatsapp: telIndicador,\n  indicado_nome: cleanName(input[\"name1\"]),\n  indicado_whatsapp: telIndicado,\n  motivo: input[\"text3\"] || \"Não informado\",\n  relacao: input[\"radio-relacao\"] || \"Não informada\",\n  data_br: dataFormatada,\n  agente_id: agenteSorteado\n};\n\n// 4. MENSAGEM PRIVADA DETALHADA (Para o Agente ler no Chatwoot)\n// Restaurado o layout completo com todos os campos do formulário\nconst mensagem = `📋 *NOVA INDICAÇÃO RECEBIDA*\n\n👤 *INDICADO:* ${dados.indicado_nome}\n📞 *CONTATO:* ${dados.indicado_whatsapp}\n\n🤝 *INDICADO POR:* ${dados.indicador_nome}\n📱 *WHATSAPP DO INDICADOR:* ${dados.indicador_whatsapp}\n🏷️ *RELAÇÃO:* ${dados.relacao}\n📝 *MOTIVO:* ${dados.motivo}\n\n🗓️ *DATA:* ${dados.data_br}`;\n\n\nreturn [{ json: { ...dados, mensagem_privada: mensagem } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        32
+      ],
+      "id": "421428d0-f51a-4652-9f7f-2bf916672240",
+      "name": "Normalização de Dados"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "url",
+              "name": "chatwoot.url",
+              "value": "https://chat.aplicgo.com/",
+              "type": "string"
+            },
+            {
+              "id": "acc",
+              "name": "chatwoot.account",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "inbox",
+              "name": "chatwoot.inboxid",
+              "value": "7",
+              "type": "string"
+            },
+            {
+              "id": "agent",
+              "name": "chatwoot.agent_id",
+              "value": "13",
+              "type": "string"
+            },
+            {
+              "id": "7c58272b-154c-4566-9ce6-2b717792261f",
+              "name": "indicador_nome",
+              "value": "={{ $json.indicador_nome }}",
+              "type": "string"
+            },
+            {
+              "id": "5bc1c489-7474-4068-837f-d5ea83e1fb52",
+              "name": "indicador_whatsapp",
+              "value": "={{ $json.indicador_whatsapp }}",
+              "type": "string"
+            },
+            {
+              "id": "808b7be3-38a7-4f99-9fc6-4578385c5020",
+              "name": "indicado_nome",
+              "value": "={{ $json.indicado_nome }}",
+              "type": "string"
+            },
+            {
+              "id": "a1629e32-6164-4c30-8bef-52f22d7c54a0",
+              "name": "indicado_whatsapp",
+              "value": "={{ $json.indicado_whatsapp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        32
+      ],
+      "id": "deb6f64d-9c6f-4fad-b237-2290fe0ba435",
+      "name": "Config Vars1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.encontrado }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "62caf882-76ef-404e-93f9-d07fd38080ae"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        32
+      ],
+      "id": "bca0c0ee-57fe-45f0-9ee4-e8e2d04e0f41",
+      "name": "Contato Existe?1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": {{ JSON.stringify($('Normalização de Dados').item.json.mensagem_privada) }},\n  \"message_type\": \"outgoing\",\n  \"private\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        -80
+      ],
+      "id": "d52c642e-799a-4a7e-975f-2d2f57a17f26",
+      "name": "Add Nota Privada1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"indicação\"]}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1040,
+        -80
+      ],
+      "id": "009bb203-aa15-4d68-9c03-7e93c8b2579f",
+      "name": "Add Label1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "indicacao-aplicgo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1664,
+        32
+      ],
+      "id": "152a513b-326a-4762-91f7-4b1a0ff804e3",
+      "name": "Webhook",
+      "webhookId": "fc8a738a-cc5e-4b2b-a773-1b159e457807"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/contacts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbox_id\": {{ $('Config Vars1').item.json.chatwoot.inboxid }},\n  \"name\": \"{{ $('Config Vars1').item.json.indicado_nome }}\",\n  \"phone_number\": \"{{ $('Busca por Contato Chatwoot').item.json.input_phone }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -320,
+        144
+      ],
+      "id": "d9fb2935-1d3c-4c97-a30c-a8d9c20acf24",
+      "name": "Criar Contato1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/contacts/{{ $json.payload_completo?.id || $json.id }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -336,
+        -96
+      ],
+      "id": "226244fa-e664-4bf4-87bb-e633e369b327",
+      "name": "Pegar Conversa Existente1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbox_id\":{{ $json.payload.contact.contact_inboxes[0].inbox.id }} ,\n  \"contact_id\": \"{{ $json.payload.contact.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -128,
+        144
+      ],
+      "id": "728897bb-011d-4ea4-919c-95feee9310c0",
+      "name": "Criar Conversa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}/api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/assignments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assignee_id\": {{ $('Normalização de Dados').item.json.agente_id }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "e11c5ac5-5526-4c8e-8278-4d534943b962",
+      "name": "Atribuir Agente1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nó: \"Buscar Contato Chatwoot - Apenas Telefone\"\n\n// ========================================\n// 1. CONFIGURAÇÃO\n// ========================================\nconst CHATWOOT_CONFIG = {\n  url: 'https://chat.aplicgo.com',\n  accountId: '1',\n  apiKey: 'fmURrfLvWrJbtkAu6RUtQLYn',\n  retryDelay: 600 // ms entre tentativas\n};\n\n// ========================================\n// 2. RECUPERAÇÃO DE DADOS (NOVA LÓGICA)\n// ========================================\nlet phoneInput = null;\n\ntry {\n  // Busca direta conforme solicitado\n  phoneInput = $input.first().json.indicado_whatsapp;\n} catch (error) {\n  phoneInput = null;\n}\n\nif (!phoneInput) {\n  throw new Error('❌ Não foi possível recuperar o número de telefone no nó \"Buscar Lead por Telefone\"');\n}\n\nconsole.log('✅ Telefone recuperado para busca:', phoneInput);\n\n// ========================================\n// 3. FUNÇÃO DE BUSCA (MANTIDA)\n// ========================================\nasync function buscarContato(query, tipo) {\n  if (!query) return null;\n    \n  try {\n    console.log('🔍 Buscando por ' + tipo + ': \"' + query + '\"');\n      \n    const options = {\n      method: 'GET',\n      url: `${CHATWOOT_CONFIG.url}/api/v1/accounts/${CHATWOOT_CONFIG.accountId}/contacts/search`,\n      qs: { q: query },\n      headers: {\n        'api_access_token': CHATWOOT_CONFIG.apiKey,\n        'Content-Type': 'application/json'\n      },\n      json: true\n    };\n      \n    const response = await this.helpers.httpRequest(options);\n      \n    const contato = (response.payload && response.payload.length > 0) ? response.payload[0] : null;\n      \n    if (contato) {\n      console.log('✅ Encontrado por ' + tipo + '!');\n    }\n      \n    return contato;\n      \n  } catch (error) {\n    if (error.statusCode === 422) {\n      return null;\n    }\n    console.log('❌ Erro na busca por ' + tipo + ':', error.message);\n    return null;\n  }\n}\n\n// ========================================\n// 4. PREPARAÇÃO DAS VARIAÇÕES DE TELEFONE\n// ========================================\nconst telefoneRaw = phoneInput || '';\n// Remove tudo que não for número para gerar variações limpas\nconst telefone = telefoneRaw.toString().replace(/\\D/g, '');\n\n// Gera todas as variações de telefone\nconst variacoesTelefone = [];\n\nif (telefone) {\n  // 1. Telefone completo (ex: 5541988887777)\n  variacoesTelefone.push({ query: telefone, tipo: 'telefone_completo' });\n    \n  // 2. Sem código do país - 55 (ex: 41999887766)\n  if (telefone.startsWith('55') && telefone.length > 11) {\n    variacoesTelefone.push({ \n      query: telefone.slice(2), \n      tipo: 'telefone_sem_codigo_pais' \n    });\n  }\n\n  // 2.5. Formato Antigo: Remove 55 E remove o 9 verificador\n  if (telefone.startsWith('55') && telefone.length === 13 && telefone[4] === '9') {\n      const ddd = telefone.substring(2, 4); \n      const numeroSem9 = telefone.substring(5); \n      \n      variacoesTelefone.push({\n          query: ddd + numeroSem9,\n          tipo: 'telefone_legacy_sem_9'\n      });\n  }\n    \n  // 3. Últimos 8 dígitos (ex: 88887766)\n  if (telefone.length >= 8) {\n    variacoesTelefone.push({ \n      query: telefone.slice(-8), \n      tipo: 'telefone_reduzido' \n    });\n  }\n    \n  // 4. Formato original (caso tenha caracteres especiais como + ou - salvos)\n  if (telefoneRaw !== telefone && telefoneRaw.length > 0) {\n    variacoesTelefone.push({ \n      query: telefoneRaw, \n      tipo: 'telefone_original' \n    });\n  }\n}\n\nconsole.log('📞 ' + variacoesTelefone.length + ' variações de telefone geradas para busca');\n\n// ========================================\n// 5. BUSCA SEQUENCIAL (APENAS TELEFONE)\n// ========================================\nlet contato = null;\nlet encontradoPor = null;\n\n// Busca por todas as variações de telefone\nfor (let i = 0; i < variacoesTelefone.length; i++) {\n  const variacao = variacoesTelefone[i];\n    \n  contato = await buscarContato.call(this, variacao.query, variacao.tipo);\n    \n  if (contato) {\n    encontradoPor = variacao.tipo;\n    break;\n  }\n    \n  // Delay entre tentativas\n  if (i < variacoesTelefone.length - 1) {\n    await new Promise(resolve => setTimeout(resolve, CHATWOOT_CONFIG.retryDelay));\n  }\n}\n\n// ========================================\n// 6. RETORNO SIMPLIFICADO\n// ========================================\nif (!contato) {\n  console.log('❌ Contato não encontrado após todas as tentativas');\n    \n  return [{\n    json: {\n      encontrado: false,\n      tentativas: variacoesTelefone.length,\n      input_phone: phoneInput\n    }\n  }];\n}\n\nconsole.log('🎉 Contato encontrado!');\n\nreturn [{\n  json: {\n    // Dados do contato encontrado no Chatwoot\n    id: contato.id,\n    name: contato.name,\n    email: contato.email, // E-mail que está no Chatwoot (se houver)\n    phone_number: contato.phone_number,\n    identifier: contato.identifier,\n\n    // Payload Completo\n    payload_completo: contato,\n      \n    // Metadados da busca\n    encontrado: true,\n    encontrado_por: encontradoPor,\n      \n    // Dados originais de entrada\n    input_phone: phoneInput,\n      \n    // Flags úteis\n    tem_identifier: !!contato.identifier,\n    identifier_valido: contato.identifier?.includes('@s.whatsapp.net') || false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        32
+      ],
+      "id": "c7d26545-398f-4956-9a20-54e0b2850df5",
+      "name": "Busca por Contato Chatwoot"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.chatwoot.url }}api/v1/accounts/{{ $json.chatwoot.account }}/contacts/search?q={{ $json.indicado_whatsapp }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        256
+      ],
+      "id": "de4e5701-0d79-4b72-a199-77534d306ff0",
+      "name": "Buscar Contato CW2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/toggle_status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "open"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1728,
+        -96
+      ],
+      "id": "bcfb8168-29c0-4b68-a399-747348516029",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        736,
+        -80
+      ],
+      "id": "c064aff3-e81f-4fba-9346-53227eda80e3",
+      "name": "Get Tags",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qYj9hhaMLzVO0ydk",
+          "name": "CahtWoot Aplic #1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Tags que você deseja adicionar (se não existirem)\nconst tagsParaAdicionar = \"indicação\";\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"1-lead-novo\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -80
+      ],
+      "id": "3d8a30a5-ea55-4dec-98d0-5ca7653c1684",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "230d6c8b-201c-4c2d-ab83-27e31eb7ec94",
+              "leftValue": "={{ $('Busca por Contato Chatwoot').item.json.encontrado }}",
+              "rightValue": "open",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1216,
+        -80
+      ],
+      "id": "f623897b-8799-4d6d-b902-9cc7d095b29f",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        208,
+        -80
+      ],
+      "id": "e2d4f322-125d-4164-9359-157c0771a11c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e764735-1422-4674-bc91-100becf960a9",
+              "name": "id_conversation",
+              "value": "={{ $json.payload?.[0]?.id ?? $json.id ?? $json.conversation_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -80
+      ],
+      "id": "bc91de11-65c5-4d38-bb02-aac547a63848",
+      "name": "Set Conversation id"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        -96
+      ],
+      "id": "e91b3069-9533-4548-9a09-c4d133899688",
+      "name": "Wait1",
+      "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+    }
+  ],
+  "connections": {
+    "Normalização de Dados": {
+      "main": [
+        [
+          {
+            "node": "Config Vars1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Vars1": {
+      "main": [
+        [
+          {
+            "node": "Busca por Contato Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contato Existe?1": {
+      "main": [
+        [
+          {
+            "node": "Pegar Conversa Existente1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Contato1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Nota Privada1": {
+      "main": [
+        [
+          {
+            "node": "Get Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalização de Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Contato1": {
+      "main": [
+        [
+          {
+            "node": "Criar Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Conversa": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Pegar Conversa Existente1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atribuir Agente1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca por Contato Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Contato Existe?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tags": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Add Label1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Atribuir Agente1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Set Conversation id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Conversation id": {
+      "main": [
+        [
+          {
+            "node": "Add Nota Privada1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "Landingi.com",
+            "content-length": "143",
+            "accept": "*/*",
+            "accept-encoding": "gzip",
+            "content-type": "application/x-www-form-urlencoded",
+            "pxycmnc6xwlmn7r3": "bearer",
+            "x-forwarded-for": "63.32.197.131",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "63.32.197.131"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "name": "JESREEEL",
+            "phone": "4599083422",
+            "name1": "Luiz Gustavo Ferreira de Souza",
+            "phone1": "4599746605",
+            "text3": "a",
+            "radio-relacao": "Amigo",
+            "checkbox": "on",
+            "IP": "186.194.145.67"
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/indicacao-aplicgo",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "1b8abe2c-c48c-4cb0-97a9-e873fefe278a",
+  "activeVersionId": "1b8abe2c-c48c-4cb0-97a9-e873fefe278a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-17T16:45:09.861Z",
+      "createdAt": "2025-12-17T16:45:09.861Z",
+      "role": "workflow:owner",
+      "workflowId": "x3K7PzFXohOgUL7i",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-18T14:40:13.072Z",
+    "createdAt": "2025-12-18T14:35:39.791Z",
+    "versionId": "1b8abe2c-c48c-4cb0-97a9-e873fefe278a",
+    "workflowId": "x3K7PzFXohOgUL7i",
+    "nodes": [
+      {
+        "parameters": {
+          "jsCode": "const input = items[0].json.body;\n\n// 1. Lógica de Sorteio de Agente (IDs: 10, 9 ou 6)\nconst agentes = [10, 9, 6];\nconst agenteSorteado = agentes[Math.floor(Math.random() * agentes.length)];\n\nconst cleanName = (n) => n ? n.trim().toLowerCase().replace(/(^\\w|\\s\\w)/g, m => m.toUpperCase()) : \"\";\n\n// 2. MÉTODO DE NORMALIZAÇÃO EFICAZ (Garante +55DDD9XXXXXXXX)\nconst normalizeToFullFormat = (p) => {\n  if (!p) return \"\";\n  let c = p.replace(/\\D/g, \"\").replace(/^0+/, \"\");\n  if (c.length === 10 || c.length === 11) {\n    c = \"55\" + c;\n  }\n  if (c.startsWith(\"55\") && c.length === 12) {\n    c = c.substring(0, 4) + \"9\" + c.substring(4);\n  }\n  return \"+\" + c;\n};\n\n// 3. Execução\nconst telIndicado = normalizeToFullFormat(input[\"phone1\"]);\nconst telIndicador = normalizeToFullFormat(input[\"phone\"]);\n\nconst agora = new Date();\nconst dataFormatada = agora.toLocaleString('pt-BR', {\n  timeZone: 'America/Sao_Paulo',\n  day: '2-digit', month: '2-digit', year: 'numeric',\n  hour: '2-digit', minute: '2-digit', second: '2-digit'\n});\n\nconst dados = {\n  indicador_nome: cleanName(input[\"name\"]),\n  indicador_whatsapp: telIndicador,\n  indicado_nome: cleanName(input[\"name1\"]),\n  indicado_whatsapp: telIndicado,\n  motivo: input[\"text3\"] || \"Não informado\",\n  relacao: input[\"radio-relacao\"] || \"Não informada\",\n  data_br: dataFormatada,\n  agente_id: agenteSorteado\n};\n\n// 4. MENSAGEM PRIVADA DETALHADA (Para o Agente ler no Chatwoot)\n// Restaurado o layout completo com todos os campos do formulário\nconst mensagem = `📋 *NOVA INDICAÇÃO RECEBIDA*\n\n👤 *INDICADO:* ${dados.indicado_nome}\n📞 *CONTATO:* ${dados.indicado_whatsapp}\n\n🤝 *INDICADO POR:* ${dados.indicador_nome}\n📱 *WHATSAPP DO INDICADOR:* ${dados.indicador_whatsapp}\n🏷️ *RELAÇÃO:* ${dados.relacao}\n📝 *MOTIVO:* ${dados.motivo}\n\n🗓️ *DATA:* ${dados.data_br}`;\n\n\nreturn [{ json: { ...dados, mensagem_privada: mensagem } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1408,
+          32
+        ],
+        "id": "421428d0-f51a-4652-9f7f-2bf916672240",
+        "name": "Normalização de Dados"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "url",
+                "name": "chatwoot.url",
+                "value": "https://chat.aplicgo.com/",
+                "type": "string"
+              },
+              {
+                "id": "acc",
+                "name": "chatwoot.account",
+                "value": "1",
+                "type": "string"
+              },
+              {
+                "id": "inbox",
+                "name": "chatwoot.inboxid",
+                "value": "7",
+                "type": "string"
+              },
+              {
+                "id": "agent",
+                "name": "chatwoot.agent_id",
+                "value": "13",
+                "type": "string"
+              },
+              {
+                "id": "7c58272b-154c-4566-9ce6-2b717792261f",
+                "name": "indicador_nome",
+                "value": "={{ $json.indicador_nome }}",
+                "type": "string"
+              },
+              {
+                "id": "5bc1c489-7474-4068-837f-d5ea83e1fb52",
+                "name": "indicador_whatsapp",
+                "value": "={{ $json.indicador_whatsapp }}",
+                "type": "string"
+              },
+              {
+                "id": "808b7be3-38a7-4f99-9fc6-4578385c5020",
+                "name": "indicado_nome",
+                "value": "={{ $json.indicado_nome }}",
+                "type": "string"
+              },
+              {
+                "id": "a1629e32-6164-4c30-8bef-52f22d7c54a0",
+                "name": "indicado_whatsapp",
+                "value": "={{ $json.indicado_whatsapp }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1152,
+          32
+        ],
+        "id": "deb6f64d-9c6f-4fad-b237-2290fe0ba435",
+        "name": "Config Vars1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.encontrado }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "id": "62caf882-76ef-404e-93f9-d07fd38080ae"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -704,
+          32
+        ],
+        "id": "bca0c0ee-57fe-45f0-9ee4-e8e2d04e0f41",
+        "name": "Contato Existe?1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": {{ JSON.stringify($('Normalização de Dados').item.json.mensagem_privada) }},\n  \"message_type\": \"outgoing\",\n  \"private\": true\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          576,
+          -80
+        ],
+        "id": "d52c642e-799a-4a7e-975f-2d2f57a17f26",
+        "name": "Add Nota Privada1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\"labels\": [\"indicação\"]}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1040,
+          -80
+        ],
+        "id": "009bb203-aa15-4d68-9c03-7e93c8b2579f",
+        "name": "Add Label1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "indicacao-aplicgo",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1664,
+          32
+        ],
+        "id": "152a513b-326a-4762-91f7-4b1a0ff804e3",
+        "name": "Webhook",
+        "webhookId": "fc8a738a-cc5e-4b2b-a773-1b159e457807"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/contacts",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"inbox_id\": {{ $('Config Vars1').item.json.chatwoot.inboxid }},\n  \"name\": \"{{ $('Config Vars1').item.json.indicado_nome }}\",\n  \"phone_number\": \"{{ $('Busca por Contato Chatwoot').item.json.input_phone }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -320,
+          144
+        ],
+        "id": "d9fb2935-1d3c-4c97-a30c-a8d9c20acf24",
+        "name": "Criar Contato1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/contacts/{{ $json.payload_completo?.id || $json.id }}/conversations",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -336,
+          -96
+        ],
+        "id": "226244fa-e664-4bf4-87bb-e633e369b327",
+        "name": "Pegar Conversa Existente1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"inbox_id\":{{ $json.payload.contact.contact_inboxes[0].inbox.id }} ,\n  \"contact_id\": \"{{ $json.payload.contact.id }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -128,
+          144
+        ],
+        "id": "728897bb-011d-4ea4-919c-95feee9310c0",
+        "name": "Criar Conversa",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}/api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/assignments",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"assignee_id\": {{ $('Normalização de Dados').item.json.agente_id }}\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1392,
+          16
+        ],
+        "id": "e11c5ac5-5526-4c8e-8278-4d534943b962",
+        "name": "Atribuir Agente1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Nó: \"Buscar Contato Chatwoot - Apenas Telefone\"\n\n// ========================================\n// 1. CONFIGURAÇÃO\n// ========================================\nconst CHATWOOT_CONFIG = {\n  url: 'https://chat.aplicgo.com',\n  accountId: '1',\n  apiKey: 'fmURrfLvWrJbtkAu6RUtQLYn',\n  retryDelay: 600 // ms entre tentativas\n};\n\n// ========================================\n// 2. RECUPERAÇÃO DE DADOS (NOVA LÓGICA)\n// ========================================\nlet phoneInput = null;\n\ntry {\n  // Busca direta conforme solicitado\n  phoneInput = $input.first().json.indicado_whatsapp;\n} catch (error) {\n  phoneInput = null;\n}\n\nif (!phoneInput) {\n  throw new Error('❌ Não foi possível recuperar o número de telefone no nó \"Buscar Lead por Telefone\"');\n}\n\nconsole.log('✅ Telefone recuperado para busca:', phoneInput);\n\n// ========================================\n// 3. FUNÇÃO DE BUSCA (MANTIDA)\n// ========================================\nasync function buscarContato(query, tipo) {\n  if (!query) return null;\n    \n  try {\n    console.log('🔍 Buscando por ' + tipo + ': \"' + query + '\"');\n      \n    const options = {\n      method: 'GET',\n      url: `${CHATWOOT_CONFIG.url}/api/v1/accounts/${CHATWOOT_CONFIG.accountId}/contacts/search`,\n      qs: { q: query },\n      headers: {\n        'api_access_token': CHATWOOT_CONFIG.apiKey,\n        'Content-Type': 'application/json'\n      },\n      json: true\n    };\n      \n    const response = await this.helpers.httpRequest(options);\n      \n    const contato = (response.payload && response.payload.length > 0) ? response.payload[0] : null;\n      \n    if (contato) {\n      console.log('✅ Encontrado por ' + tipo + '!');\n    }\n      \n    return contato;\n      \n  } catch (error) {\n    if (error.statusCode === 422) {\n      return null;\n    }\n    console.log('❌ Erro na busca por ' + tipo + ':', error.message);\n    return null;\n  }\n}\n\n// ========================================\n// 4. PREPARAÇÃO DAS VARIAÇÕES DE TELEFONE\n// ========================================\nconst telefoneRaw = phoneInput || '';\n// Remove tudo que não for número para gerar variações limpas\nconst telefone = telefoneRaw.toString().replace(/\\D/g, '');\n\n// Gera todas as variações de telefone\nconst variacoesTelefone = [];\n\nif (telefone) {\n  // 1. Telefone completo (ex: 5541988887777)\n  variacoesTelefone.push({ query: telefone, tipo: 'telefone_completo' });\n    \n  // 2. Sem código do país - 55 (ex: 41999887766)\n  if (telefone.startsWith('55') && telefone.length > 11) {\n    variacoesTelefone.push({ \n      query: telefone.slice(2), \n      tipo: 'telefone_sem_codigo_pais' \n    });\n  }\n\n  // 2.5. Formato Antigo: Remove 55 E remove o 9 verificador\n  if (telefone.startsWith('55') && telefone.length === 13 && telefone[4] === '9') {\n      const ddd = telefone.substring(2, 4); \n      const numeroSem9 = telefone.substring(5); \n      \n      variacoesTelefone.push({\n          query: ddd + numeroSem9,\n          tipo: 'telefone_legacy_sem_9'\n      });\n  }\n    \n  // 3. Últimos 8 dígitos (ex: 88887766)\n  if (telefone.length >= 8) {\n    variacoesTelefone.push({ \n      query: telefone.slice(-8), \n      tipo: 'telefone_reduzido' \n    });\n  }\n    \n  // 4. Formato original (caso tenha caracteres especiais como + ou - salvos)\n  if (telefoneRaw !== telefone && telefoneRaw.length > 0) {\n    variacoesTelefone.push({ \n      query: telefoneRaw, \n      tipo: 'telefone_original' \n    });\n  }\n}\n\nconsole.log('📞 ' + variacoesTelefone.length + ' variações de telefone geradas para busca');\n\n// ========================================\n// 5. BUSCA SEQUENCIAL (APENAS TELEFONE)\n// ========================================\nlet contato = null;\nlet encontradoPor = null;\n\n// Busca por todas as variações de telefone\nfor (let i = 0; i < variacoesTelefone.length; i++) {\n  const variacao = variacoesTelefone[i];\n    \n  contato = await buscarContato.call(this, variacao.query, variacao.tipo);\n    \n  if (contato) {\n    encontradoPor = variacao.tipo;\n    break;\n  }\n    \n  // Delay entre tentativas\n  if (i < variacoesTelefone.length - 1) {\n    await new Promise(resolve => setTimeout(resolve, CHATWOOT_CONFIG.retryDelay));\n  }\n}\n\n// ========================================\n// 6. RETORNO SIMPLIFICADO\n// ========================================\nif (!contato) {\n  console.log('❌ Contato não encontrado após todas as tentativas');\n    \n  return [{\n    json: {\n      encontrado: false,\n      tentativas: variacoesTelefone.length,\n      input_phone: phoneInput\n    }\n  }];\n}\n\nconsole.log('🎉 Contato encontrado!');\n\nreturn [{\n  json: {\n    // Dados do contato encontrado no Chatwoot\n    id: contato.id,\n    name: contato.name,\n    email: contato.email, // E-mail que está no Chatwoot (se houver)\n    phone_number: contato.phone_number,\n    identifier: contato.identifier,\n\n    // Payload Completo\n    payload_completo: contato,\n      \n    // Metadados da busca\n    encontrado: true,\n    encontrado_por: encontradoPor,\n      \n    // Dados originais de entrada\n    input_phone: phoneInput,\n      \n    // Flags úteis\n    tem_identifier: !!contato.identifier,\n    identifier_valido: contato.identifier?.includes('@s.whatsapp.net') || false\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -944,
+          32
+        ],
+        "id": "c7d26545-398f-4956-9a20-54e0b2850df5",
+        "name": "Busca por Contato Chatwoot"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.chatwoot.url }}api/v1/accounts/{{ $json.chatwoot.account }}/contacts/search?q={{ $json.indicado_whatsapp }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          672,
+          256
+        ],
+        "id": "de4e5701-0d79-4b72-a199-77534d306ff0",
+        "name": "Buscar Contato CW2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/toggle_status",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "status",
+                "value": "open"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1728,
+          -96
+        ],
+        "id": "bcfb8168-29c0-4b68-a399-747348516029",
+        "name": "HTTP Request",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $('Config Vars1').item.json.chatwoot.url }}api/v1/accounts/{{ $('Config Vars1').item.json.chatwoot.account }}/conversations/{{ $('Set Conversation id').item.json.id_conversation }}/labels",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {}
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          736,
+          -80
+        ],
+        "id": "c064aff3-e81f-4fba-9346-53227eda80e3",
+        "name": "Get Tags",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "qYj9hhaMLzVO0ydk",
+            "name": "CahtWoot Aplic #1"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Tags que você deseja adicionar (se não existirem)\nconst tagsParaAdicionar = \"indicação\";\n\n// 2. Tags que você deseja remover (se existirem)\n// Deixe vazio (\"\") ou liste as tags separadas por vírgula.\nconst tagsParaRemover = \"1-lead-novo\";\n\n// 3. Pega o array de tags do nó anterior \"Get Tags\" (usando sintaxe V1)\n// Se não houver tags existentes, será um array vazio ([]).\nconst tagsExistentes = $('Get Tags').first().json.payload || [];\n\n\n// --- Processamento ---\n\n// 4. Cria um Set de todas as tags que DEVERÃO PERMANECER ou SER ADICIONADAS\nconst setDeTagsFinais = new Set();\n\n// 5. Converte a string de tags a serem removidas para um Set para pesquisa rápida\nconst setDeTagsParaRemover = new Set(\n    tagsParaRemover.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)\n);\n\n// 6. Adiciona ao SetFinais as tags EXISTENTES que NÃO DEVEM ser removidas\ntagsExistentes.forEach(tag => {\n    // Adiciona a tag existente APENAS se ela NÃO estiver na lista de remoção\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n// 7. Adiciona as tags NOVAS/DESEJADAS ao SetFinais (o Set ignora duplicatas automaticamente)\nconst tagsNovas = tagsParaAdicionar.split(',').map(tag => tag.trim());\ntagsNovas.forEach(tag => {\n    // Adiciona a tag APENAS se ela NÃO estiver na lista de remoção (para garantir)\n    if (!setDeTagsParaRemover.has(tag)) {\n        setDeTagsFinais.add(tag);\n    }\n});\n\n\n// --- Saída ---\n\n// 8. Converte o Set de volta para um Array\nconst tagsArray = Array.from(setDeTagsFinais);\n\n// 9. Mapeia o array para adicionar as aspas em cada tag e junta em uma string.\nconst tagsAtualizadasString = tagsArray\n    .map(tag => `\"${tag}\"`) // Adiciona aspas (ex: \"tag_a\")\n    .join(','); // Junta as tags com vírgula (ex: \"tag_a\",\"tag_b\")\n\n// 10. Retorna o resultado no formato de string\nreturn [{\n    json: {\n        // Retorna a lista de tags atualizadas no formato \"tag1\",\"tag2\"\n        tagsAtualizadas: tagsAtualizadasString,\n    }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          -80
+        ],
+        "id": "3d8a30a5-ea55-4dec-98d0-5ca7653c1684",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "230d6c8b-201c-4c2d-ab83-27e31eb7ec94",
+                "leftValue": "={{ $('Busca por Contato Chatwoot').item.json.encontrado }}",
+                "rightValue": "open",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1216,
+          -80
+        ],
+        "id": "f623897b-8799-4d6d-b902-9cc7d095b29f",
+        "name": "If"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          208,
+          -80
+        ],
+        "id": "e2d4f322-125d-4164-9359-157c0771a11c",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7e764735-1422-4674-bc91-100becf960a9",
+                "name": "id_conversation",
+                "value": "={{ $json.payload?.[0]?.id ?? $json.id ?? $json.conversation_id }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          384,
+          -80
+        ],
+        "id": "bc91de11-65c5-4d38-bb02-aac547a63848",
+        "name": "Set Conversation id"
+      },
+      {
+        "parameters": {
+          "amount": 0.5
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          1584,
+          -96
+        ],
+        "id": "e91b3069-9533-4548-9a09-c4d133899688",
+        "name": "Wait1",
+        "webhookId": "6d281f4c-ee38-4390-a5e2-75a48ce4aa96"
+      }
+    ],
+    "connections": {
+      "Normalização de Dados": {
+        "main": [
+          [
+            {
+              "node": "Config Vars1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Config Vars1": {
+        "main": [
+          [
+            {
+              "node": "Busca por Contato Chatwoot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Contato Existe?1": {
+        "main": [
+          [
+            {
+              "node": "Pegar Conversa Existente1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Criar Contato1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Nota Privada1": {
+        "main": [
+          [
+            {
+              "node": "Get Tags",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Label1": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Normalização de Dados",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Criar Contato1": {
+        "main": [
+          [
+            {
+              "node": "Criar Conversa",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Criar Conversa": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Pegar Conversa Existente1": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Atribuir Agente1": {
+        "main": [
+          [
+            {
+              "node": "Wait1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca por Contato Chatwoot": {
+        "main": [
+          [
+            {
+              "node": "Contato Existe?1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Tags": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Add Label1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Wait1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Atribuir Agente1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Set Conversation id",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Conversation id": {
+        "main": [
+          [
+            {
+              "node": "Add Nota Privada1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 1b8abe2c",
+    "description": "Atualizado: Inserido Merge após bifurcação;\nEm vez de adicionar apenas, inseri um get tags existentes, para ser adicionado as tags novas (Chatwoot substitui as tags, não adiciona);\nRamificação caso o lead foi criado, atribuir agente, caso encontrado, não atribuir (pode tirar de um e jogar para outro);\nInserido ao final, uma confirmação para \"abrir a conversa\", assim conversas fechadas serão reabertas ao receber a indicação\nCorreção de erros ao bifurcar saídas diferentes (necessário definir id conversation - nó set)",
+    "autosaved": false
+  },
+  "tags": []
+}
