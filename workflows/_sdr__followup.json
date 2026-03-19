@@ -1,0 +1,1950 @@
+{
+  "updatedAt": "2026-02-18T22:55:28.754Z",
+  "createdAt": "2026-01-27T03:21:57.017Z",
+  "id": "3dibdxEyuwW1QyMtYWsgS",
+  "name": "[SDR] FollowUp",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        16
+      ],
+      "id": "0039f694-aee2-48a6-a788-c89d75196e50",
+      "name": "Webhook",
+      "webhookId": "960e56e8-1daf-4db0-aa35-9f76e9cf07d9"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analise o contexto e decida a ação de follow-up.",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=<system>\nVocê é um agente de follow-up que decide SE e COMO reengajar leads inativos.\n\n<business_context>\nAplic&Go: protocolo de emagrecimento com GLP-1 (canetinhas) + acompanhamento médico/nutricional.\nLeads já passaram por qualificação inicial. Este agente atua quando param de responder.\n</business_context>\n\n<context>\n<attempt>{{ $('Webhook').item.json.body.tentativa }}</attempt>\n<time_since_last>{{ $('Tempo e Mensagens recebidas').item.json.minutos_sem_resposta }}</time_since_last>\n<conversation>{{ $json.mensagem }}</conversation>\n<dynamic_instruction>{{ $('Webhook').item.json.body['instrução'] || \"\"}}</dynamic_instruction>\n</context>\n\n<decision_flow>\nEXECUTE NESTA ORDEM EXATA — pare ao primeiro match:\n\nPASSO 1 → QUEM ENVIOU A ÚLTIMA MENSAGEM?\n  - Se a última mensagem da conversa é do LEAD → should_send: false, stop_chain: false\n    Reasoning: \"PULAR: Lead enviou a última mensagem, não há vácuo a preencher\"\n  - Se a última mensagem é do ATENDENTE → continuar para Passo 2\n\nPASSO 2 → VERIFICAR REGRAS DE BLOQUEIO TOTAL (validation_rules › BLOQUEAR)\n  - Se qualquer regra de bloqueio se aplica → should_send: false, stop_chain: true\n\nPASSO 3 → VERIFICAR REGRAS DE PULAR (validation_rules › PULAR)\n  - Se qualquer regra de pular se aplica → should_send: false, stop_chain: false\n\nPASSO 4 → VERIFICAR SE DEVE ENVIAR (validation_rules › ENVIAR)\n  - Se contexto de envio se aplica → should_send: true\n\nPASSO 5 → CLASSIFICAR ESTÁGIO (para personalizar a mensagem):\n  - QUALIFICACAO: Lead informou objetivos/meta de kg mas não avançou para detalhes do protocolo\n  - PROTOCOLO: Lead recebeu explicação do método/tratamento mas não reagiu\n  - PRECO: Lead recebeu estimativa de investimento e silenciou\n\nPASSO 6 → APLICAR instrução dinâmica e PERSONALIZAR com dados da conversa\n  - Se não tiver nome do lead, personalize retirando o nome. Nunca envie \"[Nome]\"\n</decision_flow>\n\n<validation_rules>\n\n<!-- ═══════════════════════════════════════════════════════════ -->\n<!-- BLOQUEAR — should_send: false, stop_chain: true            -->\n<!-- ═══════════════════════════════════════════════════════════ -->\n\nBLOQUEAR-1 | AGENDAMENTO CONFIRMADO:\n- Atendente confirmou data E hora específica de forma definitiva\n- Padrões: \"até [dia] às [hora]\", \"[dia da semana] [hora]\", \"dia X às Y\", \"confirmado para [data]\"\n- Exemplos: \"até terça às 09:00\", \"quarta 14h\", \"amanhã 10h\", \"confirmado pra sexta\"\n- Reasoning: \"BLOQUEAR: Agendamento confirmado [data/hora], bloqueando chain\"\n\nBLOQUEAR-2 | AGENDAMENTO EM PROCESSO / CONVERSA DE FECHAMENTO:\n- Conversa está ativamente tratando de definir horário (mesmo sem data final confirmada)\n- Padrões: \"qual horário prefere?\", \"tenho [opção A] ou [opção B]\", \"vou verificar disponibilidade\",\n  \"pode ser [dia]?\", \"estou verificando agenda\", \"vou confirmar com a equipe\"\n- Inclui: lead disse que vai confirmar, atendente aguarda retorno sobre horário\n- Reasoning: \"BLOQUEAR: Conversa em fase de agendamento ativo, bloqueando chain\"\n\nBLOQUEAR-3 | CONVERSA FINALIZADA — EXPLÍCITA:\n- Lead encerrou com: \"obrigado/obg\", \"valeu\", \"tá bom\", \"ok então\", \"vou deixar\", \"até mais\", \"tchau\"\n- E atendente respondeu com despedida:\n  * \"quando fizer sentido\", \"fico à disposição\", \"me chama quando\", \"te ajudo quando precisar\"\n  * Emoji final: 💚, 💙, ✨, 🙏\n- Reasoning: \"BLOQUEAR: Conversa encerrada mutuamente de forma explícita, bloqueando chain\"\n\nBLOQUEAR-4 | CONVERSA FINALIZADA — IMPLÍCITA:\n- Mesmo sem despedida formal, a conversa chegou a uma conclusão natural. Sinais:\n  * Lead recebeu todas as informações que pediu e não há pergunta pendente do atendente\n  * Nas mensagens ANTERIORES (não apenas na última) houve definição clara de próximos passos\n    (ex: \"vou pensar\", \"vou falar com meu marido\", \"me manda o link\", \"vou entrar no site\")\n  * A última mensagem do atendente foi informativa/conclusiva, não uma pergunta aberta\n  * O contexto geral indica que o lead saiu satisfeito ou com uma decisão tomada\n- Reasoning: \"BLOQUEAR: Conversa com conclusão implícita detectada — [motivo específico], bloqueando chain\"\n\nBLOQUEAR-5 | LEAD DECLINOU:\n- \"Vou deixar pra depois\", \"não vou fazer agora\", \"fica pra próxima\", \"não tenho interesse\"\n- Atendente aceitou sem insistir\n- Reasoning: \"BLOQUEAR: Lead declinou educadamente, bloqueando chain\"\n\nBLOQUEAR-6 | ATENDENTE DEU ENCERRAMENTO FINAL:\n- Frases conclusivas: \"quando fizer sentido pra você\", \"pode me procurar quando\", \"me chama quando decidir\"\n- Acompanhadas de emoji de despedida (💚, 💙, ✨, 🙏)\n- Reasoning: \"BLOQUEAR: Atendente finalizou aguardando lead retornar, bloqueando chain\"\n\n<!-- ═══════════════════════════════════════════════════════════ -->\n<!-- PULAR — should_send: false, stop_chain: false              -->\n<!-- ═══════════════════════════════════════════════════════════ -->\n\nPULAR-1 | COMPROMISSO TEMPORAL AINDA VÁLIDO:\n- Lead pediu tempo para consultar alguém (marido, esposa, médico)\n- Atendente deu prazo específico\n- Tentativa atual é T1, T2, T3 ou T4 (primeiras 6h30min)\n- A partir de T5, considerar prazo expirado e executar\n- Reasoning: \"PULAR: Lead pediu tempo até [prazo], respeitando tentativas iniciais\"\n\n<!-- ═══════════════════════════════════════════════════════════ -->\n<!-- ENVIAR — should_send: true                                 -->\n<!-- ═══════════════════════════════════════════════════════════ -->\n\nENVIAR — aplicar quando NENHUMA regra acima foi ativada E:\n- Atendente fez uma pergunta direta e o lead não respondeu (vácuo claro)\n- Lead estava no meio de uma decisão e parou de responder\n- Conversa estava fluindo com interesse ativo e foi interrompida sem conclusão\n- Lead demonstrou interesse explícito mas deixou de responder\n- Atendente apresentou opções de horário e lead não escolheu nenhuma\n- Script de conversa chegou a um ponto de pergunta/ação e o lead sumiu\n\n</validation_rules>\n\n<few_shot_examples>\n<!-- Exemplos de raciocínio correto para calibrar o modelo -->\n\nEXEMPLO 1 — Última mensagem do Lead (PULAR):\n  Conversa: [...] Atendente: \"Qual horário prefere, manhã ou tarde?\" Lead: \"Tarde!\"\n  → Última msg = Lead → PULAR (lead respondeu, não há vácuo)\n\nEXEMPLO 2 — Agendamento em processo (ENVIAR):\n  Conversa: [...] Atendente: \"Tenho terça às 10h ou quinta às 14h, qual prefere?\" [sem resposta do lead]\n  → Última msg = Atendente, mas conversa está em fase de agendamento → ENVIAR\n  ATENÇÃO: Este caso deve ENVIAR porque a pergunta é sobre horário de agendamento, mas se já tivesse avançado esta etapa, seria bloquear caso não tenha sido uma pergunta diretamente sem resposta.\n\nEXEMPLO 3 — Vácuo real após pergunta de qualificação (ENVIAR):\n  Conversa: [...] Atendente: \"Qual é sua meta de emagrecimento?\" [sem resposta]\n  → Última msg = Atendente, pergunta aberta sem resposta → ENVIAR\n\nEXEMPLO 4 — Finalização implícita (BLOQUEAR-4):\n  Conversa: Lead perguntou sobre preço → Atendente explicou → Lead disse \"entendi, vou pensar\"\n  → Atendente: \"Claro! Qualquer dúvida estou aqui 💚\" [sem pergunta pendente]\n  → Conclusão natural detectada → BLOQUEAR-4\n\nEXEMPLO 5 — Encerramento explícito (BLOQUEAR-3):\n  Lead: \"Obg pela atenção!\" → Atendente: \"Disponha! Me chama quando quiser 💚\"\n  → BLOQUEAR-3\n\nEXEMPLO 6 — Pergunta de script sem resposta (ENVIAR):\n  Atendente: \"Você já tentou outros métodos antes?\" [lead sumiu]\n  → Vácuo após pergunta de script → ENVIAR\n</few_shot_examples>\n\n<message_rules>\nPERSONALIZAÇÃO:\n- Usar nome do lead quando disponível\n- Referenciar dados específicos (\"aqueles 10kg\", \"sua meta de emagrecer até o verão\")\n- Adaptar tom ao lead (formal/informal)\n\nTOM:\n- Consultivo e desapegado\n- Curto e fácil de responder\n- Sem saudações desnecessárias\n- Nunca soar desesperado ou insistente\n\nMÍDIAS:\n- Texto primeiro, mídia em nova linha\n- Formato: [tipo_nome_numero]\n- Fotos: sempre 5 sequenciais [imagem_provasocial_1] a [imagem_provasocial_5]\n- Vídeos: [video_depoimento_1] ou [video_pov_1]\n\nSE JÁ ENVIOU ESSA MÍDIA ANTES:\n- Gerar follow-up alternativo curto e objetivo\n- Foco em gerar alta taxa de resposta\n- Usar pergunta direta ou mudança de ângulo\n- Manter tom profissional e consultivo\n</message_rules>\n\n<output>\nJSON válido:\n{\n  \"should_send\": boolean,\n  \"message\": \"texto com referências de mídia ou null\",\n  \"reasoning\": \"decisão baseada em validation_rules\",\n  \"stop_chain\": boolean\n}\n\nPADRÃO DE REASONING:\n\"[AÇÃO]: [MOTIVO específico da validation_rule]\"\n\nExemplos:\n\"ENVIAR: Lead abandonou após pergunta sobre meta de emagrecimento, tent2 aplicada\"\n\"ENVIAR: Atendente apresentou opções de horário mas lead não escolheu — vácuo de decisão\"\n\"BLOQUEAR: Agendamento confirmado terça 09:00, bloqueando chain\"\n\"BLOQUEAR: Conversa em fase de agendamento ativo (atendente aguarda escolha de horário), bloqueando chain\"\n\"BLOQUEAR: Conversa encerrada mutuamente com despedida explícita, bloqueando chain\"\n\"BLOQUEAR: Conclusão implícita — lead disse 'vou pensar' e atendente finalizou sem pergunta pendente, bloqueando chain\"\n\"BLOQUEAR: Lead declinou 'vou deixar pra depois' e atendente aceitou, bloqueando chain\"\n\"PULAR: Lead enviou a última mensagem, não há vácuo a preencher\"\n\"PULAR: Lead pediu tempo até hoje à noite, respeitando tentativas iniciais\"\n</output>\n</system>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        16
+      ],
+      "id": "505de92d-b7a9-4677-8c77-32c63d80b69a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.1",
+          "mode": "list",
+          "cachedResultName": "gpt-5.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        240
+      ],
+      "id": "2439040e-4ffd-4953-a72e-550da7a1bc4b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Q1veBoP920goLjWy",
+          "name": "OpenAi account Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"auth\": { \n    \"dinastia-token\": \"{{ $('Webhook').item.json.body.auth['dinastia-token'] }}\"\n  },\n  \"to\": \"{{ $('Webhook').item.json.body.to }}\",\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": {\n      \"body\": \"{{ $json.output.message }}\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1472,
+        -64
+      ],
+      "id": "cf9981d4-ce96-4b4c-91c7-908a9c66a2bf",
+      "name": "Enviar Mensagem"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node: \"Calcular Próximo Follow-up\"\n// Tipo: Code\n// Posição: Após enviar WhatsApp com sucesso\n\nconst body = $('Webhook').first().json.body;\n\n// Extrai tentativa atual e CONVERTE PARA NÚMERO\nconst tentativaAtual = parseInt(body.tentativa) || 1;\n\n// ========================================\n// CONFIGURAÇÃO DE INTERVALOS\n// ========================================\nconst config = {\n  intervalos_minutos: {\n    1: 30,      // após 1ª msg → aguarda 30min\n    2: 90,      // após 2ª msg → aguarda 1h30min\n    3: 180,     // após 3ª msg → aguarda 3h\n    4: 360,     // após 4ª msg → aguarda 6h\n    5: 720,\n    6: 1440\n  },\n  max_tentativas: 5,\n  horario_comercial: {\n    inicio: 9,   // 9h\n    fim: 20      // 20h\n  },\n  timezone_offset: -3  // 🔥 BRASIL (UTC-3)\n};\n\n// Instruções customizadas por tentativa\nconst instrucoes = {\n  1: `TENTATIVA 1 (30min)\n\nOBJETIVO: Reativar leads que podem ter sido interrompidos momentaneamente.\n\nMENSAGEM:\n\"[Nome]?\"\nUtilize o nome do lead, caso não houver, mande um \"Oi, ta por aí?\"\n\nAPLICAÇÃO: Todos os estágios (QUALIFICACAO, PROTOCOLO, PRECO)`,\n\n  2: `TENTATIVA 2 (2h)\n\nOBJETIVO: Gerar engajamento através de pergunta empática.\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], sobre esses [X]kg que você quer perder, isso é algo importante pra você agora? Tem te incomodado muito?\"\n\nPersonalizar [X] com meta mencionada. Se não mencionou número: \"sobre o emagrecimento que você busca\".\n\nPROTOCOLO:\n\"Seria algo assim que você está buscando?\"\n\nPRECO:\n\"O investimento condiz com o que você esperava?\"`,\n\n  3: `TENTATIVA 3 (3h30min)\n\nOBJETIVO: Prova social visual com resultados reais.\n\nRECURSO:\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], olha esses resultados de pacientes que também queriam perder [X]kg 👇\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\"\n\nPROTOCOLO:\n\"Sei que pode parecer bom demais pra ser verdade, mas olha esses resultados reais 👇\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\"\n\nPRECO:\n\"Veja o que essas pessoas conquistaram com o investimento 👇\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\"\n\nSE JÁ ENVIOU FOTOS ANTES:\nGerar follow-up alternativo curto e objetivo.\nExemplos: \"[Nome], o que mais te deixou na dúvida?\" ou \"Qual sua maior preocupação neste momento?\"`,\n\n  4: `TENTATIVA 4 (5h)\n\nOBJETIVO: Prova social testimonial em vídeo.\n\nRECURSO:\n[video_depoimento_1]\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"A Ana Flávia conta aqui como foi o processo dela. Vale assistir 🎥\n[video_depoimento_1]\"\n\nPROTOCOLO:\n\"A Ana Flávia conta aqui como foi o processo dela. Vale assistir 🎥\n[video_depoimento_1]\"\n\nPRECO:\n\"A Ana Flávia fala sobre o processo completo e como valeu o investimento 🎥\n[video_depoimento_1]\"\n\nSE JÁ ENVIOU VÍDEO DEPOIMENTO ANTES:\nGerar follow-up alternativo profissional.\nExemplos: \"[Nome], o que seria ideal pra você em um tratamento?\" ou \"O que você já tentou antes que não funcionou?\"`,\n\n  5: `TENTATIVA 5 (6h30min)\n\nOBJETIVO: Educação visual do procedimento real.\n\nRECURSO:\n[video_pov_1]\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], filmamos como é uma aplicação aqui pra você ter ideia do processo 🎥\n[video_pov_1]\"\n\nPROTOCOLO:\n\"Pra você entender melhor como funciona na prática, olha esse vídeo de uma aplicação 🎥\n[video_pov_1]\"\n\nPRECO:\n\"Antes de decidir, vê como é simples e rápido o procedimento 🎥\n[video_pov_1]\"\n\nSE JÁ ENVIOU VÍDEO POV ANTES:\nGerar follow-up final estratégico.\nExemplos: \"[Nome], o que ainda te impede de dar esse passo?\" ou \"Sente que falta alguma informação ou é questão de timing?\"`,\n\n  6: `TENTATIVA 6 (8h)\n\nOBJETIVO: Encerramento respeitoso.\n\nMENSAGEM UNIVERSAL:\n\"[Nome], percebo que nossa conversa travou. Prefere que eu encerre por aqui ou ficou alguma dúvida que posso esclarecer?\"\n\nAPÓS ENVIO:\nstop_chain: true`\n};\n// ========================================\n// CALCULA PRÓXIMA TENTATIVA\n// ========================================\nconst proximaTentativa = tentativaAtual + 1;\n\n// Verifica se atingiu limite\nif (proximaTentativa > config.max_tentativas) {\n  return [{\n    json: {\n      agendar_proximo: false,\n      tentativa_atual: tentativaAtual,\n      proxima_tentativa: proximaTentativa,\n      motivo: \"Atingiu máximo de tentativas\"\n    }\n  }];\n}\n\n// ========================================\n// CALCULA HORÁRIO DO PRÓXIMO FOLLOW-UP\n// ========================================\nconst minutosProximo = config.intervalos_minutos[proximaTentativa];\nlet proximoHorario = new Date();\nproximoHorario.setMinutes(proximoHorario.getMinutes() + minutosProximo);\n\n// Ajuste especial: tentativa 4 vai para meio-dia do próximo dia\nif (proximaTentativa === 4) {\n  proximoHorario.setDate(proximoHorario.getDate() + 1);\n  proximoHorario.setHours(12, 0, 0, 0);\n}\n\n// ========================================\n// 🔥 CONVERTE PARA TIMEZONE LOCAL (BRASIL)\n// ========================================\n// Pega hora LOCAL (considerando UTC-3)\nconst horaLocal = proximoHorario.getUTCHours() + config.timezone_offset;\nconst horaLocalAjustada = horaLocal < 0 ? horaLocal + 24 : horaLocal;\n\n// ========================================\n// AJUSTA PARA HORÁRIO COMERCIAL (HORA LOCAL)\n// ========================================\nif (horaLocalAjustada < config.horario_comercial.inicio) {\n  // Se for antes das 9h LOCAL, agenda para 9h LOCAL\n  proximoHorario.setUTCHours(config.horario_comercial.inicio - config.timezone_offset, 0, 0, 0);\n  \n} else if (horaLocalAjustada >= config.horario_comercial.fim) {\n  // Se for depois das 20h LOCAL, agenda para 9h LOCAL do próximo dia\n  proximoHorario.setUTCDate(proximoHorario.getUTCDate() + 1);\n  proximoHorario.setUTCHours(config.horario_comercial.inicio - config.timezone_offset, 0, 0, 0);\n}\n\n// ========================================\n// FORMATA PARA toLocaleString (scheduler aceita)\n// ========================================\nconst horarioAgendadoISO = proximoHorario.toISOString();\nconst horarioAgendadoLocal = new Date(proximoHorario.getTime() + (config.timezone_offset * 60 * 60 * 1000))\n  .toISOString()\n  .replace('Z', ''); // Remove Z para indicar que já está no timezone local\n\n// ========================================\n// MONTA PAYLOAD COMPLETO PARA SCHEDULER\n// ========================================\nconst payloadCompleto = {\n  agente_id: body.agente_id,\n  config_whatsapp_number: body.config_whatsapp_number,\n  \"dinastia-token\": body[\"dinastia-token\"],\n  lead_data: body.lead_data,\n  tentativa: proximaTentativa\n};\n\n// ========================================\n// GERA ID ÚNICO PARA O SCHEDULER\n// ========================================\nconst leadId = $('Webhook').first().json.body['lead-id'];\nconst schedulerId = `${leadId}_fup${proximaTentativa}`;\n\n// ========================================\n// RETORNA TUDO QUE VOCÊ PRECISA\n// ========================================\nreturn [{\n  json: {\n    // Controle de fluxo\n    agendar_proximo: true,\n    \n    // Dados para o Scheduler\n    proxima_tentativa: proximaTentativa,\n    horario_agendado: horarioAgendadoISO,  // ISO padrão (UTC)\n    horario_agendado_local: horarioAgendadoLocal,  // Se scheduler preferir\n    minutos_espera: minutosProximo,\n    scheduler_id: schedulerId,\n    \n    // Payload completo com tentativa atualizada\n    payload_completo: payloadCompleto,\n    \n    // Instrução customizada para IA\n    instrucao_ia: instrucoes[proximaTentativa],\n    \n    // Debug/logs\n    tentativa_atual: tentativaAtual,\n    hora_utc: proximoHorario.getUTCHours(),\n    hora_local_brasil: horaLocalAjustada,\n    timezone_offset: config.timezone_offset,\n    ajuste_aplicado: (horaLocalAjustada < config.horario_comercial.inicio || horaLocalAjustada >= config.horario_comercial.fim)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        0
+      ],
+      "id": "be001eec-ab01-44a1-9701-d4a49f1901b7",
+      "name": "Define Próximo FollowUp"
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "status",
+              "inputValue": "enviado"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        2336,
+        -48
+      ],
+      "id": "3078e298-f9e6-4c21-a8ea-ee72cefb5479",
+      "name": "Evaluation1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6cb210e8-c4ee-4cc0-9728-f4816ef96c81",
+              "leftValue": "={{ $json.agendar_proximo }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2144,
+        16
+      ],
+      "id": "dcc823ce-7bff-465e-a58a-9421e5e0de85",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        128
+      ],
+      "id": "9f697c5a-b7e9-4d5e-bac4-6531fa93b8b0",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"{{ $('Define Próximo FollowUp').item.json.scheduler_id }}\",\n  \"scheduleTo\": \"{{ $('Define Próximo FollowUp').item.json.horario_agendado }}\",\n  \"payload\": {\n    \"lead-id\": \"{{ $('Webhook').item.json.body['lead-id'] }}\",\n    \"tentativa\": \"{{ $('Define Próximo FollowUp').item.json.proxima_tentativa }}\",\n    \"timestamp\": \"{{ $now.toLocal().toISO() }}\",\n    \"to\": \"{{ $('Webhook').item.json.body.to }}\",\n    \"instrução\": \"{{ \n  $('Define Próximo FollowUp').item.json.instrucao_ia\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/\"/g, '\\\\\"')\n    .replace(/\\n/g, '\\\\n')\n}}\",    \n    \"auth\": {\n        \"dinastia-token\": \"{{ $('Webhook').item.json.body.auth['dinastia-token'] }}\"\n    }\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2720,
+        -48
+      ],
+      "id": "9f9c2fff-9999-4f62-ac6c-8822586b4047",
+      "name": "FollowUp"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f88aed75-5c87-45e9-aa24-79e878f4393c",
+              "leftValue": "={{ $json.output.should_send }}",
+              "rightValue": "null",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1264,
+        16
+      ],
+      "id": "f0b3f186-cbb8-4b86-b6ff-52df5b05ac8c",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO interacoes (\n  lead_id, \n  type, \n  direction, \n  message, \n  ai_generated\n)\nVALUES (\n  '{{ $('Webhook').item.json.body['lead-id'] }}', \n  'WHATSAPP_ENVIADO',\n  'OUTBOUND', \n  '{{ $('Normalizador Output').item.json.output.message }}', \n  true\n)\nRETURNING lead_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1632,
+        -64
+      ],
+      "id": "66c8aa98-24b9-4963-b7c5-2244f6332800",
+      "name": "Gravar Interação",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  STRING_AGG(\n    CASE\n      WHEN message->>'type' = 'human'\n        THEN 'Humano: ' || (message->>'content')\n      WHEN message->>'type' = 'ai'\n           AND message->>'content' NOT LIKE 'Calling %'\n        THEN 'IA: ' || (message->>'content')\n    END,\n    E'\\n'\n    ORDER BY id ASC\n  ) AS mensagem\nFROM (\n  SELECT id, message\n  FROM n8n_chat_histories\n  WHERE session_id = $1\n    AND message->>'type' IN ('human', 'ai')\n  ORDER BY id DESC\n  LIMIT 20\n) AS ultimas_mensagens;\n",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').item.json.body['lead-id'] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        560,
+        112
+      ],
+      "id": "960da211-d99f-472a-9769-47ec20199def",
+      "name": "Buscar 10 mensagens",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  COUNT(*) AS count,\n  EXTRACT(EPOCH FROM (NOW() - MAX(created_at))) / 60 AS minutos_sem_resposta,\n\n  (\n    SELECT l.atendimento_tipo\n    FROM leads l\n    WHERE l.id = $1\n    LIMIT 1\n  ) AS atendimento_tipo\n\nFROM interacoes\nWHERE lead_id = $1\n  AND created_at > $2\n  AND type = 'WHATSAPP_RECEBIDO';\n",
+        "options": {
+          "queryReplacement": "={{ $json.body['lead-id'] }},{{ $json.body.timestamp }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        32,
+        16
+      ],
+      "id": "84120880-c7c0-4c16-8be6-f9b74017229d",
+      "name": "Tempo e Mensagens recebidas",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"should_send\": true,\n  \"message\": \"Olá, vi que você parou no início...\",\n  \"reasoning\": \"Lead abandonou no estágio INICIO, enviando a primeira tentativa após 30min.\",\n  \"stop_chain\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        208
+      ],
+      "id": "9cdd8b17-9c4b-499c-9f2a-3a58827a7cf1",
+      "name": "Structured Output Parser",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54cf8ee1-7d34-4105-ad52-5d9412cccadd",
+              "leftValue": "={{ $('AI Agent').item.json.output.stop_chain }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1472,
+        96
+      ],
+      "id": "de7837e2-aaf2-4020-b205-d2180da0b032",
+      "name": "Parar Cadeia?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO \"public\".\"n8n_chat_histories\" (session_id, message)\nVALUES (\n  $1,\n  jsonb_build_object(\n    'type', 'ai',\n    'content', $2,\n    'tool_calls', '[]'::jsonb,\n    'additional_kwargs', '{}'::jsonb,\n    'response_metadata', '{}'::jsonb,\n    'invalid_tool_calls', '[]'::jsonb\n  )\n);",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').item.json.body['lead-id'] }}, {{ $('Normalizador Output').item.json.output.message }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1792,
+        -64
+      ],
+      "id": "faf33261-41a9-46fc-b4e9-7edf23546d3b",
+      "name": "Gravar Interação n8n chat histories",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        112
+      ],
+      "id": "db5674e7-de51-477c-8fe8-c14dc2fd89ee",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "operation": "setInputs",
+        "inputs": {
+          "values": [
+            {
+              "inputName": "status",
+              "inputValue": "finalizada"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        1792,
+        272
+      ],
+      "id": "547c243c-f7f4-4e49-8dff-26d3e50ab765",
+      "name": "Evaluation2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8ca7bb0f-fdd2-4e08-906d-1094060657bd",
+              "name": "body['lead-id']",
+              "value": "={{ $json.body['lead-id'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8047bef5-6e42-42e4-897c-56c1e45108fc",
+              "name": "body.tentativa",
+              "value": "={{ $json.body.tentativa }}",
+              "type": "string"
+            },
+            {
+              "id": "10a4fb49-3149-476f-8496-75ef53b584cb",
+              "name": "body.to",
+              "value": "={{ $json.body.to }}",
+              "type": "string"
+            },
+            {
+              "id": "564f722b-4ac9-488d-a85f-a1f921b22b19",
+              "name": "body['instrução']",
+              "value": "={{ $json.body['instrução'] }}",
+              "type": "string"
+            },
+            {
+              "id": "79a64332-4847-4863-91c3-e1bc7a8e7b92",
+              "name": "body.auth['dinastia-token']",
+              "value": "={{ $json.body.auth['dinastia-token'] }}",
+              "type": "string"
+            },
+            {
+              "id": "600524c2-2d33-426d-b5f0-163c2afefdcb",
+              "name": "body.timestamp",
+              "value": "={{ $json.body.timestamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        16
+      ],
+      "id": "b32e73e9-0b2b-4643-ac71-03a73d0f6210",
+      "name": "Variables"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages/04446bce-ef8a-4ec4-ad00-0820ff26357c",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2608,
+        800
+      ],
+      "id": "90ff4b9c-eaae-4244-93ea-1c5ecbec0666",
+      "name": "Delete"
+    },
+    {
+      "parameters": {
+        "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"18c542f1-b2fc-47ad-9dca-b03d70a203db_fup2_fup2\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2800,
+        800
+      ],
+      "id": "62352b57-f323-4596-a065-cfc121f6bf62",
+      "name": "List"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-3-pro-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        816,
+        256
+      ],
+      "id": "9e92693c-9630-4cfe-9f55-ce8d29402b98",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "bOw8m7fIoAInpjwt",
+          "name": "OpenRouter Dr Matheus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractLLMOutput(input) {\n  if (!input) return null;\n  \n  // 1️⃣ Se vier como array (caso mais comum no n8n)\n  if (Array.isArray(input)) {\n    for (const item of input) {\n      // Prioridade: item.output\n      if (item?.output !== undefined) {\n        const found = extractLLMOutput(item.output);\n        if (found) return found;\n      }\n      // Fallback: varrer o item inteiro\n      const found = extractLLMOutput(item);\n      if (found) return found;\n    }\n  }\n  \n  // 2️⃣ Se já for objeto com campos esperados\n  if (typeof input === 'object') {\n    if (input.should_send !== undefined) return input;\n    // Caso esteja dentro de output/data/result/etc\n    for (const key of ['output', 'data', 'result', 'response']) {\n      if (input[key] !== undefined) {\n        const found = extractLLMOutput(input[key]);\n        if (found) return found;\n      }\n    }\n    // Varredura genérica\n    for (const value of Object.values(input)) {\n      const found = extractLLMOutput(value);\n      if (found) return found;\n    }\n  }\n  \n  // 3️⃣ Se for string\n  if (typeof input === 'string') {\n    // Tentar JSON direto\n    try {\n      const parsed = JSON.parse(input);\n      return extractLLMOutput(parsed);\n    } catch (_) {}\n    \n    // Extrair JSON de dentro do texto\n    const jsonMatch = input.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      try {\n        const parsed = JSON.parse(jsonMatch[0]);\n        return extractLLMOutput(parsed);\n      } catch (_) {}\n    }\n    \n    // Último fallback: regex\n    const shouldSend = input.match(/\"should_send\"\\s*:\\s*(true|false)/);\n    if (shouldSend) {\n      return {\n        should_send: shouldSend[1] === 'true',\n        message: input.match(/\"message\"\\s*:\\s*\"([^\"]+)\"/)?.[1] ?? null,\n        reasoning: input.match(/\"reasoning\"\\s*:\\s*\"([^\"]+)\"/)?.[1] ?? null,\n        stop_chain: input.match(/\"stop_chain\"\\s*:\\s*(true|false)/)?.[1] === 'true'\n      };\n    }\n  }\n  \n  return null;\n}\n\n// 🔹 Função auxiliar para sanitizar strings JSON\nfunction sanitizeJsonString(str) {\n  if (typeof str !== 'string') return str;\n  \n  return str\n    .replace(/\\\\/g, '\\\\\\\\')    // Escapa barras invertidas primeiro\n    .replace(/\"/g, '\\\\\"')       // Escapa aspas duplas\n    .replace(/\\n/g, '\\\\n\\\\n')   // Converte \\n em \\\\n\\\\n (duplo)\n    .replace(/\\r/g, '\\\\r')      // Escapa retornos de carro\n    .replace(/\\t/g, '\\\\t');     // Escapa tabs\n}\n\n// 🔹 USO REAL (exatamente para seu caso)\nconst normalized = extractLLMOutput($json);\n\n// 🔹 OUTPUT FINAL NO FORMATO CORRETO COM SANITIZAÇÃO\nreturn {\n  output: {\n    should_send: normalized?.should_send ?? false,\n    message: normalized?.message ? sanitizeJsonString(normalized.message) : null,\n    reasoning: normalized?.reasoning ? sanitizeJsonString(normalized.reasoning) : 'Fallback acionado: saída mal formatada',\n    stop_chain: normalized?.stop_chain ?? false\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        16
+      ],
+      "id": "c3e65a7a-4979-493d-abf3-b3b4641a1e49",
+      "name": "Normalizador Output"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $('Contexto Geral').item.json.id }}_fup1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3024,
+        800
+      ],
+      "id": "a02967b2-77ae-44d1-ad76-22e9973248fe",
+      "name": "Delete Scheduler",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.scheduler_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2528,
+        -48
+      ],
+      "id": "e2526c41-4fe6-4bfc-8479-ce5ac222c7ef",
+      "name": "Deletar FollowUp",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f9dd75b3-67e3-4f67-a3c8-0a5f827706da",
+              "leftValue": "={{ $json.count }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "635661ff-b9fc-4d6f-ad6f-49fce96d7815",
+              "leftValue": "={{ $json.atendimento_tipo }}",
+              "rightValue": "humano",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        16
+      ],
+      "id": "e4051cbe-9d94-41de-90d0-e4634b2f0d5b",
+      "name": "Respondeu? | Humano?"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "tentativa",
+              "value": "={{ $('Webhook').item.json.body.tentativa }}"
+            },
+            {
+              "key": "status",
+              "value": "gerando"
+            },
+            {
+              "key": "lead_id",
+              "value": "={{ $('Webhook').item.json.body['lead-id'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        112
+      ],
+      "id": "28f2e6e6-94da-4329-b3b6-49189a02c690",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "lead-id",
+              "value": "={{ $('Webhook').item.json.body['lead-id'] }}"
+            },
+            {
+              "key": "status",
+              "value": "cancelada"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        -64
+      ],
+      "id": "5aed0b61-d8d2-417c-8c2e-bfb244a101a3",
+      "name": "Execution Data1"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Normalizador Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Gravar Interação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation1": {
+      "main": [
+        [
+          {
+            "node": "Deletar FollowUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Próximo FollowUp": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Evaluation1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parar Cadeia?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar Interação": {
+      "main": [
+        [
+          {
+            "node": "Gravar Interação n8n chat histories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar 10 mensagens": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tempo e Mensagens recebidas": {
+      "main": [
+        [
+          {
+            "node": "Respondeu? | Humano?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parar Cadeia?": {
+      "main": [
+        [
+          {
+            "node": "Evaluation2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar Interação n8n chat histories": {
+      "main": [
+        [
+          {
+            "node": "Define Próximo FollowUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing1": {
+      "main": [
+        [
+          {
+            "node": "Define Próximo FollowUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variables": {
+      "main": [
+        [
+          {
+            "node": "Tempo e Mensagens recebidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Normalizador Output": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar FollowUp": {
+      "main": [
+        [
+          {
+            "node": "FollowUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respondeu? | Humano?": {
+      "main": [
+        [
+          {
+            "node": "Execution Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "Buscar 10 mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "python-requests/2.31.0",
+            "content-length": "760",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "lead-id": "f6408532-f758-483c-bf7e-402b7fe0f782",
+            "tentativa": "2",
+            "timestamp": "2026-02-05T14:38:04.705-03:00",
+            "to": "+553499992009",
+            "instrução": "TENTATIVA 2 (2h)\n\nOBJETIVO: Gerar engajamento através de pergunta empática.\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], sobre esses [X]kg que você quer perder, isso é algo importante pra você agora? Tem te incomodado muito?\"\n\nPersonalizar [X] com meta mencionada. Se não mencionou número: \"sobre o emagrecimento que você busca\".\n\nPROTOCOLO:\n\"Seria algo assim que você está buscando?\"\n\nPRECO:\n\"O investimento condiz com o que você esperava?\"",
+            "auth": {
+              "dinastia-token": "fb29784a-0b59-41fd-8b24-9ff551999e07"
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "6facc05d-93e5-432b-8c04-da9651c78ebd",
+  "activeVersionId": "6facc05d-93e5-432b-8c04-da9651c78ebd",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-27T03:21:57.017Z",
+      "createdAt": "2026-01-27T03:21:57.017Z",
+      "role": "workflow:owner",
+      "workflowId": "3dibdxEyuwW1QyMtYWsgS",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-18T22:55:42.891Z",
+    "createdAt": "2026-02-18T22:54:54.930Z",
+    "versionId": "6facc05d-93e5-432b-8c04-da9651c78ebd",
+    "workflowId": "3dibdxEyuwW1QyMtYWsgS",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -256,
+          16
+        ],
+        "id": "0039f694-aee2-48a6-a788-c89d75196e50",
+        "name": "Webhook",
+        "webhookId": "960e56e8-1daf-4db0-aa35-9f76e9cf07d9"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Analise o contexto e decida a ação de follow-up.",
+          "hasOutputParser": true,
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "=<system>\nVocê é um agente de follow-up que decide SE e COMO reengajar leads inativos.\n\n<business_context>\nAplic&Go: protocolo de emagrecimento com GLP-1 (canetinhas) + acompanhamento médico/nutricional.\nLeads já passaram por qualificação inicial. Este agente atua quando param de responder.\n</business_context>\n\n<context>\n<attempt>{{ $('Webhook').item.json.body.tentativa }}</attempt>\n<time_since_last>{{ $('Tempo e Mensagens recebidas').item.json.minutos_sem_resposta }}</time_since_last>\n<conversation>{{ $json.mensagem }}</conversation>\n<dynamic_instruction>{{ $('Webhook').item.json.body['instrução'] || \"\"}}</dynamic_instruction>\n</context>\n\n<decision_flow>\nEXECUTE NESTA ORDEM EXATA — pare ao primeiro match:\n\nPASSO 1 → QUEM ENVIOU A ÚLTIMA MENSAGEM?\n  - Se a última mensagem da conversa é do LEAD → should_send: false, stop_chain: false\n    Reasoning: \"PULAR: Lead enviou a última mensagem, não há vácuo a preencher\"\n  - Se a última mensagem é do ATENDENTE → continuar para Passo 2\n\nPASSO 2 → VERIFICAR REGRAS DE BLOQUEIO TOTAL (validation_rules › BLOQUEAR)\n  - Se qualquer regra de bloqueio se aplica → should_send: false, stop_chain: true\n\nPASSO 3 → VERIFICAR REGRAS DE PULAR (validation_rules › PULAR)\n  - Se qualquer regra de pular se aplica → should_send: false, stop_chain: false\n\nPASSO 4 → VERIFICAR SE DEVE ENVIAR (validation_rules › ENVIAR)\n  - Se contexto de envio se aplica → should_send: true\n\nPASSO 5 → CLASSIFICAR ESTÁGIO (para personalizar a mensagem):\n  - QUALIFICACAO: Lead informou objetivos/meta de kg mas não avançou para detalhes do protocolo\n  - PROTOCOLO: Lead recebeu explicação do método/tratamento mas não reagiu\n  - PRECO: Lead recebeu estimativa de investimento e silenciou\n\nPASSO 6 → APLICAR instrução dinâmica e PERSONALIZAR com dados da conversa\n  - Se não tiver nome do lead, personalize retirando o nome. Nunca envie \"[Nome]\"\n</decision_flow>\n\n<validation_rules>\n\n<!-- ═══════════════════════════════════════════════════════════ -->\n<!-- BLOQUEAR — should_send: false, stop_chain: true            -->\n<!-- ═══════════════════════════════════════════════════════════ -->\n\nBLOQUEAR-1 | AGENDAMENTO CONFIRMADO:\n- Atendente confirmou data E hora específica de forma definitiva\n- Padrões: \"até [dia] às [hora]\", \"[dia da semana] [hora]\", \"dia X às Y\", \"confirmado para [data]\"\n- Exemplos: \"até terça às 09:00\", \"quarta 14h\", \"amanhã 10h\", \"confirmado pra sexta\"\n- Reasoning: \"BLOQUEAR: Agendamento confirmado [data/hora], bloqueando chain\"\n\nBLOQUEAR-2 | AGENDAMENTO EM PROCESSO / CONVERSA DE FECHAMENTO:\n- Conversa está ativamente tratando de definir horário (mesmo sem data final confirmada)\n- Padrões: \"qual horário prefere?\", \"tenho [opção A] ou [opção B]\", \"vou verificar disponibilidade\",\n  \"pode ser [dia]?\", \"estou verificando agenda\", \"vou confirmar com a equipe\"\n- Inclui: lead disse que vai confirmar, atendente aguarda retorno sobre horário\n- Reasoning: \"BLOQUEAR: Conversa em fase de agendamento ativo, bloqueando chain\"\n\nBLOQUEAR-3 | CONVERSA FINALIZADA — EXPLÍCITA:\n- Lead encerrou com: \"obrigado/obg\", \"valeu\", \"tá bom\", \"ok então\", \"vou deixar\", \"até mais\", \"tchau\"\n- E atendente respondeu com despedida:\n  * \"quando fizer sentido\", \"fico à disposição\", \"me chama quando\", \"te ajudo quando precisar\"\n  * Emoji final: 💚, 💙, ✨, 🙏\n- Reasoning: \"BLOQUEAR: Conversa encerrada mutuamente de forma explícita, bloqueando chain\"\n\nBLOQUEAR-4 | CONVERSA FINALIZADA — IMPLÍCITA:\n- Mesmo sem despedida formal, a conversa chegou a uma conclusão natural. Sinais:\n  * Lead recebeu todas as informações que pediu e não há pergunta pendente do atendente\n  * Nas mensagens ANTERIORES (não apenas na última) houve definição clara de próximos passos\n    (ex: \"vou pensar\", \"vou falar com meu marido\", \"me manda o link\", \"vou entrar no site\")\n  * A última mensagem do atendente foi informativa/conclusiva, não uma pergunta aberta\n  * O contexto geral indica que o lead saiu satisfeito ou com uma decisão tomada\n- Reasoning: \"BLOQUEAR: Conversa com conclusão implícita detectada — [motivo específico], bloqueando chain\"\n\nBLOQUEAR-5 | LEAD DECLINOU:\n- \"Vou deixar pra depois\", \"não vou fazer agora\", \"fica pra próxima\", \"não tenho interesse\"\n- Atendente aceitou sem insistir\n- Reasoning: \"BLOQUEAR: Lead declinou educadamente, bloqueando chain\"\n\nBLOQUEAR-6 | ATENDENTE DEU ENCERRAMENTO FINAL:\n- Frases conclusivas: \"quando fizer sentido pra você\", \"pode me procurar quando\", \"me chama quando decidir\"\n- Acompanhadas de emoji de despedida (💚, 💙, ✨, 🙏)\n- Reasoning: \"BLOQUEAR: Atendente finalizou aguardando lead retornar, bloqueando chain\"\n\n<!-- ═══════════════════════════════════════════════════════════ -->\n<!-- PULAR — should_send: false, stop_chain: false              -->\n<!-- ═══════════════════════════════════════════════════════════ -->\n\nPULAR-1 | COMPROMISSO TEMPORAL AINDA VÁLIDO:\n- Lead pediu tempo para consultar alguém (marido, esposa, médico)\n- Atendente deu prazo específico\n- Tentativa atual é T1, T2, T3 ou T4 (primeiras 6h30min)\n- A partir de T5, considerar prazo expirado e executar\n- Reasoning: \"PULAR: Lead pediu tempo até [prazo], respeitando tentativas iniciais\"\n\n<!-- ═══════════════════════════════════════════════════════════ -->\n<!-- ENVIAR — should_send: true                                 -->\n<!-- ═══════════════════════════════════════════════════════════ -->\n\nENVIAR — aplicar quando NENHUMA regra acima foi ativada E:\n- Atendente fez uma pergunta direta e o lead não respondeu (vácuo claro)\n- Lead estava no meio de uma decisão e parou de responder\n- Conversa estava fluindo com interesse ativo e foi interrompida sem conclusão\n- Lead demonstrou interesse explícito mas deixou de responder\n- Atendente apresentou opções de horário e lead não escolheu nenhuma\n- Script de conversa chegou a um ponto de pergunta/ação e o lead sumiu\n\n</validation_rules>\n\n<few_shot_examples>\n<!-- Exemplos de raciocínio correto para calibrar o modelo -->\n\nEXEMPLO 1 — Última mensagem do Lead (PULAR):\n  Conversa: [...] Atendente: \"Qual horário prefere, manhã ou tarde?\" Lead: \"Tarde!\"\n  → Última msg = Lead → PULAR (lead respondeu, não há vácuo)\n\nEXEMPLO 2 — Agendamento em processo (ENVIAR):\n  Conversa: [...] Atendente: \"Tenho terça às 10h ou quinta às 14h, qual prefere?\" [sem resposta do lead]\n  → Última msg = Atendente, mas conversa está em fase de agendamento → ENVIAR\n  ATENÇÃO: Este caso deve ENVIAR porque a pergunta é sobre horário de agendamento, mas se já tivesse avançado esta etapa, seria bloquear caso não tenha sido uma pergunta diretamente sem resposta.\n\nEXEMPLO 3 — Vácuo real após pergunta de qualificação (ENVIAR):\n  Conversa: [...] Atendente: \"Qual é sua meta de emagrecimento?\" [sem resposta]\n  → Última msg = Atendente, pergunta aberta sem resposta → ENVIAR\n\nEXEMPLO 4 — Finalização implícita (BLOQUEAR-4):\n  Conversa: Lead perguntou sobre preço → Atendente explicou → Lead disse \"entendi, vou pensar\"\n  → Atendente: \"Claro! Qualquer dúvida estou aqui 💚\" [sem pergunta pendente]\n  → Conclusão natural detectada → BLOQUEAR-4\n\nEXEMPLO 5 — Encerramento explícito (BLOQUEAR-3):\n  Lead: \"Obg pela atenção!\" → Atendente: \"Disponha! Me chama quando quiser 💚\"\n  → BLOQUEAR-3\n\nEXEMPLO 6 — Pergunta de script sem resposta (ENVIAR):\n  Atendente: \"Você já tentou outros métodos antes?\" [lead sumiu]\n  → Vácuo após pergunta de script → ENVIAR\n</few_shot_examples>\n\n<message_rules>\nPERSONALIZAÇÃO:\n- Usar nome do lead quando disponível\n- Referenciar dados específicos (\"aqueles 10kg\", \"sua meta de emagrecer até o verão\")\n- Adaptar tom ao lead (formal/informal)\n\nTOM:\n- Consultivo e desapegado\n- Curto e fácil de responder\n- Sem saudações desnecessárias\n- Nunca soar desesperado ou insistente\n\nMÍDIAS:\n- Texto primeiro, mídia em nova linha\n- Formato: [tipo_nome_numero]\n- Fotos: sempre 5 sequenciais [imagem_provasocial_1] a [imagem_provasocial_5]\n- Vídeos: [video_depoimento_1] ou [video_pov_1]\n\nSE JÁ ENVIOU ESSA MÍDIA ANTES:\n- Gerar follow-up alternativo curto e objetivo\n- Foco em gerar alta taxa de resposta\n- Usar pergunta direta ou mudança de ângulo\n- Manter tom profissional e consultivo\n</message_rules>\n\n<output>\nJSON válido:\n{\n  \"should_send\": boolean,\n  \"message\": \"texto com referências de mídia ou null\",\n  \"reasoning\": \"decisão baseada em validation_rules\",\n  \"stop_chain\": boolean\n}\n\nPADRÃO DE REASONING:\n\"[AÇÃO]: [MOTIVO específico da validation_rule]\"\n\nExemplos:\n\"ENVIAR: Lead abandonou após pergunta sobre meta de emagrecimento, tent2 aplicada\"\n\"ENVIAR: Atendente apresentou opções de horário mas lead não escolheu — vácuo de decisão\"\n\"BLOQUEAR: Agendamento confirmado terça 09:00, bloqueando chain\"\n\"BLOQUEAR: Conversa em fase de agendamento ativo (atendente aguarda escolha de horário), bloqueando chain\"\n\"BLOQUEAR: Conversa encerrada mutuamente com despedida explícita, bloqueando chain\"\n\"BLOQUEAR: Conclusão implícita — lead disse 'vou pensar' e atendente finalizou sem pergunta pendente, bloqueando chain\"\n\"BLOQUEAR: Lead declinou 'vou deixar pra depois' e atendente aceitou, bloqueando chain\"\n\"PULAR: Lead enviou a última mensagem, não há vácuo a preencher\"\n\"PULAR: Lead pediu tempo até hoje à noite, respeitando tentativas iniciais\"\n</output>\n</system>"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          800,
+          16
+        ],
+        "id": "505de92d-b7a9-4677-8c77-32c63d80b69a",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-5.1",
+            "mode": "list",
+            "cachedResultName": "gpt-5.1"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          704,
+          240
+        ],
+        "id": "2439040e-4ffd-4953-a72e-550da7a1bc4b",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "Q1veBoP920goLjWy",
+            "name": "OpenAi account Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n    \"auth\": { \n    \"dinastia-token\": \"{{ $('Webhook').item.json.body.auth['dinastia-token'] }}\"\n  },\n  \"to\": \"{{ $('Webhook').item.json.body.to }}\",\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": {\n      \"body\": \"{{ $json.output.message }}\"\n    }\n  }\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1472,
+          -64
+        ],
+        "id": "cf9981d4-ce96-4b4c-91c7-908a9c66a2bf",
+        "name": "Enviar Mensagem"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Node: \"Calcular Próximo Follow-up\"\n// Tipo: Code\n// Posição: Após enviar WhatsApp com sucesso\n\nconst body = $('Webhook').first().json.body;\n\n// Extrai tentativa atual e CONVERTE PARA NÚMERO\nconst tentativaAtual = parseInt(body.tentativa) || 1;\n\n// ========================================\n// CONFIGURAÇÃO DE INTERVALOS\n// ========================================\nconst config = {\n  intervalos_minutos: {\n    1: 30,      // após 1ª msg → aguarda 30min\n    2: 90,      // após 2ª msg → aguarda 1h30min\n    3: 180,     // após 3ª msg → aguarda 3h\n    4: 360,     // após 4ª msg → aguarda 6h\n    5: 720,\n    6: 1440\n  },\n  max_tentativas: 5,\n  horario_comercial: {\n    inicio: 9,   // 9h\n    fim: 20      // 20h\n  },\n  timezone_offset: -3  // 🔥 BRASIL (UTC-3)\n};\n\n// Instruções customizadas por tentativa\nconst instrucoes = {\n  1: `TENTATIVA 1 (30min)\n\nOBJETIVO: Reativar leads que podem ter sido interrompidos momentaneamente.\n\nMENSAGEM:\n\"[Nome]?\"\nUtilize o nome do lead, caso não houver, mande um \"Oi, ta por aí?\"\n\nAPLICAÇÃO: Todos os estágios (QUALIFICACAO, PROTOCOLO, PRECO)`,\n\n  2: `TENTATIVA 2 (2h)\n\nOBJETIVO: Gerar engajamento através de pergunta empática.\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], sobre esses [X]kg que você quer perder, isso é algo importante pra você agora? Tem te incomodado muito?\"\n\nPersonalizar [X] com meta mencionada. Se não mencionou número: \"sobre o emagrecimento que você busca\".\n\nPROTOCOLO:\n\"Seria algo assim que você está buscando?\"\n\nPRECO:\n\"O investimento condiz com o que você esperava?\"`,\n\n  3: `TENTATIVA 3 (3h30min)\n\nOBJETIVO: Prova social visual com resultados reais.\n\nRECURSO:\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], olha esses resultados de pacientes que também queriam perder [X]kg 👇\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\"\n\nPROTOCOLO:\n\"Sei que pode parecer bom demais pra ser verdade, mas olha esses resultados reais 👇\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\"\n\nPRECO:\n\"Veja o que essas pessoas conquistaram com o investimento 👇\n[imagem_provasocial_1]\n[imagem_provasocial_2]\n[imagem_provasocial_3]\n[imagem_provasocial_4]\n[imagem_provasocial_5]\"\n\nSE JÁ ENVIOU FOTOS ANTES:\nGerar follow-up alternativo curto e objetivo.\nExemplos: \"[Nome], o que mais te deixou na dúvida?\" ou \"Qual sua maior preocupação neste momento?\"`,\n\n  4: `TENTATIVA 4 (5h)\n\nOBJETIVO: Prova social testimonial em vídeo.\n\nRECURSO:\n[video_depoimento_1]\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"A Ana Flávia conta aqui como foi o processo dela. Vale assistir 🎥\n[video_depoimento_1]\"\n\nPROTOCOLO:\n\"A Ana Flávia conta aqui como foi o processo dela. Vale assistir 🎥\n[video_depoimento_1]\"\n\nPRECO:\n\"A Ana Flávia fala sobre o processo completo e como valeu o investimento 🎥\n[video_depoimento_1]\"\n\nSE JÁ ENVIOU VÍDEO DEPOIMENTO ANTES:\nGerar follow-up alternativo profissional.\nExemplos: \"[Nome], o que seria ideal pra você em um tratamento?\" ou \"O que você já tentou antes que não funcionou?\"`,\n\n  5: `TENTATIVA 5 (6h30min)\n\nOBJETIVO: Educação visual do procedimento real.\n\nRECURSO:\n[video_pov_1]\n\nMENSAGENS POR ESTÁGIO:\n\nQUALIFICACAO:\n\"[Nome], filmamos como é uma aplicação aqui pra você ter ideia do processo 🎥\n[video_pov_1]\"\n\nPROTOCOLO:\n\"Pra você entender melhor como funciona na prática, olha esse vídeo de uma aplicação 🎥\n[video_pov_1]\"\n\nPRECO:\n\"Antes de decidir, vê como é simples e rápido o procedimento 🎥\n[video_pov_1]\"\n\nSE JÁ ENVIOU VÍDEO POV ANTES:\nGerar follow-up final estratégico.\nExemplos: \"[Nome], o que ainda te impede de dar esse passo?\" ou \"Sente que falta alguma informação ou é questão de timing?\"`,\n\n  6: `TENTATIVA 6 (8h)\n\nOBJETIVO: Encerramento respeitoso.\n\nMENSAGEM UNIVERSAL:\n\"[Nome], percebo que nossa conversa travou. Prefere que eu encerre por aqui ou ficou alguma dúvida que posso esclarecer?\"\n\nAPÓS ENVIO:\nstop_chain: true`\n};\n// ========================================\n// CALCULA PRÓXIMA TENTATIVA\n// ========================================\nconst proximaTentativa = tentativaAtual + 1;\n\n// Verifica se atingiu limite\nif (proximaTentativa > config.max_tentativas) {\n  return [{\n    json: {\n      agendar_proximo: false,\n      tentativa_atual: tentativaAtual,\n      proxima_tentativa: proximaTentativa,\n      motivo: \"Atingiu máximo de tentativas\"\n    }\n  }];\n}\n\n// ========================================\n// CALCULA HORÁRIO DO PRÓXIMO FOLLOW-UP\n// ========================================\nconst minutosProximo = config.intervalos_minutos[proximaTentativa];\nlet proximoHorario = new Date();\nproximoHorario.setMinutes(proximoHorario.getMinutes() + minutosProximo);\n\n// Ajuste especial: tentativa 4 vai para meio-dia do próximo dia\nif (proximaTentativa === 4) {\n  proximoHorario.setDate(proximoHorario.getDate() + 1);\n  proximoHorario.setHours(12, 0, 0, 0);\n}\n\n// ========================================\n// 🔥 CONVERTE PARA TIMEZONE LOCAL (BRASIL)\n// ========================================\n// Pega hora LOCAL (considerando UTC-3)\nconst horaLocal = proximoHorario.getUTCHours() + config.timezone_offset;\nconst horaLocalAjustada = horaLocal < 0 ? horaLocal + 24 : horaLocal;\n\n// ========================================\n// AJUSTA PARA HORÁRIO COMERCIAL (HORA LOCAL)\n// ========================================\nif (horaLocalAjustada < config.horario_comercial.inicio) {\n  // Se for antes das 9h LOCAL, agenda para 9h LOCAL\n  proximoHorario.setUTCHours(config.horario_comercial.inicio - config.timezone_offset, 0, 0, 0);\n  \n} else if (horaLocalAjustada >= config.horario_comercial.fim) {\n  // Se for depois das 20h LOCAL, agenda para 9h LOCAL do próximo dia\n  proximoHorario.setUTCDate(proximoHorario.getUTCDate() + 1);\n  proximoHorario.setUTCHours(config.horario_comercial.inicio - config.timezone_offset, 0, 0, 0);\n}\n\n// ========================================\n// FORMATA PARA toLocaleString (scheduler aceita)\n// ========================================\nconst horarioAgendadoISO = proximoHorario.toISOString();\nconst horarioAgendadoLocal = new Date(proximoHorario.getTime() + (config.timezone_offset * 60 * 60 * 1000))\n  .toISOString()\n  .replace('Z', ''); // Remove Z para indicar que já está no timezone local\n\n// ========================================\n// MONTA PAYLOAD COMPLETO PARA SCHEDULER\n// ========================================\nconst payloadCompleto = {\n  agente_id: body.agente_id,\n  config_whatsapp_number: body.config_whatsapp_number,\n  \"dinastia-token\": body[\"dinastia-token\"],\n  lead_data: body.lead_data,\n  tentativa: proximaTentativa\n};\n\n// ========================================\n// GERA ID ÚNICO PARA O SCHEDULER\n// ========================================\nconst leadId = $('Webhook').first().json.body['lead-id'];\nconst schedulerId = `${leadId}_fup${proximaTentativa}`;\n\n// ========================================\n// RETORNA TUDO QUE VOCÊ PRECISA\n// ========================================\nreturn [{\n  json: {\n    // Controle de fluxo\n    agendar_proximo: true,\n    \n    // Dados para o Scheduler\n    proxima_tentativa: proximaTentativa,\n    horario_agendado: horarioAgendadoISO,  // ISO padrão (UTC)\n    horario_agendado_local: horarioAgendadoLocal,  // Se scheduler preferir\n    minutos_espera: minutosProximo,\n    scheduler_id: schedulerId,\n    \n    // Payload completo com tentativa atualizada\n    payload_completo: payloadCompleto,\n    \n    // Instrução customizada para IA\n    instrucao_ia: instrucoes[proximaTentativa],\n    \n    // Debug/logs\n    tentativa_atual: tentativaAtual,\n    hora_utc: proximoHorario.getUTCHours(),\n    hora_local_brasil: horaLocalAjustada,\n    timezone_offset: config.timezone_offset,\n    ajuste_aplicado: (horaLocalAjustada < config.horario_comercial.inicio || horaLocalAjustada >= config.horario_comercial.fim)\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1984,
+          0
+        ],
+        "id": "be001eec-ab01-44a1-9701-d4a49f1901b7",
+        "name": "Define Próximo FollowUp"
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "status",
+                "inputValue": "enviado"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          2336,
+          -48
+        ],
+        "id": "3078e298-f9e6-4c21-a8ea-ee72cefb5479",
+        "name": "Evaluation1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6cb210e8-c4ee-4cc0-9728-f4816ef96c81",
+                "leftValue": "={{ $json.agendar_proximo }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2144,
+          16
+        ],
+        "id": "dcc823ce-7bff-465e-a58a-9421e5e0de85",
+        "name": "If"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          2336,
+          128
+        ],
+        "id": "9f697c5a-b7e9-4d5e-bac4-6531fa93b8b0",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"id\": \"{{ $('Define Próximo FollowUp').item.json.scheduler_id }}\",\n  \"scheduleTo\": \"{{ $('Define Próximo FollowUp').item.json.horario_agendado }}\",\n  \"payload\": {\n    \"lead-id\": \"{{ $('Webhook').item.json.body['lead-id'] }}\",\n    \"tentativa\": \"{{ $('Define Próximo FollowUp').item.json.proxima_tentativa }}\",\n    \"timestamp\": \"{{ $now.toLocal().toISO() }}\",\n    \"to\": \"{{ $('Webhook').item.json.body.to }}\",\n    \"instrução\": \"{{ \n  $('Define Próximo FollowUp').item.json.instrucao_ia\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/\"/g, '\\\\\"')\n    .replace(/\\n/g, '\\\\n')\n}}\",    \n    \"auth\": {\n        \"dinastia-token\": \"{{ $('Webhook').item.json.body.auth['dinastia-token'] }}\"\n    }\n  },\n  \"webhookUrl\": \"https://n8n-aplictech-editor.aplicgo.com/webhook/followUp-sdr-chain-960e56e8-1daf-4db0-aa35-9f76e9cf07d9\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2720,
+          -48
+        ],
+        "id": "9f9c2fff-9999-4f62-ac6c-8822586b4047",
+        "name": "FollowUp"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f88aed75-5c87-45e9-aa24-79e878f4393c",
+                "leftValue": "={{ $json.output.should_send }}",
+                "rightValue": "null",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1264,
+          16
+        ],
+        "id": "f0b3f186-cbb8-4b86-b6ff-52df5b05ac8c",
+        "name": "If1"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO interacoes (\n  lead_id, \n  type, \n  direction, \n  message, \n  ai_generated\n)\nVALUES (\n  '{{ $('Webhook').item.json.body['lead-id'] }}', \n  'WHATSAPP_ENVIADO',\n  'OUTBOUND', \n  '{{ $('Normalizador Output').item.json.output.message }}', \n  true\n)\nRETURNING lead_id;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1632,
+          -64
+        ],
+        "id": "66c8aa98-24b9-4963-b7c5-2244f6332800",
+        "name": "Gravar Interação",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT\n  STRING_AGG(\n    CASE\n      WHEN message->>'type' = 'human'\n        THEN 'Humano: ' || (message->>'content')\n      WHEN message->>'type' = 'ai'\n           AND message->>'content' NOT LIKE 'Calling %'\n        THEN 'IA: ' || (message->>'content')\n    END,\n    E'\\n'\n    ORDER BY id ASC\n  ) AS mensagem\nFROM (\n  SELECT id, message\n  FROM n8n_chat_histories\n  WHERE session_id = $1\n    AND message->>'type' IN ('human', 'ai')\n  ORDER BY id DESC\n  LIMIT 20\n) AS ultimas_mensagens;\n",
+          "options": {
+            "queryReplacement": "={{ $('Webhook').item.json.body['lead-id'] }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          560,
+          112
+        ],
+        "id": "960da211-d99f-472a-9769-47ec20199def",
+        "name": "Buscar 10 mensagens",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT \n  COUNT(*) AS count,\n  EXTRACT(EPOCH FROM (NOW() - MAX(created_at))) / 60 AS minutos_sem_resposta,\n\n  (\n    SELECT l.atendimento_tipo\n    FROM leads l\n    WHERE l.id = $1\n    LIMIT 1\n  ) AS atendimento_tipo\n\nFROM interacoes\nWHERE lead_id = $1\n  AND created_at > $2\n  AND type = 'WHATSAPP_RECEBIDO';\n",
+          "options": {
+            "queryReplacement": "={{ $json.body['lead-id'] }},{{ $json.body.timestamp }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          32,
+          16
+        ],
+        "id": "84120880-c7c0-4c16-8be6-f9b74017229d",
+        "name": "Tempo e Mensagens recebidas",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "schemaType": "manual",
+          "inputSchema": "{\n  \"should_send\": true,\n  \"message\": \"Olá, vi que você parou no início...\",\n  \"reasoning\": \"Lead abandonou no estágio INICIO, enviando a primeira tentativa após 30min.\",\n  \"stop_chain\": false\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          1072,
+          208
+        ],
+        "id": "9cdd8b17-9c4b-499c-9f2a-3a58827a7cf1",
+        "name": "Structured Output Parser",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "54cf8ee1-7d34-4105-ad52-5d9412cccadd",
+                "leftValue": "={{ $('AI Agent').item.json.output.stop_chain }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1472,
+          96
+        ],
+        "id": "de7837e2-aaf2-4020-b205-d2180da0b032",
+        "name": "Parar Cadeia?"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO \"public\".\"n8n_chat_histories\" (session_id, message)\nVALUES (\n  $1,\n  jsonb_build_object(\n    'type', 'ai',\n    'content', $2,\n    'tool_calls', '[]'::jsonb,\n    'additional_kwargs', '{}'::jsonb,\n    'response_metadata', '{}'::jsonb,\n    'invalid_tool_calls', '[]'::jsonb\n  )\n);",
+          "options": {
+            "queryReplacement": "={{ $('Webhook').item.json.body['lead-id'] }}, {{ $('Normalizador Output').item.json.output.message }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1792,
+          -64
+        ],
+        "id": "faf33261-41a9-46fc-b4e9-7edf23546d3b",
+        "name": "Gravar Interação n8n chat histories",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1792,
+          112
+        ],
+        "id": "db5674e7-de51-477c-8fe8-c14dc2fd89ee",
+        "name": "No Operation, do nothing1"
+      },
+      {
+        "parameters": {
+          "operation": "setInputs",
+          "inputs": {
+            "values": [
+              {
+                "inputName": "status",
+                "inputValue": "finalizada"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.evaluation",
+        "typeVersion": 4.8,
+        "position": [
+          1792,
+          272
+        ],
+        "id": "547c243c-f7f4-4e49-8dff-26d3e50ab765",
+        "name": "Evaluation2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "8ca7bb0f-fdd2-4e08-906d-1094060657bd",
+                "name": "body['lead-id']",
+                "value": "={{ $json.body['lead-id'] }}",
+                "type": "string"
+              },
+              {
+                "id": "8047bef5-6e42-42e4-897c-56c1e45108fc",
+                "name": "body.tentativa",
+                "value": "={{ $json.body.tentativa }}",
+                "type": "string"
+              },
+              {
+                "id": "10a4fb49-3149-476f-8496-75ef53b584cb",
+                "name": "body.to",
+                "value": "={{ $json.body.to }}",
+                "type": "string"
+              },
+              {
+                "id": "564f722b-4ac9-488d-a85f-a1f921b22b19",
+                "name": "body['instrução']",
+                "value": "={{ $json.body['instrução'] }}",
+                "type": "string"
+              },
+              {
+                "id": "79a64332-4847-4863-91c3-e1bc7a8e7b92",
+                "name": "body.auth['dinastia-token']",
+                "value": "={{ $json.body.auth['dinastia-token'] }}",
+                "type": "string"
+              },
+              {
+                "id": "600524c2-2d33-426d-b5f0-163c2afefdcb",
+                "name": "body.timestamp",
+                "value": "={{ $json.body.timestamp }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -112,
+          16
+        ],
+        "id": "b32e73e9-0b2b-4643-ac71-03a73d0f6210",
+        "name": "Variables"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages/04446bce-ef8a-4ec4-ad00-0820ff26357c",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2608,
+          800
+        ],
+        "id": "90ff4b9c-eaae-4244-93ea-1c5ecbec0666",
+        "name": "Delete"
+      },
+      {
+        "parameters": {
+          "url": "https://aplicativos-scheduler.trcjj4.easypanel.host/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"id\": \"18c542f1-b2fc-47ad-9dca-b03d70a203db_fup2_fup2\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2800,
+          800
+        ],
+        "id": "62352b57-f323-4596-a065-cfc121f6bf62",
+        "name": "List"
+      },
+      {
+        "parameters": {
+          "model": "google/gemini-3-pro-preview",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          816,
+          256
+        ],
+        "id": "9e92693c-9630-4cfe-9f55-ce8d29402b98",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "bOw8m7fIoAInpjwt",
+            "name": "OpenRouter Dr Matheus"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "function extractLLMOutput(input) {\n  if (!input) return null;\n  \n  // 1️⃣ Se vier como array (caso mais comum no n8n)\n  if (Array.isArray(input)) {\n    for (const item of input) {\n      // Prioridade: item.output\n      if (item?.output !== undefined) {\n        const found = extractLLMOutput(item.output);\n        if (found) return found;\n      }\n      // Fallback: varrer o item inteiro\n      const found = extractLLMOutput(item);\n      if (found) return found;\n    }\n  }\n  \n  // 2️⃣ Se já for objeto com campos esperados\n  if (typeof input === 'object') {\n    if (input.should_send !== undefined) return input;\n    // Caso esteja dentro de output/data/result/etc\n    for (const key of ['output', 'data', 'result', 'response']) {\n      if (input[key] !== undefined) {\n        const found = extractLLMOutput(input[key]);\n        if (found) return found;\n      }\n    }\n    // Varredura genérica\n    for (const value of Object.values(input)) {\n      const found = extractLLMOutput(value);\n      if (found) return found;\n    }\n  }\n  \n  // 3️⃣ Se for string\n  if (typeof input === 'string') {\n    // Tentar JSON direto\n    try {\n      const parsed = JSON.parse(input);\n      return extractLLMOutput(parsed);\n    } catch (_) {}\n    \n    // Extrair JSON de dentro do texto\n    const jsonMatch = input.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      try {\n        const parsed = JSON.parse(jsonMatch[0]);\n        return extractLLMOutput(parsed);\n      } catch (_) {}\n    }\n    \n    // Último fallback: regex\n    const shouldSend = input.match(/\"should_send\"\\s*:\\s*(true|false)/);\n    if (shouldSend) {\n      return {\n        should_send: shouldSend[1] === 'true',\n        message: input.match(/\"message\"\\s*:\\s*\"([^\"]+)\"/)?.[1] ?? null,\n        reasoning: input.match(/\"reasoning\"\\s*:\\s*\"([^\"]+)\"/)?.[1] ?? null,\n        stop_chain: input.match(/\"stop_chain\"\\s*:\\s*(true|false)/)?.[1] === 'true'\n      };\n    }\n  }\n  \n  return null;\n}\n\n// 🔹 Função auxiliar para sanitizar strings JSON\nfunction sanitizeJsonString(str) {\n  if (typeof str !== 'string') return str;\n  \n  return str\n    .replace(/\\\\/g, '\\\\\\\\')    // Escapa barras invertidas primeiro\n    .replace(/\"/g, '\\\\\"')       // Escapa aspas duplas\n    .replace(/\\n/g, '\\\\n\\\\n')   // Converte \\n em \\\\n\\\\n (duplo)\n    .replace(/\\r/g, '\\\\r')      // Escapa retornos de carro\n    .replace(/\\t/g, '\\\\t');     // Escapa tabs\n}\n\n// 🔹 USO REAL (exatamente para seu caso)\nconst normalized = extractLLMOutput($json);\n\n// 🔹 OUTPUT FINAL NO FORMATO CORRETO COM SANITIZAÇÃO\nreturn {\n  output: {\n    should_send: normalized?.should_send ?? false,\n    message: normalized?.message ? sanitizeJsonString(normalized.message) : null,\n    reasoning: normalized?.reasoning ? sanitizeJsonString(normalized.reasoning) : 'Fallback acionado: saída mal formatada',\n    stop_chain: normalized?.stop_chain ?? false\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          16
+        ],
+        "id": "c3e65a7a-4979-493d-abf3-b3b4641a1e49",
+        "name": "Normalizador Output"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $('Contexto Geral').item.json.id }}_fup1",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3024,
+          800
+        ],
+        "id": "a02967b2-77ae-44d1-ad76-22e9973248fe",
+        "name": "Delete Scheduler",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "=https://aplicativos-scheduler.trcjj4.easypanel.host/messages/{{ $json.scheduler_id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer nRuZcbn7WmMKq5yqLBLtiQi1gNOhxALz"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2528,
+          -48
+        ],
+        "id": "e2526c41-4fe6-4bfc-8479-ce5ac222c7ef",
+        "name": "Deletar FollowUp",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f9dd75b3-67e3-4f67-a3c8-0a5f827706da",
+                "leftValue": "={{ $json.count }}",
+                "rightValue": 1,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "635661ff-b9fc-4d6f-ad6f-49fce96d7815",
+                "leftValue": "={{ $json.atendimento_tipo }}",
+                "rightValue": "humano",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "looseTypeValidation": true,
+          "options": {
+            "ignoreCase": true
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          176,
+          16
+        ],
+        "id": "e4051cbe-9d94-41de-90d0-e4634b2f0d5b",
+        "name": "Respondeu? | Humano?"
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "tentativa",
+                "value": "={{ $('Webhook').item.json.body.tentativa }}"
+              },
+              {
+                "key": "status",
+                "value": "gerando"
+              },
+              {
+                "key": "lead_id",
+                "value": "={{ $('Webhook').item.json.body['lead-id'] }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          384,
+          112
+        ],
+        "id": "28f2e6e6-94da-4329-b3b6-49189a02c690",
+        "name": "Execution Data"
+      },
+      {
+        "parameters": {
+          "dataToSave": {
+            "values": [
+              {
+                "key": "lead-id",
+                "value": "={{ $('Webhook').item.json.body['lead-id'] }}"
+              },
+              {
+                "key": "status",
+                "value": "cancelada"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executionData",
+        "typeVersion": 1.1,
+        "position": [
+          384,
+          -64
+        ],
+        "id": "5aed0b61-d8d2-417c-8c2e-bfb244a101a3",
+        "name": "Execution Data1"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Variables",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Normalizador Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem": {
+        "main": [
+          [
+            {
+              "node": "Gravar Interação",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evaluation1": {
+        "main": [
+          [
+            {
+              "node": "Deletar FollowUp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Define Próximo FollowUp": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Evaluation1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If1": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Parar Cadeia?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gravar Interação": {
+        "main": [
+          [
+            {
+              "node": "Gravar Interação n8n chat histories",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar 10 mensagens": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tempo e Mensagens recebidas": {
+        "main": [
+          [
+            {
+              "node": "Respondeu? | Humano?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parar Cadeia?": {
+        "main": [
+          [
+            {
+              "node": "Evaluation2",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gravar Interação n8n chat histories": {
+        "main": [
+          [
+            {
+              "node": "Define Próximo FollowUp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "No Operation, do nothing1": {
+        "main": [
+          [
+            {
+              "node": "Define Próximo FollowUp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Variables": {
+        "main": [
+          [
+            {
+              "node": "Tempo e Mensagens recebidas",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Normalizador Output": {
+        "main": [
+          [
+            {
+              "node": "If1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deletar FollowUp": {
+        "main": [
+          [
+            {
+              "node": "FollowUp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respondeu? | Humano?": {
+        "main": [
+          [
+            {
+              "node": "Execution Data1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execution Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execution Data": {
+        "main": [
+          [
+            {
+              "node": "Buscar 10 mensagens",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 6facc05d",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
