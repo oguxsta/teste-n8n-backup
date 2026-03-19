@@ -1,0 +1,655 @@
+{
+  "updatedAt": "2026-02-25T14:16:29.096Z",
+  "createdAt": "2026-02-25T01:08:20.560Z",
+  "id": "sCkkAzerKGqiGUbl",
+  "name": "[mcp_agendar] POST /clinicai/calendario",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "nome"
+            },
+            {
+              "name": "telefone"
+            },
+            {
+              "name": "dataHora"
+            },
+            {
+              "name": "leadId"
+            },
+            {
+              "name": "calendarioId"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        336,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## POST /clinicai/calendario",
+        "height": 512,
+        "width": 1632
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        576
+      ],
+      "id": "3ef3ba39-197b-4f25-964a-a84288fe7b9b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarioId }}",
+          "mode": "id"
+        },
+        "start": "={{ $json.dataHora.toDateTime().format('yyyy-MM-dd TT') }}",
+        "end": "={{ $json.dataHora.toDateTime().plus(60, 'minutes').format('yyyy-MM-dd TT') }}",
+        "additionalFields": {
+          "attendees": [],
+          "summary": "=Consultoria Gratuita <> {{ $json.nome }} ({{ $json.telefone.split('@')[0] }})"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        720
+      ],
+      "id": "6da876ce-1205-4a87-8869-9c8730c90d10",
+      "name": "novo_evento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "d8bHQ4sRiAyrnyTJ",
+          "name": "Google Calendar Aplic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "=Novo evento agendado para {{ $('When Executed by Another Workflow').item.json.dataHora }}. EventId: {{ $json.id }} CalendarioId: {{ $('When Executed by Another Workflow').item.json.calendarioId }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        800
+      ],
+      "id": "4f2abce2-5a43-44e6-8ad6-454bb4ea2f6b",
+      "name": "chat"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.leadId }}",
+        "tableName": "chats_calendario",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        960
+      ],
+      "id": "3901980a-103d-4e67-b1a3-61080e796160",
+      "name": "memoria",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "leadId",
+              "value": "={{ $('POST /clinicai/calendario').item.json.body.leadId }}"
+            },
+            {
+              "name": "dataHora",
+              "value": "={{ $('POST /clinicai/calendario').item.json.body.dataHora }}"
+            },
+            {
+              "name": "eventId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "method",
+              "value": "post"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        624
+      ],
+      "id": "6b30e5fb-be0a-43f4-a666-62749515deb7",
+      "name": "callback",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ARda8IGDT2hRKvve",
+          "name": "Aplic-Ai | WH"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+              "name": "calendarioId",
+              "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.calendarioId).id\n\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        720
+      ],
+      "id": "5b2ae0b2-27c3-40d3-8caf-f5066f969228",
+      "name": "calendario1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Mapeamento de telefones\nconst telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\nconst webhookData = $('When Executed by Another Workflow').first().json;\nconst nomeAgenda = webhookData.calendarioId.toLowerCase().trim();\n\n// 2. Formatação de Data e Hora do Agendamento\nconst dataAgendamento = new Date(webhookData.dataHora);\nconst dataFormatada = dataAgendamento.toLocaleDateString('pt-BR');\nconst horaFormatada = dataAgendamento.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\n// 3. Hora Atual (Momento do Alerta)\nconst agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\nconst responsavelFone = telefones[nomeAgenda] || \"554599746605\";\nconst nomeFormatado = nomeAgenda.charAt(0).toUpperCase() + nomeAgenda.slice(1);\n\nreturn items.map(item => {\n  return {\n    json: {\n      ...item.json,\n      notificar: {\n        whatsapp: responsavelFone,\n        atendente: nomeFormatado,\n        paciente: webhookData.nome,\n        dataAgendamento: dataFormatada,\n        horaAgendamento: horaFormatada,\n        horaAlerta: agora,\n        agenda: nomeFormatado\n      }\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        624
+      ],
+      "id": "8f2e8581-ec3c-4a42-9519-a6dd3383f4d6",
+      "name": "Telefones/Atendente"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO CONFIRMADO* ✅\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nUm paciente acabou de agendar um horário com você.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n📅 *Data:* {{ $json.notificar.dataAgendamento }}\\n⏰ *Horário:* {{ $json.notificar.horaAgendamento }}\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        624
+      ],
+      "id": "91ddf115-9aa1-423b-8137-15351babc82e",
+      "name": "Enviar Mensagem",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GWyVVdDSzfdz0oVW",
+          "name": "DinastiApi - APLIC Número 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "calendario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "novo_evento": {
+      "main": [
+        [
+          {
+            "node": "chat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefones/Atendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memoria": {
+      "ai_memory": [
+        [
+          {
+            "node": "chat",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendario1": {
+      "main": [
+        [
+          {
+            "node": "novo_evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefones/Atendente": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "nome": "Jesreel David TESTE Hobus",
+          "telefone": "+554599083422",
+          "dataHora": "2026-03-03T16:00:00",
+          "leadId": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+          "calendarioId": "Maria"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "3952aea2-d7b1-49dc-a23a-e9a0d7fb7687",
+  "activeVersionId": "3952aea2-d7b1-49dc-a23a-e9a0d7fb7687",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-25T01:08:20.560Z",
+      "createdAt": "2026-02-25T01:08:20.560Z",
+      "role": "workflow:owner",
+      "workflowId": "sCkkAzerKGqiGUbl",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-25T14:16:30.123Z",
+    "createdAt": "2026-02-25T14:16:29.097Z",
+    "versionId": "3952aea2-d7b1-49dc-a23a-e9a0d7fb7687",
+    "workflowId": "sCkkAzerKGqiGUbl",
+    "nodes": [
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "nome"
+              },
+              {
+                "name": "telefone"
+              },
+              {
+                "name": "dataHora"
+              },
+              {
+                "name": "leadId"
+              },
+              {
+                "name": "calendarioId"
+              }
+            ]
+          }
+        },
+        "id": "c055762a-8fe7-4141-a639-df2372f30060",
+        "typeVersion": 1.1,
+        "name": "When Executed by Another Workflow",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "position": [
+          336,
+          720
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## POST /clinicai/calendario",
+          "height": 512,
+          "width": 1632
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          240,
+          576
+        ],
+        "id": "3ef3ba39-197b-4f25-964a-a84288fe7b9b",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $json.calendarioId }}",
+            "mode": "id"
+          },
+          "start": "={{ $json.dataHora.toDateTime().format('yyyy-MM-dd TT') }}",
+          "end": "={{ $json.dataHora.toDateTime().plus(60, 'minutes').format('yyyy-MM-dd TT') }}",
+          "additionalFields": {
+            "attendees": [],
+            "summary": "=Consultoria Gratuita <> {{ $json.nome }} ({{ $json.telefone.split('@')[0] }})"
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          752,
+          720
+        ],
+        "id": "6da876ce-1205-4a87-8869-9c8730c90d10",
+        "name": "novo_evento",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "d8bHQ4sRiAyrnyTJ",
+            "name": "Google Calendar Aplic"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "messages": {
+            "messageValues": [
+              {
+                "type": "ai",
+                "message": "=Novo evento agendado para {{ $('When Executed by Another Workflow').item.json.dataHora }}. EventId: {{ $json.id }} CalendarioId: {{ $('When Executed by Another Workflow').item.json.calendarioId }}"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryManager",
+        "typeVersion": 1.1,
+        "position": [
+          1232,
+          800
+        ],
+        "id": "4f2abce2-5a43-44e6-8ad6-454bb4ea2f6b",
+        "name": "chat"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('When Executed by Another Workflow').item.json.leadId }}",
+          "tableName": "chats_calendario",
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          1168,
+          960
+        ],
+        "id": "3901980a-103d-4e67-b1a3-61080e796160",
+        "name": "memoria",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://aplic_tech_n8n_webhook:5678/webhook/clinicai/calendario/status",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "leadId",
+                "value": "={{ $('POST /clinicai/calendario').item.json.body.leadId }}"
+              },
+              {
+                "name": "dataHora",
+                "value": "={{ $('POST /clinicai/calendario').item.json.body.dataHora }}"
+              },
+              {
+                "name": "eventId",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "method",
+                "value": "post"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1360,
+          624
+        ],
+        "id": "6b30e5fb-be0a-43f4-a666-62749515deb7",
+        "name": "callback",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ARda8IGDT2hRKvve",
+            "name": "Aplic-Ai | WH"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1b3fe9ab-3b0d-4fdd-8166-af5cc5df1fb5",
+                "name": "calendarioId",
+                "value": "={{\n\n[\n {\n   \"calendarioId\": \"Bruna\",\n   \"id\": \"bruna.luisa018@gmail.com\"\n },\n  {\n   \"calendarioId\": \"Maria\",\n   \"id\": \"consultoramaria.aplic@gmail.com\"\n }\n].find(item => item.calendarioId === $json.calendarioId).id\n\n}}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          544,
+          720
+        ],
+        "id": "5b2ae0b2-27c3-40d3-8caf-f5066f969228",
+        "name": "calendario1"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Mapeamento de telefones\nconst telefones = {\n  \"maria\": \"553497065870\",\n  \"bruna\": \"553498912728\"\n};\n\nconst webhookData = $('When Executed by Another Workflow').first().json;\nconst nomeAgenda = webhookData.calendarioId.toLowerCase().trim();\n\n// 2. Formatação de Data e Hora do Agendamento\nconst dataAgendamento = new Date(webhookData.dataHora);\nconst dataFormatada = dataAgendamento.toLocaleDateString('pt-BR');\nconst horaFormatada = dataAgendamento.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\n// 3. Hora Atual (Momento do Alerta)\nconst agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });\n\nconst responsavelFone = telefones[nomeAgenda] || \"554599746605\";\nconst nomeFormatado = nomeAgenda.charAt(0).toUpperCase() + nomeAgenda.slice(1);\n\nreturn items.map(item => {\n  return {\n    json: {\n      ...item.json,\n      notificar: {\n        whatsapp: responsavelFone,\n        atendente: nomeFormatado,\n        paciente: webhookData.nome,\n        dataAgendamento: dataFormatada,\n        horaAgendamento: horaFormatada,\n        horaAlerta: agora,\n        agenda: nomeFormatado\n      }\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1072,
+          624
+        ],
+        "id": "8f2e8581-ec3c-4a42-9519-a6dd3383f4d6",
+        "name": "Telefones/Atendente"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"Phone\": \"{{ $json.notificar.whatsapp }}\",\n  \"Body\": \"*AGENDAMENTO CONFIRMADO* ✅\\n\\nOlá *{{ $json.notificar.atendente }}*,\\nUm paciente acabou de agendar um horário com você.\\n\\n👤 *Paciente:* {{ $json.notificar.paciente }}\\n📅 *Data:* {{ $json.notificar.dataAgendamento }}\\n⏰ *Horário:* {{ $json.notificar.horaAgendamento }}\\n🏥 *Agenda:* {{ $json.notificar.agenda }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1216,
+          624
+        ],
+        "id": "91ddf115-9aa1-423b-8137-15351babc82e",
+        "name": "Enviar Mensagem",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "GWyVVdDSzfdz0oVW",
+            "name": "DinastiApi - APLIC Número 2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "calendario1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "novo_evento": {
+        "main": [
+          [
+            {
+              "node": "chat",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefones/Atendente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "memoria": {
+        "ai_memory": [
+          [
+            {
+              "node": "chat",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "calendario1": {
+        "main": [
+          [
+            {
+              "node": "novo_evento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefones/Atendente": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem": {
+        "main": [
+          [
+            {
+              "node": "callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 3952aea2",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
