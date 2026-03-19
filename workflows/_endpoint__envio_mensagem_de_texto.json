@@ -1,0 +1,2265 @@
+{
+  "updatedAt": "2026-02-25T02:44:02.992Z",
+  "createdAt": "2026-01-26T11:57:28.321Z",
+  "id": "V5VVghSOmapx3qRyHXvAz",
+  "name": "[Endpoint] Envio Mensagem de Texto",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Envio de Mensagens",
+        "height": 80,
+        "width": 3280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "eadb8723-5d6d-4f79-bd92-105acf829eb7",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.tempo_calculado_ms / 1000 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2208,
+        1616
+      ],
+      "id": "e513bf10-bf77-4f33-8525-90dd3a86a6ac",
+      "name": "TempoDigitando",
+      "webhookId": "6b1b52a7-610c-4194-853c-ebf342c0a474",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$('Resultado')}}",
+        "options": {
+          "responseCode": "={{$('Resultado').item.json.success ? 200 : 400}}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        272
+      ],
+      "id": "54d81424-fa09-47af-8b2d-ee3402ca56b7",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// VALIDADOR DE TEXTO - Flexível, Multi-item Output + Split por \\n\\n\n// ============================================================================\ntry {\n  const payload = $input.item.json.body || $input.item.json;\n  \n  // Validações básicas\n  if (!payload.auth?.['dinastia-token']) {\n    throw new Error('Campo obrigatório: auth.dinastia-token');\n  }\n  \n  if (!payload.to) {\n    throw new Error('Campo obrigatório: to (telefone)');\n  }\n  \n  const phoneClean = payload.to.replace(/^\\+/, '');\n  if (!/^55\\d{10,11}$/.test(phoneClean)) {\n    throw new Error(`Telefone inválido: ${payload.to}. Formato: 5511999999999`);\n  }\n  \n  // ========================================================================\n  // NORMALIZAÇÃO INTELIGENTE: detecta qualquer variação\n  // ========================================================================\n  let messagesToProcess = [];\n  \n  // Tentar encontrar mensagens em qualquer formato\n  const possibleKeys = ['message', 'messages', 'Message', 'Messages'];\n  let foundMessages = null;\n  \n  for (const key of possibleKeys) {\n    if (payload[key]) {\n      foundMessages = payload[key];\n      break;\n    }\n  }\n  \n  if (!foundMessages) {\n    throw new Error('Deve informar \"message\" (única) ou \"messages\" (array)');\n  }\n  \n  // Normalizar para array\n  if (Array.isArray(foundMessages)) {\n    // Já é array\n    if (foundMessages.length === 0) {\n      throw new Error('Array de mensagens não pode estar vazio');\n    }\n    messagesToProcess = foundMessages;\n  } else if (typeof foundMessages === 'object') {\n    // É um objeto único - transformar em array\n    messagesToProcess = [foundMessages];\n  } else {\n    throw new Error('Formato de mensagem inválido');\n  }\n  \n  // ========================================================================\n  // VALIDAR, PROCESSAR e QUEBRAR cada mensagem por \\n\\n\n  // ========================================================================\n  const validatedMessages = [];\n  \n  messagesToProcess.forEach((msg, index) => {\n    const msgNum = index + 1;\n    \n    // Validar tipo (se informado)\n    if (msg.type && msg.type !== 'text') {\n      throw new Error(`Mensagem ${msgNum}: tipo deve ser \"text\", recebido \"${msg.type}\"`);\n    }\n    \n    // Validar texto\n    if (!msg.text) {\n      throw new Error(`Mensagem ${msgNum}: campo \"text\" é obrigatório`);\n    }\n    \n    // Aceitar text como string ou objeto {body: \"...\"}\n    let textContent = typeof msg.text === 'string' \n      ? msg.text \n      : msg.text?.body;\n    \n    if (!textContent || textContent.trim().length === 0) {\n      throw new Error(`Mensagem ${msgNum}: text não pode estar vazio`);\n    }\n    \n    // ========================================================================\n    // QUEBRAR por \\n\\n (dupla quebra de linha)\n    // ========================================================================\n    const splitMessages = textContent\n      .split(/\\n\\n+/)  // Split por 2 ou mais \\n consecutivos\n      .map(part => part.trim())\n      .filter(part => part.length > 0);  // Remove vazios\n    \n    // Se não houver quebras, retorna a mensagem inteira\n    if (splitMessages.length === 0) {\n      validatedMessages.push({\n        type: 'text',\n        text: textContent.trim()\n      });\n    } else {\n      // Adiciona cada parte como mensagem separada\n      splitMessages.forEach(part => {\n        validatedMessages.push({\n          type: 'text',\n          text: part\n        });\n      });\n    }\n  });\n  \n  // ========================================================================\n  // OUTPUT: Criar um item para cada mensagem (agora expandido)\n  // ========================================================================\n  return validatedMessages.map((msg, index) => ({\n    json: {\n      auth: {\n        'dinastia-token': payload.auth['dinastia-token']\n      },\n      to: phoneClean,\n      message: msg,\n      message_index: index + 1,\n      total_messages: validatedMessages.length,\n      ...(payload.meta && { meta: payload.meta }),\n      ...(payload.config && { config: payload.config }),\n      ...(payload.context && { context: payload.context })\n    }\n  }));\n  \n} catch (error) {\n  throw new Error(`❌ Erro no contrato: ${error.message}`);\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        1536
+      ],
+      "id": "09abe90a-f5bb-49b5-aa5e-de48c07fd689",
+      "name": "Validador Minimo",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "path": "enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1536
+      ],
+      "id": "a630f5ca-1419-41ea-8ded-0d8629f04b86",
+      "name": "SendText",
+      "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Contrato\n\n{\n  \"meta\": { /* opcional - rastreamento */ },\n  \"auth\": { \n    \"dinastia-token\": \"...\" // OBRIGATÓRIO\n  },\n  \"to\": \"5534999887766\", // OBRIGATÓRIO - sem \"+\"\n  \"config\": { /* opcional */ },\n  \"message\": {\n    \"type\": \"text|audio|video|image|document\", // OBRIGATÓRIO\n    /* campos específicos do tipo */\n  },\n  \"context\": { /* opcional - lead_id, agente_id, etc */ }\n}",
+        "height": 336,
+        "width": 416,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        1312
+      ],
+      "id": "d05275dd-5c0c-40dd-a4dc-8122ce331c04",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Exemplo\nUma mensagem:\n{\n  \"auth\": { \"dinastia-token\": \"...\" },\n  \"to\": \"5534999887766\",\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": \"Olá, tudo bem?\"\n  },\n  \"context\": { \"lead_id\": \"...\" }\n}\n\nVarias Mensagens:\n{\n  \"auth\": { \"dinastia-token\": \"...\" },\n  \"to\": \"5534999887766\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"Olá, muito bom dia Amanda!\"\n    },\n    {\n      \"type\": \"text\",\n      \"text\": \"Claro, tenho horário na sexta sim. Que horas ficaria bom pra ti?\"\n    }\n  ],\n  \"context\": { \"lead_id\": \"...\" }\n}",
+        "height": 608,
+        "width": 656,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        1664
+      ],
+      "id": "ad91a03a-8674-454c-91a6-253dc1e25bca",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1312,
+        1536
+      ],
+      "id": "6d9cdbfa-45f3-443b-9bfd-854d906f57b7",
+      "name": "Loop Over Items",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// AGREGADOR DE RESPOSTAS - Consolidar múltiplas mensagens (FAIL-SAFE)\n// ============================================================================\n\ntry {\n  const allItems = $input.all();\n  \n  let totalSent = 0;\n  let totalFailed = 0;\n  \n  const messagesResults = allItems.map((item, index) => {\n    try {\n      const data = item.json;\n      \n      // Verificar se foi sucesso (múltiplas formas)\n      const isSuccess = data.success === true || \n                        data.code === 200 || \n                        data.data?.Details === \"Sent\" ||\n                        data.Details === \"Sent\" ||\n                        data.status === \"success\";\n      \n      if (isSuccess) {\n        totalSent++;\n        return {\n          index: index,\n          status: \"sent\",\n          provider_message_id: data.data?.Id || data.Id || data.messageId || null,\n          timestamp: data.data?.Timestamp || data.Timestamp || new Date().toISOString()\n        };\n      } else {\n        totalFailed++;\n        return {\n          index: index,\n          status: \"failed\",\n          error: {\n            code: data.error?.code || \n                  data.data?.error_code || \n                  data.code || \n                  \"UNKNOWN_ERROR\",\n            message: data.error?.message || \n                     data.data?.error || \n                     data.message || \n                     \"Erro desconhecido ao enviar mensagem\"\n          },\n          raw_response: data // Replica resposta original\n        };\n      }\n      \n    } catch (itemError) {\n      // Se der erro ao processar um item específico\n      totalFailed++;\n      return {\n        index: index,\n        status: \"failed\",\n        error: {\n          code: \"PROCESSING_ERROR\",\n          message: `Erro ao processar item: ${itemError.message}`\n        },\n        raw_response: item.json // Replica payload original\n      };\n    }\n  });\n  \n  // Montar resposta consolidada\n  const consolidatedResponse = {\n    success: totalFailed === 0,\n    summary: {\n      total: allItems.length,\n      sent: totalSent,\n      failed: totalFailed\n    },\n    messages: messagesResults\n  };\n  \n  return [{ json: consolidatedResponse }];\n  \n} catch (error) {\n  // Se der erro geral na agregação\n  return [{\n    json: {\n      success: false,\n      summary: {\n        total: 0,\n        sent: 0,\n        failed: 0\n      },\n      messages: [],\n      error: {\n        code: \"AGGREGATION_ERROR\",\n        message: error.message\n      },\n      raw_error: error.stack\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        272
+      ],
+      "id": "05ce722e-d622-4c4f-bd9a-546a5194b0f3",
+      "name": "Resultado"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $('Validador Minimo').item.json.auth[\"dinastia-token\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload_final }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2288,
+        1920
+      ],
+      "id": "e5c9290d-0fd7-4816-bb4c-513ac97c7802",
+      "name": "Enviar Mensagem",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Retry 3x + Continue"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/presence",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $json.auth[\"dinastia-token\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Phone",
+              "value": "={{ $json.to }}"
+            },
+            {
+              "name": "State",
+              "value": "={{ $json.media_presence || 'composing' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1808,
+        1712
+      ],
+      "id": "4599c475-2b82-43a1-88aa-463c63abd9d3",
+      "name": "Enviar Digitando",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notesInFlow": true,
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Retry 2x + Continue"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO interacoes (\n  lead_id,\n  type,\n  direction,\n  message,\n  ai_generated,\n  whatsapp_number,\n  agente_id,\n  channel_data,\n  created_at\n)\nVALUES (\n  $1::uuid,                                    -- lead_id (OBRIGATÓRIO)\n  $2::text,                                    -- type (OBRIGATÓRIO)\n  $3::text,                                    -- direction (OBRIGATÓRIO: 'INBOUND' ou 'OUTBOUND')\n  $4::text,                                    -- message (OBRIGATÓRIO)\n  COALESCE($5::boolean, false),                -- ai_generated (OPCIONAL, default false)\n  NULLIF($6::text, ''),                        -- whatsapp_number (OPCIONAL)\n  CASE \n    WHEN $7::text IS NOT NULL AND $7::text != '' \n    THEN $7::uuid \n    ELSE NULL \n  END,                                         -- agente_id (OPCIONAL)\n  jsonb_build_object(\n    'messageId', NULLIF($8::text, ''),\n    'tipo_mensagem', NULLIF($9::text, ''),\n    'timestamp_original', NULLIF($10::text, ''),\n    'agente_nome', NULLIF($11::text, '')\n  ) - '{}'::text[],                            -- Remove nulls\n  NOW()\n)\nON CONFLICT (lead_id, (channel_data->>'messageId'))\nWHERE channel_data->>'messageId' IS NOT NULL\nDO NOTHING\nRETURNING id, lead_id, created_at;",
+        "options": {
+          "queryReplacement": "={{ $('SendText').item.json.body.context.lead_id }}, "
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1024,
+        1680
+      ],
+      "id": "2e87edaa-f6b9-4fcc-a9e5-0c38dd1b014f",
+      "name": "Salvar interação Enviada",
+      "credentials": {
+        "postgres": {
+          "id": "0w4wNBvz8tuXc0ht",
+          "name": "aplic_tech_postgres_clinic_mvp"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "path": "54262122-5849-48d4-92ff-b4fc746bea73",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1680
+      ],
+      "id": "5fe4255d-a674-4cc4-bdd4-5e9acf941648",
+      "name": "Webhook",
+      "webhookId": "54262122-5849-48d4-92ff-b4fc746bea73"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "^\\[.*\\]$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "a77a8025-15a6-48ec-b23b-57f9f3ad56d3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mídia (Tag)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f4e3e576-30d3-4b85-adb2-1e700fa8a986",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "^\\[.*\\]$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notRegex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto Comum"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1552,
+        1536
+      ],
+      "id": "561e338b-e4bb-4d07-81c1-3874d402d0c5",
+      "name": "Switch",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// BIBLIOTECA DE MÍDIAS (DICIONÁRIO)\n// ============================================================================\nconst mediaLibrary = {\n    // 📸 IMAGEM\n    \"imagem_teste\": {\n        url: \"https://pub-58bea372872445d982f17b69de9e4f57.r2.dev/WhatsApp%20Image%202026-01-17%20at%2008.08.03.jpeg\",\n        type: \"image\",\n        endpoint: \"send/image\", // Formato corrigido para sua API\n        presence: \"composing\",\n        caption: \"Segue a imagem que você pediu! 📸\"\n    },\n    \n    // 🎥 VÍDEO EXEMPLO (Pode editar)\n    \"video_vendas_01\": {\n        url: \"https://seu-link-aqui.com/video.mp4\",\n        type: \"video\",\n        endpoint: \"send/video\",\n        presence: \"composing\",\n        caption: \"Veja esse vídeo incrível 👇\"\n    },\n    \n    // 🎤 ÁUDIO EXEMPLO (Pode editar)\n    \"audio_apresentacao\": {\n        url: \"https://seu-link-aqui.com/audio.mp3\",\n        type: \"audio\",\n        endpoint: \"send/audio\", // Pode ser send/audio ou send/whatsappAudio dependendo da versão\n        presence: \"recording\",\n        caption: \"\"\n    }\n};\n\n// ============================================================================\n// LÓGICA DE RESOLUÇÃO\n// ============================================================================\n\n// 1. Obtém o texto bruto (segurança se vier como objeto ou string)\nlet rawText = \"\";\nif ($json.message && $json.message.text) {\n    rawText = $json.message.text;\n} else if ($json.message) {\n    rawText = $json.message;\n}\n\n// 2. Limpa os colchetes para pegar só o nome da tag (ex: \"[imagem_teste]\" vira \"imagem_teste\")\nconst tag = rawText.toString().replace(/[\\[\\]]/g, \"\").trim();\n\n// 3. Busca no dicionário\nconst media = mediaLibrary[tag];\n\n// 4. Verificação de Segurança\nif (!media) {\n    // Se chegou aqui mas a tag não existe, avisa no erro\n    throw new Error(`❌ ERRO CRÍTICO: A tag [${tag}] não foi encontrada no dicionário do Media Resolver.`);\n}\n\n// 5. Retorna os dados mesclados\nreturn {\n    ...$json, // Mantém os dados originais (telefone, token, etc)\n    media_url: media.url,\n    media_type: media.type,\n    media_endpoint: media.endpoint,\n    media_presence: media.presence,\n    media_caption: media.caption,\n    is_media: true\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        1488
+      ],
+      "id": "81932e00-7575-4ccc-9178-a76c9460d7c6",
+      "name": "Media Resolver",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const message_part = $('Validador Minimo').first().json.message.text;\n\nif (typeof message_part !== 'string' || message_part.length === 0) {\n  return { error: 'A entrada \"message_part\" deve ser um texto (string) não vazio.' };\n}\n\n// Velocidade de um escritor profissional: 80 palavras por minuto.\n// Média de caracteres por palavra (padrão): 5.\n// Caracteres por minuto de um profissional: 80 * 5 = 400.\n// Capacidade 3x superior: 400 * 3 = 1200 caracteres por minuto.\nconst caracteresPorMinuto = 4000;\nconst caracteresPorSegundo = caracteresPorMinuto / 60;\n\nconst numeroDeCaracteres = message_part.length;\nconst tempoEmSegundos = numeroDeCaracteres / caracteresPorSegundo;\nconst tempoEmMs = Math.round(tempoEmSegundos * 1000);\n\n// Retorna o resultado\nreturn { tempo_em_ms: tempoEmMs };$input.first().json.message_part$input.first().json.message_part"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        1888
+      ],
+      "id": "0d6153d0-395c-4aa7-a7ed-4e811495d37e",
+      "name": "Contabilizador de Caracteres1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// CALCULADORA MESTRE DE TEMPO (TEXTO & MÍDIA)\n// ============================================================================\n\nconst item = $input.item.json;\nlet tempoMs = 0;\n\n// CONFIGURAÇÃO DE VELOCIDADE (TEXTO)\n// 1200 caracteres/minuto (Simulação de escrita rápida/colar texto)\nconst CHARS_POR_SEGUNDO = 1200 / 60; \n\n// CONFIGURAÇÃO DE DURAÇÃO (MÍDIA - EM SEGUNDOS)\n// Mapeie aqui o tempo real dos seus áudios para o \"Gravando...\" ser exato\nconst duracaoMidia = {\n    \"audio_apresentacao\": 12,  // 12 segundos\n    \"video_vendas_01\": 5,      // 5 segundos (suficiente para simular upload)\n    \"default_audio\": 5,        // Fallback para áudios sem map\n    \"default_video\": 3         // Fallback para vídeos\n};\n\n// ============================================================================\n// LÓGICA DE DECISÃO\n// ============================================================================\n\nif (item.is_media) {\n    // --- LÓGICA PARA MÍDIA ---\n    // Tenta encontrar a tag original (removendo colchetes)\n    const tag = item.message.text ? item.message.text.replace(/[\\[\\]]/g, \"\").trim() : \"\";\n    \n    if (duracaoMidia[tag]) {\n        // Se temos o tempo exato mapeado\n        tempoMs = duracaoMidia[tag] * 1000;\n    } else {\n        // Se não, usa o fallback baseado no tipo\n        const tipo = item.media_type || 'video';\n        const segundos = duracaoMidia[`default_${tipo}`] || 3;\n        tempoMs = segundos * 1000;\n    }\n\n} else {\n    // --- LÓGICA PARA TEXTO ---\n    // Garante que é string\n    let texto = \"\";\n    if (typeof item.message === 'string') texto = item.message;\n    else if (item.message && item.message.text) texto = item.message.text;\n\n    if (texto.length > 0) {\n        const segundos = texto.length / CHARS_POR_SEGUNDO;\n        tempoMs = Math.round(segundos * 1000);\n    }\n}\n\n// SEGURANÇA: Mínimo de 1s e Máximo de 25s (para não travar o fluxo)\nif (tempoMs < 1000) tempoMs = 1000;\nif (tempoMs > 25000) tempoMs = 25000;\n\nreturn {\n    ...item,\n    tempo_calculado_ms: tempoMs\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        1616
+      ],
+      "id": "a26c3044-fa84-410f-bcc1-dd917e08701f",
+      "name": "Calculadora",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 1. A FUSÃO DE DADOS (O Segredo para não perder nada) 🧬\n// ============================================================================\n\n// 1. O que chegou neste nó (Vindo da Calculadora/Wait)\nconst dadosAtuais = $input.item.json;\n\n// 2. O que foi gerado lá atrás (Dados da Mídia)\nlet dadosMidia = {};\ntry {\n    // Tenta buscar os dados do nó Media Resolver\n    // Usamos .first() se for execução única ou batemos pelo índice\n    // Para simplificar, assumimos que o fluxo manteve a ordem\n    dadosMidia = $('Media Resolver').item.json;\n} catch (erro) {\n    // Se der erro, é porque o fluxo veio pelo caminho de Texto (sem mídia)\n    dadosMidia = {}; \n}\n\n// 3. Onde está o telefone original? (Caso a calculadora tenha perdido)\nlet dadosLoop = {};\ntry { dadosLoop = $('Loop Over Items').item.json; } catch(e) {}\n\n// === A MÁGICA ===\n// Juntamos tudo em um único objeto. \n// A prioridade é: Mídia > Calculadora > Loop\nconst itemCompleto = { ...dadosLoop, ...dadosAtuais, ...dadosMidia };\n\n// ============================================================================\n// 2. VERIFICAÇÃO E MONTAGEM\n// ============================================================================\n\nlet body = {};\n\n// Recupera o telefone de onde ele estiver (garantia total)\nconst phone = itemCompleto.number || itemCompleto.to || itemCompleto.phone || itemCompleto.whatsapp_number;\n\nif (!phone) {\n    throw new Error(\"❌ ERRO: O telefone sumiu depois da calculadora. Verifique se a calculadora repassa os dados.\");\n}\n\n// Prepara chaves padrão\nbody.number = phone.toString();\nbody.to = phone.toString();\n\n// Verifica se é Mídia ou Texto\nif (itemCompleto.is_media && itemCompleto.media_url) {\n    \n    // === CENÁRIO MÍDIA ===\n    const mediaUrl = itemCompleto.media_url;\n    \n    body.mediatype = itemCompleto.media_type;\n    body.caption = itemCompleto.media_caption || \"\";\n    \n    // URL em todas as chaves possíveis\n    body.url = mediaUrl;\n    body.media = mediaUrl; \n    \n    // Chaves específicas\n    if (itemCompleto.media_type === 'image') body.image = mediaUrl;\n    if (itemCompleto.media_type === 'video') body.video = mediaUrl;\n    if (itemCompleto.media_type === 'audio') { body.audio = mediaUrl; body.ptt = true; }\n    \n    // Endpoint correto\n    itemCompleto.endpoint_final = itemCompleto.media_endpoint || \"send/image\";\n\n} else {\n    \n    // === CENÁRIO TEXTO ===\n    // Pega o texto original ou o que sobrou\n    let msg = itemCompleto.text || itemCompleto.message || \"Olá\";\n    \n    // Limpeza de segurança: Se por acaso sobrou a tag [imagem] como texto\n    if (msg.toString().includes(\"[imagem_teste]\")) {\n        // Se chegou aqui como texto, algo deu errado, mas enviamos um aviso ou tentamos recuperar\n        // Mas como fizemos o merge lá em cima, o 'if is_media' deve pegar antes.\n    }\n\n    body.text = msg;\n    body.message = msg;\n    \n    itemCompleto.endpoint_final = \"send/text\";\n}\n\n// ============================================================================\n// 3. RETORNO FINAL\n// ============================================================================\n\nreturn {\n    ...itemCompleto, // Mantém os dados da calculadora (ex: tempo, delay)\n    media_endpoint: itemCompleto.endpoint_final, // Para usar na URL do nó HTTP\n    payload_final: body // O JSON limpo para a API\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        1648
+      ],
+      "id": "405dfae4-8b53-4280-919c-c17a8924a7b2",
+      "name": "Formataliza",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## 4. Envio Final",
+        "height": 260,
+        "width": 380
+      },
+      "id": "121d15d5-77ca-43d1-adb1-c9d2af586d50",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 1. Entrada e Validação e Verificação",
+        "height": 356,
+        "width": 624
+      },
+      "id": "2c709aa4-1c1c-423e-bc6d-494dbba026a7",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.tempo_calculado_ms ? $json.tempo_calculado_ms / 1000 : 1 }}"
+      },
+      "id": "3fcc9f42-4425-45f3-b2fb-e3d72dd1f825",
+      "name": "TempoDigitando1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2784,
+        352
+      ],
+      "webhookId": "6b1b52a7-610c-4194-853c-ebf342c0a474"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// VALIDADOR DE TEXTO\n// ============================================================================\ntry {\n  const payload = $input.item.json.body || $input.item.json;\n  \n  if (!payload.to) throw new Error('Campo obrigatório: to (telefone)');\n  \n  const phoneClean = payload.to.replace(/^\\+/, '');\n  \n  let messagesToProcess = [];\n  const possibleKeys = ['message', 'messages'];\n  let foundMessages = payload.message || payload.messages;\n  \n  if (!foundMessages) throw new Error('Deve informar \"message\" ou \"messages\"');\n  \n  if (Array.isArray(foundMessages)) messagesToProcess = foundMessages;\n  else messagesToProcess = [foundMessages];\n  \n  const validatedMessages = [];\n  \n  messagesToProcess.forEach((msg) => {\n    let textContent = typeof msg.text === 'string' ? msg.text : msg.text?.body;\n    if (!textContent && typeof msg === 'string') textContent = msg;\n    if (!textContent) return;\n    \n    const splitMessages = textContent.toString().split(/\\n\\n+/).map(p => p.trim()).filter(p => p.length > 0);\n    \n    if (splitMessages.length === 0) validatedMessages.push({ type: 'text', text: textContent.trim() });\n    else splitMessages.forEach(part => validatedMessages.push({ type: 'text', text: part }));\n  });\n  \n  return validatedMessages.map((msg, index) => ({\n    json: {\n      auth: payload.auth,\n      to: phoneClean,\n      message: msg,\n      message_index: index + 1,\n      total_messages: validatedMessages.length\n    }\n  }));\n  \n} catch (error) {\n  throw new Error(`❌ Erro Validador: ${error.message}`);\n}"
+      },
+      "id": "7e61ef13-e2ae-458b-aa2d-5bef9b7a156d",
+      "name": "Validador Minimo1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "path": "enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f366112a-4e9a-4706-81f9-a6bafff13a6c",
+      "name": "SendText1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        336
+      ],
+      "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "39edf501-f502-4d73-a375-cec34d2536b4",
+      "name": "Loop Over Items1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        688,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $('Validador Minimo1').item.json.auth[\"dinastia-token\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload_final }}",
+        "options": {}
+      },
+      "id": "0e73b396-6376-4c26-af43-8386e33ab098",
+      "name": "Enviar Mensagem1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3296,
+        352
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/presence",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $json.auth['dinastia-token'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Phone",
+              "value": "={{ $json.to }}"
+            },
+            {
+              "name": "State",
+              "value": "={{ $json.media_presence || 'composing' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1248ecef-0089-4a07-bfaf-869ff9578a6c",
+      "name": "Enviar Digitando1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2128,
+        336
+      ],
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text || $json.text }}",
+                    "rightValue": "\\[.*\\]",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "a77a8025-15a6-48ec-b23b-57f9f3ad56d3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mídia (Tag)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f4e3e576-30d3-4b85-adb2-1e700fa8a986",
+                    "leftValue": "={{ $json.message.text || $json.text }}",
+                    "rightValue": "\\[.*\\]",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notRegex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto Comum"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ad7c0f0b-dbe7-46e1-8ad1-e3be8e4ef2f1",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// CALCULADORA DE TEMPO - INTEGRADA AO BANCO 🧠\n\nlet dadosOriginais = {};\ntry { dadosOriginais = $('Loop Over Items1').item.json; } catch (e) { dadosOriginais = $input.item.json; }\n\nlet dadosMidia = {};\ntry { dadosMidia = $('Verifica o tipo de MIDIA').item.json; } catch(e) {}\n\n// Mescla tudo. Se veio do Media Resolver, a chave 'media_duration' estará aqui.\nconst itemCompleto = { ...dadosOriginais, ...dadosMidia };\n\n// ============================================================================\n// CÁLCULO\n// ============================================================================\nlet tempoMs = 0;\nconst CHARS_POR_SEGUNDO = 2500 / 60; // Velocidade média de digitação humana\n\nif (itemCompleto.is_media) {\n    // === MÍDIA (VÍDEO, ÁUDIO, IMAGEM) ===\n    // Pega a duração que veio do Banco de Dados\n    // Se esquecerem de por no banco, usa 5 segundos como segurança\n    const durationSec = itemCompleto.media_duration || 5; \n    \n    tempoMs = durationSec * 1000; // Converte para milissegundos\n\n} else {\n    // === TEXTO COMUM ===\n    // Calcula baseado no tamanho do texto\n    let texto = itemCompleto.text || itemCompleto.message?.text || itemCompleto.message || \"\";\n    \n    // Se for objeto, tenta converter\n    if (typeof texto === 'object') texto = JSON.stringify(texto);\n\n    if (texto && texto.length > 0) {\n        tempoMs = Math.round((texto.length / CHARS_POR_SEGUNDO) * 1000);\n    }\n}\n\n// === LIMITES DE SEGURANÇA ===\n// Mínimo: 1 segundo (pra não ser instantâneo demais)\n// Máximo: 60 segundos (pra não travar o fluxo se você colocar 1 hora no banco sem querer)\nif (tempoMs < 1000) tempoMs = 1000;\nif (tempoMs > 60000) tempoMs = 60000; \n\nreturn {\n    ...itemCompleto,\n    tempo_calculado_ms: tempoMs\n};"
+      },
+      "id": "2d092572-7d96-40b2-abbe-4187166d323d",
+      "name": "Calculadora1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// FORMATALIZAÇÃO RESTRITA - VERSÃO FINALÍSSIMA (AUDIO FIX) 🎙️\n// ============================================================================\n\nconst item = $input.item.json;\nlet body = {}; \n\n// 1. TELEFONE\nlet phone = \"\";\ntry { phone = $('Loop Over Items1').item.json.to; } \ncatch (e) { phone = item.to || item.number || item.Phone; }\n\nif (phone) phone = phone.toString().replace(/\\D/g, \"\");\nelse throw new Error(\"❌ ERRO: Telefone não encontrado.\");\n\nbody.Phone = \"55\" + phone.replace(/^55/, \"\"); \n\n// 2. TRATAMENTO DE URL - Limpeza de espaços para o R2\nlet rawUrl = item.media_url ? item.media_url.trim() : \"\";\n\n// 3. SEPARAÇÃO POR TIPO\nlet endpointSuffix = \"\";\n\nif (item.is_media && rawUrl) {\n    \n    if (item.media_type === 'image') {\n        endpointSuffix = \"send/image\";\n        body.Image = rawUrl;\n        body.Caption = item.media_caption || \"\";\n    }\n    else if (item.media_type === 'video') {\n        endpointSuffix = \"send/video\";\n        body.Video = rawUrl;\n        body.Caption = item.media_caption || \"\";\n    }\n    else if (item.media_type === 'document') {\n        endpointSuffix = \"send/document\";\n        body.Document = rawUrl;\n        body.FileName = item.media_caption || \"arquivo.pdf\";\n    }\n    else if (item.media_type === 'audio') {\n        // Mudança estratégica: Algumas instâncias da Dinastia preferem \n        // o endpoint 'send/whatsappAudio' ou 'send/voice'\n        // Vamos manter 'send/audio' mas simplificar o payload\n        endpointSuffix = \"send/audio\"; \n        body.Audio = rawUrl; \n        body.PTT = true;\n        // Removendo flags redundantes que podem confundir o parser da API\n    }\n\n} else {\n    endpointSuffix = \"send/text\";\n    let msg = item.text || item.message?.text || item.message || \"\";\n    if (typeof msg === 'object') msg = JSON.stringify(msg);\n    body.Body = String(msg || \"🤖\");\n}\n\nreturn {\n    ...item,\n    media_endpoint: endpointSuffix,\n    payload_final: body \n};"
+      },
+      "id": "e33d6db4-d461-42ee-aff9-0705afcf09ac",
+      "name": "Formataliza1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2. Decisão e Resolução",
+        "height": 404,
+        "width": 572
+      },
+      "id": "5e0edb92-417b-400d-b5f3-36bbbf5cd306",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 3. Experiência (Wait + Calc)",
+        "height": 260,
+        "width": 640
+      },
+      "id": "7c83bd3e-acdd-48d8-a8e2-24b35c5c247a",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.media_library \nWHERE tag = $1;",
+        "options": {
+          "queryReplacement": "={{ $json.message.text.toString().replace(/[\\[\\]]/g, \"\").trim() }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        240
+      ],
+      "id": "72008403-04d2-45f9-beed-e08a29bd264f",
+      "name": "BuscarMidia",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "IPayEAHTuRMmnVq1",
+          "name": "PG_Infra_IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// SANITIZADOR DE IA - VERSÃO ULTRA RIGOROSA 🛡️\n// ============================================================================\n\nconst payload = { ...$input.item.json };\nlet body = payload.body || payload;\n\nfunction sanitize(text) {\n  if (typeof text !== 'string') return text;\n  \n  return text\n    // 1. Converte barras erradas /n ou /N para quebra de linha real \\n\n    .replace(/\\/n/gi, '\\n')\n    \n    // 2. Garante que entre duas tags grudadas ][ exista quebra de linha \\n\\n\n    .replace(/\\]\\s*\\[/g, ']\\n\\n[')\n    \n    // 3. Garante que toda tag [tag] tenha \\n\\n antes e depois\n    .replace(/\\s*(\\[.*?\\])\\s*/g, '\\n\\n$1\\n\\n')\n    \n    // 4. Limpa excessos: se ficou com 3 ou mais enters, reduz para 2\n    .replace(/\\n{3,}/g, '\\n\\n')\n    \n    // 5. Remove espaços e quebras inúteis no início e fim de tudo\n    .trim();\n}\n\n// Aplicação da lógica nos campos de mensagem\nif (body.message) {\n  if (typeof body.message === 'string') {\n    body.message = sanitize(body.message);\n  } else if (body.message.text && body.message.text.body) {\n    body.message.text.body = sanitize(body.message.text.body);\n  }\n}\n\nif (Array.isArray(body.messages)) {\n  body.messages = body.messages.map(msg => {\n    if (typeof msg === 'string') return sanitize(msg);\n    if (msg.text && msg.text.body) {\n       msg.text.body = sanitize(msg.text.body);\n    }\n    return msg;\n  });\n}\n\nreturn { json: body };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        336
+      ],
+      "id": "246b005a-4429-4898-860d-154959d2165a",
+      "name": "Verificar se ia nao mando algo errado"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.media_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2656,
+        2096
+      ],
+      "id": "8d666991-0e06-4897-9363-012942a6ee55",
+      "name": "DonwloadMIDIA",
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Backup de fluxos anteriores\n",
+        "height": 816,
+        "width": 2080
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        1472
+      ],
+      "id": "d6ef9ee3-6e56-4731-96ea-7e47f0c1457f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## LOOP E Resultados\n",
+        "height": 416,
+        "width": 592
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        192
+      ],
+      "id": "0aef7cde-c075-4d2b-8188-2329341fc020",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Efeito whatsapp",
+        "height": 320,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        224
+      ],
+      "id": "c2a566d8-4411-4d02-aa4d-8e4abb454c20",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// RESOLVEDOR DE MÍDIA - FIX URL ENCODING 🚀\n// ============================================================================\n\nconst dbData = $input.item.json;\n\nif (!dbData.url) {\n    throw new Error(\"❌ ERRO: Mídia não encontrada no Banco de Dados.\");\n}\n\n// FIX: Garante que a URL esteja corretamente formatada para o WhatsApp\n// Remove espaços duplos e garante o encoding correto\nlet cleanUrl = dbData.url.trim();\n\nreturn {\n    ...dbData,\n    media_url: cleanUrl,\n    media_type: dbData.type,\n    media_caption: dbData.caption || \"\",\n    media_presence: dbData.type === 'audio' ? 'recording' : 'composing',\n    media_duration: dbData.duration || 5, \n    is_media: true\n};"
+      },
+      "id": "4ead1cba-dc03-4006-8e58-bb9e8a255028",
+      "name": "Verifica o tipo de MIDIA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "TempoDigitando": {
+      "main": [
+        [
+          {
+            "node": "Formataliza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validador Minimo": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendText": {
+      "main": [
+        [
+          {
+            "node": "Validador Minimo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Digitando": {
+      "main": [
+        [
+          {
+            "node": "Calculadora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar interação Enviada": {
+      "main": [
+        []
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Media Resolver",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Formataliza",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Digitando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Media Resolver": {
+      "main": [
+        [
+          {
+            "node": "Enviar Digitando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculadora": {
+      "main": [
+        [
+          {
+            "node": "TempoDigitando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formataliza": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TempoDigitando1": {
+      "main": [
+        [
+          {
+            "node": "Formataliza1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validador Minimo1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendText1": {
+      "main": [
+        [
+          {
+            "node": "Verificar se ia nao mando algo errado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Digitando1": {
+      "main": [
+        [
+          {
+            "node": "Calculadora1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "BuscarMidia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Digitando1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculadora1": {
+      "main": [
+        [
+          {
+            "node": "TempoDigitando1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formataliza1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BuscarMidia": {
+      "main": [
+        [
+          {
+            "node": "Verifica o tipo de MIDIA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se ia nao mando algo errado": {
+      "main": [
+        [
+          {
+            "node": "Validador Minimo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica o tipo de MIDIA": {
+      "main": [
+        [
+          {
+            "node": "Enviar Digitando1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "SendText": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.12.0",
+            "content-length": "995",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/;q=0.9, image/;q=0.8, /;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6215c90acf9b",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "meta": {
+              "event_id": "TESTE_IMAGEM_001",
+              "timestamp": "2026-01-14T13:01:12-03:00",
+              "source": "teste-manual",
+              "trace_id": "TESTE_IMAGEM_001"
+            },
+            "auth": {
+              "dinastia-token": "fb29784a-0b59-41fd-8b24-9ff551999e07"
+            },
+            "to": "554599746605",
+            "config": {
+              "whatsapp_number": "554599746605"
+            },
+            "messages": [
+              {
+                "type": "text",
+                "text": "[imagem_teste]"
+              }
+            ],
+            "context": {
+              "lead_id": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+              "agente_id": "f7eefee6-f9b8-49c1-96ce-b51985db6ed2",
+              "conversation_id": "18c542f1-b2fc-47ad-9dca-b03d70a203db",
+              "reply_to_message_id": "3EB0147B3C99851C46B2C8"
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "SendText1": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-aplictech-editor.aplicgo.com",
+            "user-agent": "axios/1.12.0",
+            "content-length": "418",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n-aplictech-editor.aplicgo.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "2b85f3cb3649",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "auth": {
+              "dinastia-token": "fb29784a-0b59-41fd-8b24-9ff551999e07"
+            },
+            "to": "554599083422",
+            "message": {
+              "type": "text",
+              "text": {
+                "body": "Oi! Aqui é a Andreia, da Aplic&Go. 😊\n\nAntes de agendar com seu voucher, esse vídeo explica rapidinho como funciona a nossa avaliação e o acompanhamento.\n\n[video_institucional_2]\n\nDe onde você fala?"
+              }
+            },
+            "context": {
+              "lead_id": "e019709e-ecd5-4f58-b6cc-73e6449882cb",
+              "agente_id": ""
+            }
+          },
+          "webhookUrl": "https://n8n-aplictech-editor.aplicgo.com/webhook/enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "dbdb5e39-dc69-44ac-a797-ddc35f4f74ec",
+  "activeVersionId": "dbdb5e39-dc69-44ac-a797-ddc35f4f74ec",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-26T11:57:28.321Z",
+      "createdAt": "2026-01-26T11:57:28.321Z",
+      "role": "workflow:owner",
+      "workflowId": "V5VVghSOmapx3qRyHXvAz",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-25T02:44:04.596Z",
+    "createdAt": "2026-02-25T02:44:02.995Z",
+    "versionId": "dbdb5e39-dc69-44ac-a797-ddc35f4f74ec",
+    "workflowId": "V5VVghSOmapx3qRyHXvAz",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## Envio de Mensagens",
+          "height": 80,
+          "width": 3280
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "eadb8723-5d6d-4f79-bd92-105acf829eb7",
+        "name": "Sticky Note6"
+      },
+      {
+        "parameters": {
+          "amount": "={{ $json.tempo_calculado_ms / 1000 }}"
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          2208,
+          1616
+        ],
+        "id": "e513bf10-bf77-4f33-8525-90dd3a86a6ac",
+        "name": "TempoDigitando",
+        "webhookId": "6b1b52a7-610c-4194-853c-ebf342c0a474",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{$('Resultado')}}",
+          "options": {
+            "responseCode": "={{$('Resultado').item.json.success ? 200 : 400}}"
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1040,
+          272
+        ],
+        "id": "54d81424-fa09-47af-8b2d-ee3402ca56b7",
+        "name": "Respond to Webhook1"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// VALIDADOR DE TEXTO - Flexível, Multi-item Output + Split por \\n\\n\n// ============================================================================\ntry {\n  const payload = $input.item.json.body || $input.item.json;\n  \n  // Validações básicas\n  if (!payload.auth?.['dinastia-token']) {\n    throw new Error('Campo obrigatório: auth.dinastia-token');\n  }\n  \n  if (!payload.to) {\n    throw new Error('Campo obrigatório: to (telefone)');\n  }\n  \n  const phoneClean = payload.to.replace(/^\\+/, '');\n  if (!/^55\\d{10,11}$/.test(phoneClean)) {\n    throw new Error(`Telefone inválido: ${payload.to}. Formato: 5511999999999`);\n  }\n  \n  // ========================================================================\n  // NORMALIZAÇÃO INTELIGENTE: detecta qualquer variação\n  // ========================================================================\n  let messagesToProcess = [];\n  \n  // Tentar encontrar mensagens em qualquer formato\n  const possibleKeys = ['message', 'messages', 'Message', 'Messages'];\n  let foundMessages = null;\n  \n  for (const key of possibleKeys) {\n    if (payload[key]) {\n      foundMessages = payload[key];\n      break;\n    }\n  }\n  \n  if (!foundMessages) {\n    throw new Error('Deve informar \"message\" (única) ou \"messages\" (array)');\n  }\n  \n  // Normalizar para array\n  if (Array.isArray(foundMessages)) {\n    // Já é array\n    if (foundMessages.length === 0) {\n      throw new Error('Array de mensagens não pode estar vazio');\n    }\n    messagesToProcess = foundMessages;\n  } else if (typeof foundMessages === 'object') {\n    // É um objeto único - transformar em array\n    messagesToProcess = [foundMessages];\n  } else {\n    throw new Error('Formato de mensagem inválido');\n  }\n  \n  // ========================================================================\n  // VALIDAR, PROCESSAR e QUEBRAR cada mensagem por \\n\\n\n  // ========================================================================\n  const validatedMessages = [];\n  \n  messagesToProcess.forEach((msg, index) => {\n    const msgNum = index + 1;\n    \n    // Validar tipo (se informado)\n    if (msg.type && msg.type !== 'text') {\n      throw new Error(`Mensagem ${msgNum}: tipo deve ser \"text\", recebido \"${msg.type}\"`);\n    }\n    \n    // Validar texto\n    if (!msg.text) {\n      throw new Error(`Mensagem ${msgNum}: campo \"text\" é obrigatório`);\n    }\n    \n    // Aceitar text como string ou objeto {body: \"...\"}\n    let textContent = typeof msg.text === 'string' \n      ? msg.text \n      : msg.text?.body;\n    \n    if (!textContent || textContent.trim().length === 0) {\n      throw new Error(`Mensagem ${msgNum}: text não pode estar vazio`);\n    }\n    \n    // ========================================================================\n    // QUEBRAR por \\n\\n (dupla quebra de linha)\n    // ========================================================================\n    const splitMessages = textContent\n      .split(/\\n\\n+/)  // Split por 2 ou mais \\n consecutivos\n      .map(part => part.trim())\n      .filter(part => part.length > 0);  // Remove vazios\n    \n    // Se não houver quebras, retorna a mensagem inteira\n    if (splitMessages.length === 0) {\n      validatedMessages.push({\n        type: 'text',\n        text: textContent.trim()\n      });\n    } else {\n      // Adiciona cada parte como mensagem separada\n      splitMessages.forEach(part => {\n        validatedMessages.push({\n          type: 'text',\n          text: part\n        });\n      });\n    }\n  });\n  \n  // ========================================================================\n  // OUTPUT: Criar um item para cada mensagem (agora expandido)\n  // ========================================================================\n  return validatedMessages.map((msg, index) => ({\n    json: {\n      auth: {\n        'dinastia-token': payload.auth['dinastia-token']\n      },\n      to: phoneClean,\n      message: msg,\n      message_index: index + 1,\n      total_messages: validatedMessages.length,\n      ...(payload.meta && { meta: payload.meta }),\n      ...(payload.config && { config: payload.config }),\n      ...(payload.context && { context: payload.context })\n    }\n  }));\n  \n} catch (error) {\n  throw new Error(`❌ Erro no contrato: ${error.message}`);\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1024,
+          1536
+        ],
+        "id": "09abe90a-f5bb-49b5-aa5e-de48c07fd689",
+        "name": "Validador Minimo",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "path": "enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          816,
+          1536
+        ],
+        "id": "a630f5ca-1419-41ea-8ded-0d8629f04b86",
+        "name": "SendText",
+        "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "content": "## Contrato\n\n{\n  \"meta\": { /* opcional - rastreamento */ },\n  \"auth\": { \n    \"dinastia-token\": \"...\" // OBRIGATÓRIO\n  },\n  \"to\": \"5534999887766\", // OBRIGATÓRIO - sem \"+\"\n  \"config\": { /* opcional */ },\n  \"message\": {\n    \"type\": \"text|audio|video|image|document\", // OBRIGATÓRIO\n    /* campos específicos do tipo */\n  },\n  \"context\": { /* opcional - lead_id, agente_id, etc */ }\n}",
+          "height": 336,
+          "width": 416,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          192,
+          1312
+        ],
+        "id": "d05275dd-5c0c-40dd-a4dc-8122ce331c04",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Exemplo\nUma mensagem:\n{\n  \"auth\": { \"dinastia-token\": \"...\" },\n  \"to\": \"5534999887766\",\n  \"message\": {\n    \"type\": \"text\",\n    \"text\": \"Olá, tudo bem?\"\n  },\n  \"context\": { \"lead_id\": \"...\" }\n}\n\nVarias Mensagens:\n{\n  \"auth\": { \"dinastia-token\": \"...\" },\n  \"to\": \"5534999887766\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"Olá, muito bom dia Amanda!\"\n    },\n    {\n      \"type\": \"text\",\n      \"text\": \"Claro, tenho horário na sexta sim. Que horas ficaria bom pra ti?\"\n    }\n  ],\n  \"context\": { \"lead_id\": \"...\" }\n}",
+          "height": 608,
+          "width": 656,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          64,
+          1664
+        ],
+        "id": "ad91a03a-8674-454c-91a6-253dc1e25bca",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "options": {
+            "reset": false
+          }
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          1312,
+          1536
+        ],
+        "id": "6d9cdbfa-45f3-443b-9bfd-854d906f57b7",
+        "name": "Loop Over Items",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// AGREGADOR DE RESPOSTAS - Consolidar múltiplas mensagens (FAIL-SAFE)\n// ============================================================================\n\ntry {\n  const allItems = $input.all();\n  \n  let totalSent = 0;\n  let totalFailed = 0;\n  \n  const messagesResults = allItems.map((item, index) => {\n    try {\n      const data = item.json;\n      \n      // Verificar se foi sucesso (múltiplas formas)\n      const isSuccess = data.success === true || \n                        data.code === 200 || \n                        data.data?.Details === \"Sent\" ||\n                        data.Details === \"Sent\" ||\n                        data.status === \"success\";\n      \n      if (isSuccess) {\n        totalSent++;\n        return {\n          index: index,\n          status: \"sent\",\n          provider_message_id: data.data?.Id || data.Id || data.messageId || null,\n          timestamp: data.data?.Timestamp || data.Timestamp || new Date().toISOString()\n        };\n      } else {\n        totalFailed++;\n        return {\n          index: index,\n          status: \"failed\",\n          error: {\n            code: data.error?.code || \n                  data.data?.error_code || \n                  data.code || \n                  \"UNKNOWN_ERROR\",\n            message: data.error?.message || \n                     data.data?.error || \n                     data.message || \n                     \"Erro desconhecido ao enviar mensagem\"\n          },\n          raw_response: data // Replica resposta original\n        };\n      }\n      \n    } catch (itemError) {\n      // Se der erro ao processar um item específico\n      totalFailed++;\n      return {\n        index: index,\n        status: \"failed\",\n        error: {\n          code: \"PROCESSING_ERROR\",\n          message: `Erro ao processar item: ${itemError.message}`\n        },\n        raw_response: item.json // Replica payload original\n      };\n    }\n  });\n  \n  // Montar resposta consolidada\n  const consolidatedResponse = {\n    success: totalFailed === 0,\n    summary: {\n      total: allItems.length,\n      sent: totalSent,\n      failed: totalFailed\n    },\n    messages: messagesResults\n  };\n  \n  return [{ json: consolidatedResponse }];\n  \n} catch (error) {\n  // Se der erro geral na agregação\n  return [{\n    json: {\n      success: false,\n      summary: {\n        total: 0,\n        sent: 0,\n        failed: 0\n      },\n      messages: [],\n      error: {\n        code: \"AGGREGATION_ERROR\",\n        message: error.message\n      },\n      raw_error: error.stack\n    }\n  }];\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          272
+        ],
+        "id": "05ce722e-d622-4c4f-bd9a-546a5194b0f3",
+        "name": "Resultado"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "token",
+                "value": "={{ $('Validador Minimo').item.json.auth[\"dinastia-token\"] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.payload_final }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2288,
+          1920
+        ],
+        "id": "e5c9290d-0fd7-4816-bb4c-513ac97c7802",
+        "name": "Enviar Mensagem",
+        "retryOnFail": true,
+        "notesInFlow": true,
+        "disabled": true,
+        "onError": "continueRegularOutput",
+        "notes": "Retry 3x + Continue"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/presence",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "token",
+                "value": "={{ $json.auth[\"dinastia-token\"] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Phone",
+                "value": "={{ $json.to }}"
+              },
+              {
+                "name": "State",
+                "value": "={{ $json.media_presence || 'composing' }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1808,
+          1712
+        ],
+        "id": "4599c475-2b82-43a1-88aa-463c63abd9d3",
+        "name": "Enviar Digitando",
+        "retryOnFail": true,
+        "maxTries": 2,
+        "notesInFlow": true,
+        "disabled": true,
+        "onError": "continueRegularOutput",
+        "notes": "Retry 2x + Continue"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO interacoes (\n  lead_id,\n  type,\n  direction,\n  message,\n  ai_generated,\n  whatsapp_number,\n  agente_id,\n  channel_data,\n  created_at\n)\nVALUES (\n  $1::uuid,                                    -- lead_id (OBRIGATÓRIO)\n  $2::text,                                    -- type (OBRIGATÓRIO)\n  $3::text,                                    -- direction (OBRIGATÓRIO: 'INBOUND' ou 'OUTBOUND')\n  $4::text,                                    -- message (OBRIGATÓRIO)\n  COALESCE($5::boolean, false),                -- ai_generated (OPCIONAL, default false)\n  NULLIF($6::text, ''),                        -- whatsapp_number (OPCIONAL)\n  CASE \n    WHEN $7::text IS NOT NULL AND $7::text != '' \n    THEN $7::uuid \n    ELSE NULL \n  END,                                         -- agente_id (OPCIONAL)\n  jsonb_build_object(\n    'messageId', NULLIF($8::text, ''),\n    'tipo_mensagem', NULLIF($9::text, ''),\n    'timestamp_original', NULLIF($10::text, ''),\n    'agente_nome', NULLIF($11::text, '')\n  ) - '{}'::text[],                            -- Remove nulls\n  NOW()\n)\nON CONFLICT (lead_id, (channel_data->>'messageId'))\nWHERE channel_data->>'messageId' IS NOT NULL\nDO NOTHING\nRETURNING id, lead_id, created_at;",
+          "options": {
+            "queryReplacement": "={{ $('SendText').item.json.body.context.lead_id }}, "
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1024,
+          1680
+        ],
+        "id": "2e87edaa-f6b9-4fcc-a9e5-0c38dd1b014f",
+        "name": "Salvar interação Enviada",
+        "credentials": {
+          "postgres": {
+            "id": "0w4wNBvz8tuXc0ht",
+            "name": "aplic_tech_postgres_clinic_mvp"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "path": "54262122-5849-48d4-92ff-b4fc746bea73",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          816,
+          1680
+        ],
+        "id": "5fe4255d-a674-4cc4-bdd4-5e9acf941648",
+        "name": "Webhook",
+        "webhookId": "54262122-5849-48d4-92ff-b4fc746bea73"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.message.text }}",
+                      "rightValue": "^\\[.*\\]$",
+                      "operator": {
+                        "type": "string",
+                        "operation": "regex"
+                      },
+                      "id": "a77a8025-15a6-48ec-b23b-57f9f3ad56d3"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Mídia (Tag)"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "f4e3e576-30d3-4b85-adb2-1e700fa8a986",
+                      "leftValue": "={{ $json.message.text }}",
+                      "rightValue": "^\\[.*\\]$",
+                      "operator": {
+                        "type": "string",
+                        "operation": "notRegex"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Texto Comum"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          1552,
+          1536
+        ],
+        "id": "561e338b-e4bb-4d07-81c1-3874d402d0c5",
+        "name": "Switch",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// BIBLIOTECA DE MÍDIAS (DICIONÁRIO)\n// ============================================================================\nconst mediaLibrary = {\n    // 📸 IMAGEM\n    \"imagem_teste\": {\n        url: \"https://pub-58bea372872445d982f17b69de9e4f57.r2.dev/WhatsApp%20Image%202026-01-17%20at%2008.08.03.jpeg\",\n        type: \"image\",\n        endpoint: \"send/image\", // Formato corrigido para sua API\n        presence: \"composing\",\n        caption: \"Segue a imagem que você pediu! 📸\"\n    },\n    \n    // 🎥 VÍDEO EXEMPLO (Pode editar)\n    \"video_vendas_01\": {\n        url: \"https://seu-link-aqui.com/video.mp4\",\n        type: \"video\",\n        endpoint: \"send/video\",\n        presence: \"composing\",\n        caption: \"Veja esse vídeo incrível 👇\"\n    },\n    \n    // 🎤 ÁUDIO EXEMPLO (Pode editar)\n    \"audio_apresentacao\": {\n        url: \"https://seu-link-aqui.com/audio.mp3\",\n        type: \"audio\",\n        endpoint: \"send/audio\", // Pode ser send/audio ou send/whatsappAudio dependendo da versão\n        presence: \"recording\",\n        caption: \"\"\n    }\n};\n\n// ============================================================================\n// LÓGICA DE RESOLUÇÃO\n// ============================================================================\n\n// 1. Obtém o texto bruto (segurança se vier como objeto ou string)\nlet rawText = \"\";\nif ($json.message && $json.message.text) {\n    rawText = $json.message.text;\n} else if ($json.message) {\n    rawText = $json.message;\n}\n\n// 2. Limpa os colchetes para pegar só o nome da tag (ex: \"[imagem_teste]\" vira \"imagem_teste\")\nconst tag = rawText.toString().replace(/[\\[\\]]/g, \"\").trim();\n\n// 3. Busca no dicionário\nconst media = mediaLibrary[tag];\n\n// 4. Verificação de Segurança\nif (!media) {\n    // Se chegou aqui mas a tag não existe, avisa no erro\n    throw new Error(`❌ ERRO CRÍTICO: A tag [${tag}] não foi encontrada no dicionário do Media Resolver.`);\n}\n\n// 5. Retorna os dados mesclados\nreturn {\n    ...$json, // Mantém os dados originais (telefone, token, etc)\n    media_url: media.url,\n    media_type: media.type,\n    media_endpoint: media.endpoint,\n    media_presence: media.presence,\n    media_caption: media.caption,\n    is_media: true\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1808,
+          1488
+        ],
+        "id": "81932e00-7575-4ccc-9178-a76c9460d7c6",
+        "name": "Media Resolver",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const message_part = $('Validador Minimo').first().json.message.text;\n\nif (typeof message_part !== 'string' || message_part.length === 0) {\n  return { error: 'A entrada \"message_part\" deve ser um texto (string) não vazio.' };\n}\n\n// Velocidade de um escritor profissional: 80 palavras por minuto.\n// Média de caracteres por palavra (padrão): 5.\n// Caracteres por minuto de um profissional: 80 * 5 = 400.\n// Capacidade 3x superior: 400 * 3 = 1200 caracteres por minuto.\nconst caracteresPorMinuto = 4000;\nconst caracteresPorSegundo = caracteresPorMinuto / 60;\n\nconst numeroDeCaracteres = message_part.length;\nconst tempoEmSegundos = numeroDeCaracteres / caracteresPorSegundo;\nconst tempoEmMs = Math.round(tempoEmSegundos * 1000);\n\n// Retorna o resultado\nreturn { tempo_em_ms: tempoEmMs };$input.first().json.message_part$input.first().json.message_part"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1024,
+          1888
+        ],
+        "id": "0d6153d0-395c-4aa7-a7ed-4e811495d37e",
+        "name": "Contabilizador de Caracteres1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// CALCULADORA MESTRE DE TEMPO (TEXTO & MÍDIA)\n// ============================================================================\n\nconst item = $input.item.json;\nlet tempoMs = 0;\n\n// CONFIGURAÇÃO DE VELOCIDADE (TEXTO)\n// 1200 caracteres/minuto (Simulação de escrita rápida/colar texto)\nconst CHARS_POR_SEGUNDO = 1200 / 60; \n\n// CONFIGURAÇÃO DE DURAÇÃO (MÍDIA - EM SEGUNDOS)\n// Mapeie aqui o tempo real dos seus áudios para o \"Gravando...\" ser exato\nconst duracaoMidia = {\n    \"audio_apresentacao\": 12,  // 12 segundos\n    \"video_vendas_01\": 5,      // 5 segundos (suficiente para simular upload)\n    \"default_audio\": 5,        // Fallback para áudios sem map\n    \"default_video\": 3         // Fallback para vídeos\n};\n\n// ============================================================================\n// LÓGICA DE DECISÃO\n// ============================================================================\n\nif (item.is_media) {\n    // --- LÓGICA PARA MÍDIA ---\n    // Tenta encontrar a tag original (removendo colchetes)\n    const tag = item.message.text ? item.message.text.replace(/[\\[\\]]/g, \"\").trim() : \"\";\n    \n    if (duracaoMidia[tag]) {\n        // Se temos o tempo exato mapeado\n        tempoMs = duracaoMidia[tag] * 1000;\n    } else {\n        // Se não, usa o fallback baseado no tipo\n        const tipo = item.media_type || 'video';\n        const segundos = duracaoMidia[`default_${tipo}`] || 3;\n        tempoMs = segundos * 1000;\n    }\n\n} else {\n    // --- LÓGICA PARA TEXTO ---\n    // Garante que é string\n    let texto = \"\";\n    if (typeof item.message === 'string') texto = item.message;\n    else if (item.message && item.message.text) texto = item.message.text;\n\n    if (texto.length > 0) {\n        const segundos = texto.length / CHARS_POR_SEGUNDO;\n        tempoMs = Math.round(segundos * 1000);\n    }\n}\n\n// SEGURANÇA: Mínimo de 1s e Máximo de 25s (para não travar o fluxo)\nif (tempoMs < 1000) tempoMs = 1000;\nif (tempoMs > 25000) tempoMs = 25000;\n\nreturn {\n    ...item,\n    tempo_calculado_ms: tempoMs\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1984,
+          1616
+        ],
+        "id": "a26c3044-fa84-410f-bcc1-dd917e08701f",
+        "name": "Calculadora",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// 1. A FUSÃO DE DADOS (O Segredo para não perder nada) 🧬\n// ============================================================================\n\n// 1. O que chegou neste nó (Vindo da Calculadora/Wait)\nconst dadosAtuais = $input.item.json;\n\n// 2. O que foi gerado lá atrás (Dados da Mídia)\nlet dadosMidia = {};\ntry {\n    // Tenta buscar os dados do nó Media Resolver\n    // Usamos .first() se for execução única ou batemos pelo índice\n    // Para simplificar, assumimos que o fluxo manteve a ordem\n    dadosMidia = $('Media Resolver').item.json;\n} catch (erro) {\n    // Se der erro, é porque o fluxo veio pelo caminho de Texto (sem mídia)\n    dadosMidia = {}; \n}\n\n// 3. Onde está o telefone original? (Caso a calculadora tenha perdido)\nlet dadosLoop = {};\ntry { dadosLoop = $('Loop Over Items').item.json; } catch(e) {}\n\n// === A MÁGICA ===\n// Juntamos tudo em um único objeto. \n// A prioridade é: Mídia > Calculadora > Loop\nconst itemCompleto = { ...dadosLoop, ...dadosAtuais, ...dadosMidia };\n\n// ============================================================================\n// 2. VERIFICAÇÃO E MONTAGEM\n// ============================================================================\n\nlet body = {};\n\n// Recupera o telefone de onde ele estiver (garantia total)\nconst phone = itemCompleto.number || itemCompleto.to || itemCompleto.phone || itemCompleto.whatsapp_number;\n\nif (!phone) {\n    throw new Error(\"❌ ERRO: O telefone sumiu depois da calculadora. Verifique se a calculadora repassa os dados.\");\n}\n\n// Prepara chaves padrão\nbody.number = phone.toString();\nbody.to = phone.toString();\n\n// Verifica se é Mídia ou Texto\nif (itemCompleto.is_media && itemCompleto.media_url) {\n    \n    // === CENÁRIO MÍDIA ===\n    const mediaUrl = itemCompleto.media_url;\n    \n    body.mediatype = itemCompleto.media_type;\n    body.caption = itemCompleto.media_caption || \"\";\n    \n    // URL em todas as chaves possíveis\n    body.url = mediaUrl;\n    body.media = mediaUrl; \n    \n    // Chaves específicas\n    if (itemCompleto.media_type === 'image') body.image = mediaUrl;\n    if (itemCompleto.media_type === 'video') body.video = mediaUrl;\n    if (itemCompleto.media_type === 'audio') { body.audio = mediaUrl; body.ptt = true; }\n    \n    // Endpoint correto\n    itemCompleto.endpoint_final = itemCompleto.media_endpoint || \"send/image\";\n\n} else {\n    \n    // === CENÁRIO TEXTO ===\n    // Pega o texto original ou o que sobrou\n    let msg = itemCompleto.text || itemCompleto.message || \"Olá\";\n    \n    // Limpeza de segurança: Se por acaso sobrou a tag [imagem] como texto\n    if (msg.toString().includes(\"[imagem_teste]\")) {\n        // Se chegou aqui como texto, algo deu errado, mas enviamos um aviso ou tentamos recuperar\n        // Mas como fizemos o merge lá em cima, o 'if is_media' deve pegar antes.\n    }\n\n    body.text = msg;\n    body.message = msg;\n    \n    itemCompleto.endpoint_final = \"send/text\";\n}\n\n// ============================================================================\n// 3. RETORNO FINAL\n// ============================================================================\n\nreturn {\n    ...itemCompleto, // Mantém os dados da calculadora (ex: tempo, delay)\n    media_endpoint: itemCompleto.endpoint_final, // Para usar na URL do nó HTTP\n    payload_final: body // O JSON limpo para a API\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2464,
+          1648
+        ],
+        "id": "405dfae4-8b53-4280-919c-c17a8924a7b2",
+        "name": "Formataliza",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "content": "## 4. Envio Final",
+          "height": 260,
+          "width": 380
+        },
+        "id": "121d15d5-77ca-43d1-adb1-c9d2af586d50",
+        "name": "Sticky Note2",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3072,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 1. Entrada e Validação e Verificação",
+          "height": 356,
+          "width": 624
+        },
+        "id": "2c709aa4-1c1c-423e-bc6d-494dbba026a7",
+        "name": "Sticky Note7",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -48,
+          240
+        ]
+      },
+      {
+        "parameters": {
+          "amount": "={{ $json.tempo_calculado_ms ? $json.tempo_calculado_ms / 1000 : 1 }}"
+        },
+        "id": "3fcc9f42-4425-45f3-b2fb-e3d72dd1f825",
+        "name": "TempoDigitando1",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          2784,
+          352
+        ],
+        "webhookId": "6b1b52a7-610c-4194-853c-ebf342c0a474"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// VALIDADOR DE TEXTO\n// ============================================================================\ntry {\n  const payload = $input.item.json.body || $input.item.json;\n  \n  if (!payload.to) throw new Error('Campo obrigatório: to (telefone)');\n  \n  const phoneClean = payload.to.replace(/^\\+/, '');\n  \n  let messagesToProcess = [];\n  const possibleKeys = ['message', 'messages'];\n  let foundMessages = payload.message || payload.messages;\n  \n  if (!foundMessages) throw new Error('Deve informar \"message\" ou \"messages\"');\n  \n  if (Array.isArray(foundMessages)) messagesToProcess = foundMessages;\n  else messagesToProcess = [foundMessages];\n  \n  const validatedMessages = [];\n  \n  messagesToProcess.forEach((msg) => {\n    let textContent = typeof msg.text === 'string' ? msg.text : msg.text?.body;\n    if (!textContent && typeof msg === 'string') textContent = msg;\n    if (!textContent) return;\n    \n    const splitMessages = textContent.toString().split(/\\n\\n+/).map(p => p.trim()).filter(p => p.length > 0);\n    \n    if (splitMessages.length === 0) validatedMessages.push({ type: 'text', text: textContent.trim() });\n    else splitMessages.forEach(part => validatedMessages.push({ type: 'text', text: part }));\n  });\n  \n  return validatedMessages.map((msg, index) => ({\n    json: {\n      auth: payload.auth,\n      to: phoneClean,\n      message: msg,\n      message_index: index + 1,\n      total_messages: validatedMessages.length\n    }\n  }));\n  \n} catch (error) {\n  throw new Error(`❌ Erro Validador: ${error.message}`);\n}"
+        },
+        "id": "7e61ef13-e2ae-458b-aa2d-5bef9b7a156d",
+        "name": "Validador Minimo1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          384,
+          336
+        ]
+      },
+      {
+        "parameters": {
+          "path": "enviar-mensagem-texto-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "f366112a-4e9a-4706-81f9-a6bafff13a6c",
+        "name": "SendText1",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          32,
+          336
+        ],
+        "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd"
+      },
+      {
+        "parameters": {
+          "options": {
+            "reset": false
+          }
+        },
+        "id": "39edf501-f502-4d73-a375-cec34d2536b4",
+        "name": "Loop Over Items1",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          688,
+          336
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/{{ $json.media_endpoint ? $json.media_endpoint : 'send/text' }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "token",
+                "value": "={{ $('Validador Minimo1').item.json.auth[\"dinastia-token\"] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.payload_final }}",
+          "options": {}
+        },
+        "id": "0e73b396-6376-4c26-af43-8386e33ab098",
+        "name": "Enviar Mensagem1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3296,
+          352
+        ],
+        "retryOnFail": true,
+        "maxTries": 2,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://aplic_tech-dinastiapi.trcjj4.easypanel.host/chat/presence",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "token",
+                "value": "={{ $json.auth['dinastia-token'] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "Phone",
+                "value": "={{ $json.to }}"
+              },
+              {
+                "name": "State",
+                "value": "={{ $json.media_presence || 'composing' }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "1248ecef-0089-4a07-bfaf-869ff9578a6c",
+        "name": "Enviar Digitando1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2128,
+          336
+        ],
+        "retryOnFail": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.message.text || $json.text }}",
+                      "rightValue": "\\[.*\\]",
+                      "operator": {
+                        "type": "string",
+                        "operation": "regex"
+                      },
+                      "id": "a77a8025-15a6-48ec-b23b-57f9f3ad56d3"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Mídia (Tag)"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "f4e3e576-30d3-4b85-adb2-1e700fa8a986",
+                      "leftValue": "={{ $json.message.text || $json.text }}",
+                      "rightValue": "\\[.*\\]",
+                      "operator": {
+                        "type": "string",
+                        "operation": "notRegex"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Texto Comum"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "ad7c0f0b-dbe7-46e1-8ad1-e3be8e4ef2f1",
+        "name": "Switch1",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          1344,
+          368
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// CALCULADORA DE TEMPO - INTEGRADA AO BANCO 🧠\n\nlet dadosOriginais = {};\ntry { dadosOriginais = $('Loop Over Items1').item.json; } catch (e) { dadosOriginais = $input.item.json; }\n\nlet dadosMidia = {};\ntry { dadosMidia = $('Verifica o tipo de MIDIA').item.json; } catch(e) {}\n\n// Mescla tudo. Se veio do Media Resolver, a chave 'media_duration' estará aqui.\nconst itemCompleto = { ...dadosOriginais, ...dadosMidia };\n\n// ============================================================================\n// CÁLCULO\n// ============================================================================\nlet tempoMs = 0;\nconst CHARS_POR_SEGUNDO = 2500 / 60; // Velocidade média de digitação humana\n\nif (itemCompleto.is_media) {\n    // === MÍDIA (VÍDEO, ÁUDIO, IMAGEM) ===\n    // Pega a duração que veio do Banco de Dados\n    // Se esquecerem de por no banco, usa 5 segundos como segurança\n    const durationSec = itemCompleto.media_duration || 5; \n    \n    tempoMs = durationSec * 1000; // Converte para milissegundos\n\n} else {\n    // === TEXTO COMUM ===\n    // Calcula baseado no tamanho do texto\n    let texto = itemCompleto.text || itemCompleto.message?.text || itemCompleto.message || \"\";\n    \n    // Se for objeto, tenta converter\n    if (typeof texto === 'object') texto = JSON.stringify(texto);\n\n    if (texto && texto.length > 0) {\n        tempoMs = Math.round((texto.length / CHARS_POR_SEGUNDO) * 1000);\n    }\n}\n\n// === LIMITES DE SEGURANÇA ===\n// Mínimo: 1 segundo (pra não ser instantâneo demais)\n// Máximo: 60 segundos (pra não travar o fluxo se você colocar 1 hora no banco sem querer)\nif (tempoMs < 1000) tempoMs = 1000;\nif (tempoMs > 60000) tempoMs = 60000; \n\nreturn {\n    ...itemCompleto,\n    tempo_calculado_ms: tempoMs\n};"
+        },
+        "id": "2d092572-7d96-40b2-abbe-4187166d323d",
+        "name": "Calculadora1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2512,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// FORMATALIZAÇÃO RESTRITA - VERSÃO FINALÍSSIMA (AUDIO FIX) 🎙️\n// ============================================================================\n\nconst item = $input.item.json;\nlet body = {}; \n\n// 1. TELEFONE\nlet phone = \"\";\ntry { phone = $('Loop Over Items1').item.json.to; } \ncatch (e) { phone = item.to || item.number || item.Phone; }\n\nif (phone) phone = phone.toString().replace(/\\D/g, \"\");\nelse throw new Error(\"❌ ERRO: Telefone não encontrado.\");\n\nbody.Phone = \"55\" + phone.replace(/^55/, \"\"); \n\n// 2. TRATAMENTO DE URL - Limpeza de espaços para o R2\nlet rawUrl = item.media_url ? item.media_url.trim() : \"\";\n\n// 3. SEPARAÇÃO POR TIPO\nlet endpointSuffix = \"\";\n\nif (item.is_media && rawUrl) {\n    \n    if (item.media_type === 'image') {\n        endpointSuffix = \"send/image\";\n        body.Image = rawUrl;\n        body.Caption = item.media_caption || \"\";\n    }\n    else if (item.media_type === 'video') {\n        endpointSuffix = \"send/video\";\n        body.Video = rawUrl;\n        body.Caption = item.media_caption || \"\";\n    }\n    else if (item.media_type === 'document') {\n        endpointSuffix = \"send/document\";\n        body.Document = rawUrl;\n        body.FileName = item.media_caption || \"arquivo.pdf\";\n    }\n    else if (item.media_type === 'audio') {\n        // Mudança estratégica: Algumas instâncias da Dinastia preferem \n        // o endpoint 'send/whatsappAudio' ou 'send/voice'\n        // Vamos manter 'send/audio' mas simplificar o payload\n        endpointSuffix = \"send/audio\"; \n        body.Audio = rawUrl; \n        body.PTT = true;\n        // Removendo flags redundantes que podem confundir o parser da API\n    }\n\n} else {\n    endpointSuffix = \"send/text\";\n    let msg = item.text || item.message?.text || item.message || \"\";\n    if (typeof msg === 'object') msg = JSON.stringify(msg);\n    body.Body = String(msg || \"🤖\");\n}\n\nreturn {\n    ...item,\n    media_endpoint: endpointSuffix,\n    payload_final: body \n};"
+        },
+        "id": "e33d6db4-d461-42ee-aff9-0705afcf09ac",
+        "name": "Formataliza1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3120,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 2. Decisão e Resolução",
+          "height": 404,
+          "width": 572
+        },
+        "id": "5e0edb92-417b-400d-b5f3-36bbbf5cd306",
+        "name": "Sticky Note3",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1296,
+          208
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## 3. Experiência (Wait + Calc)",
+          "height": 260,
+          "width": 640
+        },
+        "id": "7c83bd3e-acdd-48d8-a8e2-24b35c5c247a",
+        "name": "Sticky Note4",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2416,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM public.media_library \nWHERE tag = $1;",
+          "options": {
+            "queryReplacement": "={{ $json.message.text.toString().replace(/[\\[\\]]/g, \"\").trim() }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1536,
+          240
+        ],
+        "id": "72008403-04d2-45f9-beed-e08a29bd264f",
+        "name": "BuscarMidia",
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "IPayEAHTuRMmnVq1",
+            "name": "PG_Infra_IA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// SANITIZADOR DE IA - VERSÃO ULTRA RIGOROSA 🛡️\n// ============================================================================\n\nconst payload = { ...$input.item.json };\nlet body = payload.body || payload;\n\nfunction sanitize(text) {\n  if (typeof text !== 'string') return text;\n  \n  return text\n    // 1. Converte barras erradas /n ou /N para quebra de linha real \\n\n    .replace(/\\/n/gi, '\\n')\n    \n    // 2. Garante que entre duas tags grudadas ][ exista quebra de linha \\n\\n\n    .replace(/\\]\\s*\\[/g, ']\\n\\n[')\n    \n    // 3. Garante que toda tag [tag] tenha \\n\\n antes e depois\n    .replace(/\\s*(\\[.*?\\])\\s*/g, '\\n\\n$1\\n\\n')\n    \n    // 4. Limpa excessos: se ficou com 3 ou mais enters, reduz para 2\n    .replace(/\\n{3,}/g, '\\n\\n')\n    \n    // 5. Remove espaços e quebras inúteis no início e fim de tudo\n    .trim();\n}\n\n// Aplicação da lógica nos campos de mensagem\nif (body.message) {\n  if (typeof body.message === 'string') {\n    body.message = sanitize(body.message);\n  } else if (body.message.text && body.message.text.body) {\n    body.message.text.body = sanitize(body.message.text.body);\n  }\n}\n\nif (Array.isArray(body.messages)) {\n  body.messages = body.messages.map(msg => {\n    if (typeof msg === 'string') return sanitize(msg);\n    if (msg.text && msg.text.body) {\n       msg.text.body = sanitize(msg.text.body);\n    }\n    return msg;\n  });\n}\n\nreturn { json: body };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          208,
+          336
+        ],
+        "id": "246b005a-4429-4898-860d-154959d2165a",
+        "name": "Verificar se ia nao mando algo errado"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.media_url }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2656,
+          2096
+        ],
+        "id": "8d666991-0e06-4897-9363-012942a6ee55",
+        "name": "DonwloadMIDIA",
+        "alwaysOutputData": true,
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "content": "## Backup de fluxos anteriores\n",
+          "height": 816,
+          "width": 2080
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          784,
+          1472
+        ],
+        "id": "d6ef9ee3-6e56-4731-96ea-7e47f0c1457f",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "content": "## LOOP E Resultados\n",
+          "height": 416,
+          "width": 592
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          656,
+          192
+        ],
+        "id": "0aef7cde-c075-4d2b-8188-2329341fc020",
+        "name": "Sticky Note8"
+      },
+      {
+        "parameters": {
+          "content": "## Efeito whatsapp",
+          "height": 320,
+          "width": 288
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2048,
+          224
+        ],
+        "id": "c2a566d8-4411-4d02-aa4d-8e4abb454c20",
+        "name": "Sticky Note9"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================================================\n// RESOLVEDOR DE MÍDIA - FIX URL ENCODING 🚀\n// ============================================================================\n\nconst dbData = $input.item.json;\n\nif (!dbData.url) {\n    throw new Error(\"❌ ERRO: Mídia não encontrada no Banco de Dados.\");\n}\n\n// FIX: Garante que a URL esteja corretamente formatada para o WhatsApp\n// Remove espaços duplos e garante o encoding correto\nlet cleanUrl = dbData.url.trim();\n\nreturn {\n    ...dbData,\n    media_url: cleanUrl,\n    media_type: dbData.type,\n    media_caption: dbData.caption || \"\",\n    media_presence: dbData.type === 'audio' ? 'recording' : 'composing',\n    media_duration: dbData.duration || 5, \n    is_media: true\n};"
+        },
+        "id": "4ead1cba-dc03-4006-8e58-bb9e8a255028",
+        "name": "Verifica o tipo de MIDIA",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1728,
+          240
+        ]
+      }
+    ],
+    "connections": {
+      "TempoDigitando": {
+        "main": [
+          [
+            {
+              "node": "Formataliza",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validador Minimo": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SendText": {
+        "main": [
+          [
+            {
+              "node": "Validador Minimo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Resultado": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Digitando": {
+        "main": [
+          [
+            {
+              "node": "Calculadora",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Salvar interação Enviada": {
+        "main": [
+          []
+        ]
+      },
+      "Respond to Webhook1": {
+        "main": [
+          []
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Media Resolver",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Formataliza",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar Digitando",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Media Resolver": {
+        "main": [
+          [
+            {
+              "node": "Enviar Digitando",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculadora": {
+        "main": [
+          [
+            {
+              "node": "TempoDigitando",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formataliza": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TempoDigitando1": {
+        "main": [
+          [
+            {
+              "node": "Formataliza1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validador Minimo1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SendText1": {
+        "main": [
+          [
+            {
+              "node": "Verificar se ia nao mando algo errado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items1": {
+        "main": [
+          [
+            {
+              "node": "Resultado",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Switch1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Mensagem1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Digitando1": {
+        "main": [
+          [
+            {
+              "node": "Calculadora1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch1": {
+        "main": [
+          [
+            {
+              "node": "BuscarMidia",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Enviar Digitando1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculadora1": {
+        "main": [
+          [
+            {
+              "node": "TempoDigitando1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formataliza1": {
+        "main": [
+          [
+            {
+              "node": "Enviar Mensagem1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BuscarMidia": {
+        "main": [
+          [
+            {
+              "node": "Verifica o tipo de MIDIA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verificar se ia nao mando algo errado": {
+        "main": [
+          [
+            {
+              "node": "Validador Minimo1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verifica o tipo de MIDIA": {
+        "main": [
+          [
+            {
+              "node": "Enviar Digitando1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version dbdb5e39",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
