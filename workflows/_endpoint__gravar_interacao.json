@@ -1,0 +1,282 @@
+{
+  "updatedAt": "2026-01-26T12:03:10.424Z",
+  "createdAt": "2026-01-26T12:03:02.527Z",
+  "id": "UKC42jWn0-xDLE_rUPaoI",
+  "name": "[Endpoint] Gravar Interação",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Registro de Interações",
+        "height": 80,
+        "width": 464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f377ce10-825e-46e6-b355-e1a544140365",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "path": "registrar-informação-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "id": "51f639b7-7b2d-4980-ba45-2ff4082189bd",
+      "name": "Webhook1",
+      "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        320,
+        112
+      ],
+      "id": "ef3d4015-9a91-43f0-ae4f-c9a4e57f9ea2",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "bDQneub2cDRQsqRN",
+          "name": "Takego-CRM"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        496,
+        112
+      ],
+      "id": "367fee0e-1008-4716-95c6-7a091a8d5872",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        112
+      ],
+      "id": "e7ac305f-abd5-43e6-885d-c75e3873c828",
+      "name": "Validador Minimo1"
+    }
+  ],
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Validador Minimo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validador Minimo1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "21b83b5e-57f0-49f2-93e0-7bc6e167f90d",
+  "activeVersionId": "21b83b5e-57f0-49f2-93e0-7bc6e167f90d",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-26T12:03:02.527Z",
+      "createdAt": "2026-01-26T12:03:02.527Z",
+      "role": "workflow:owner",
+      "workflowId": "UKC42jWn0-xDLE_rUPaoI",
+      "projectId": "zIWzQf2ZTqYydzuc"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-26T12:03:13.479Z",
+    "createdAt": "2026-01-26T12:03:10.429Z",
+    "versionId": "21b83b5e-57f0-49f2-93e0-7bc6e167f90d",
+    "workflowId": "UKC42jWn0-xDLE_rUPaoI",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## Registro de Interações",
+          "height": 80,
+          "width": 464
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "f377ce10-825e-46e6-b355-e1a544140365",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "path": "registrar-informação-b3461d76-bbfa-4f15-8631-3f99e21e42fd",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "id": "51f639b7-7b2d-4980-ba45-2ff4082189bd",
+        "name": "Webhook1",
+        "webhookId": "b3461d76-bbfa-4f15-8631-3f99e21e42fd"
+      },
+      {
+        "parameters": {
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          320,
+          112
+        ],
+        "id": "ef3d4015-9a91-43f0-ae4f-c9a4e57f9ea2",
+        "name": "Insert rows in a table",
+        "credentials": {
+          "postgres": {
+            "id": "bDQneub2cDRQsqRN",
+            "name": "Takego-CRM"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          496,
+          112
+        ],
+        "id": "367fee0e-1008-4716-95c6-7a091a8d5872",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          160,
+          112
+        ],
+        "id": "e7ac305f-abd5-43e6-885d-c75e3873c828",
+        "name": "Validador Minimo1"
+      }
+    ],
+    "connections": {
+      "Webhook1": {
+        "main": [
+          [
+            {
+              "node": "Validador Minimo1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert rows in a table": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validador Minimo1": {
+        "main": [
+          [
+            {
+              "node": "Insert rows in a table",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesreel David Hobus",
+    "name": "Version 21b83b5e",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
